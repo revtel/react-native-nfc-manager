@@ -1,0 +1,23 @@
+{
+  "name": "react-native-nfc-manager",
+  "version": "0.0.1",
+  "description": "A NFC module for react native.",
+  "main": "NfcManager",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whitedogg13/react-native-nfc-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/whitedogg13/react-native-nfc-manager/issues"
+  },
+  "keywords": [
+  	"react-native",
+  	"android",
+    "nfc"
+  ],
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Richie",
+    "url": "https://github.com/whitedogg13"
+  }
+}

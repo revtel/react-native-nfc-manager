@@ -1,0 +1,30 @@
+.idea
+android/local.properties
+gen/
+
+.gradle
+gradle
+gradlew
+gradlew.bat
+
+node_modules
+
+# OSX
+#
+.DS_Store
+
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## Build generated
+build/
+DerivedData
+
+*.tgz
+
+*.xcuserstate
+
+xcuserdata
+
+*.iml
