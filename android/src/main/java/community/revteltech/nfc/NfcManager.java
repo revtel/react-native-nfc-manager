@@ -100,9 +100,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private void registerTagEvent(Callback callback) {
         Log.d(LOG_TAG, "registerTag");
 		isForegroundEnabled = true;
-        intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED));
-        intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED));
 
+		// capture all mime-based dispatch NDEF
 		IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
 		try {
 			ndef.addDataType("*/*");
@@ -110,6 +109,13 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 			throw new RuntimeException("fail", e);
 	    }
 		intentFilters.add(ndef);
+
+		// capture all rest NDEF, such as uri-based
+        intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED));
+		techLists.add(new String[]{Ndef.class.getName()});
+
+		// for those without NDEF, get them as tags
+        intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED));
 
 		if (isResumed) {
 			enableDisableForegroundDispatch(true);
@@ -230,10 +236,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
 		WritableMap parsed = null;
 		Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-		Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
+		// Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
 
 		if (action.equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
 			Ndef ndef = Ndef.get(tag);
+			Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
 			parsed = ndef2React(ndef, messages);
 		} else if (action.equals(NfcAdapter.ACTION_TECH_DISCOVERED)) {
 			for (String tagTech : tag.getTechList()) {
@@ -242,7 +249,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					// fireNdefFormatableEvent(tag);
 				} else if (tagTech.equals(Ndef.class.getName())) { //
 					Ndef ndef = Ndef.get(tag);
-					parsed = ndef2React(ndef, messages);
+					parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
 				}
 			}
 		} else if (action.equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
