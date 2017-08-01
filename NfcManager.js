@@ -4,6 +4,7 @@ import {
   NativeEventEmitter,
   Platform
 } from 'react-native'
+import NdefParser from './NdefParser'
 
 const NativeNfcManager = NativeModules.NfcManager;
 const NfcManagerEmitter = new NativeEventEmitter(NativeNfcManager);
@@ -81,3 +82,7 @@ class NfcManager {
 }
 
 export default new NfcManager();
+
+export {
+  NdefParser
+}

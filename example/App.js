@@ -6,7 +6,7 @@ import {
     Platform,
     TouchableOpacity
 } from 'react-native';
-import NfcManager from 'react-native-nfc-manager';
+import NfcManager, {NdefParser} from 'react-native-nfc-manager';
 
 class App extends Component {
     constructor(props) {
@@ -39,6 +39,7 @@ class App extends Component {
             .catch(err => {
                 console.log(err);
             })
+        this._testNdefParser();
     }
 
     render() {
@@ -105,6 +106,49 @@ class App extends Component {
             .catch(error => {
                 console.warn('goToNfcSetting fail', error)
             })
+    }
+
+    _testNdefParser = () => {
+        const sampleTag = {
+            "id": [
+                4,
+                109,
+                -123,
+                10,
+                116,
+                76,
+                -127,
+            ],
+            "maxSize": 142,
+            "ndefMessage": [
+                {
+                    "id": [],
+                    "payload": [
+                        1,
+                        101,
+                        98,
+                        115,
+                        108,
+                        46,
+                        104,
+                        107,
+                    ],
+                    "tnf": 1,
+                    "type": [
+                        85,
+                    ],
+                },
+            ],
+            "techTypes": [
+                "android.nfc.tech.NfcA",
+                "android.nfc.tech.MifareUltralight",
+                "android.nfc.tech.Ndef",
+            ],
+            "type": "NFC Forum Type 2",
+        };
+
+        let {uri} = NdefParser.parseUri(sampleTag.ndefMessage[0]);
+        console.log('parseUri: ' + uri);
     }
 }
 

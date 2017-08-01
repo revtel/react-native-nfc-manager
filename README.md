@@ -20,7 +20,16 @@ react-native link react-native-nfc-manager
 Look into `example/App.js` as a starting point.
 
 ## API
+This library provide a default export `NfcManager` and a named export `NdefParser`, like this:
+```javascript
+import NfcManager, {NdefParser} from 'react-native-nfc-manager'
+```
+
 All methods in `NfcManager` return a `Promise` object and are resolved to different types of data according to individual API.
+
+`NdefParser` is an utility class to parse some well-known NDEF format, currently only support `RTD URI`.
+
+## NfcManager API
 
 ### start()
 Init the module.
@@ -44,10 +53,26 @@ __Arguments__
 
 __Examples__
 ```js
-NfcManager.registerTagEvent( tag => {
+NfcManager.registerTagEvent(tag => {
     console.log('Tag Discovered', tag);
 })
 ```
 
-## unregisterTagEvent()
+### unregisterTagEvent()
 Stop listening to NFC tags.
+
+
+## NdefParser API
+
+### parseUri(ndef)
+Try to parse uri from a NdefMessage, return an object with an `uri` property.
+
+__Arguments__
+- `ndef` - `object` - this object should be obtained from nfc tag object with this form: `tag.ndefMessage[0]`. (NFC tag object can be obtained by `getLaunchTagEvent` or `registerTagEvent`)
+
+__Examples__
+```js
+let {uri} = NdefParser.parseUri(sampleTag.ndefMessage[0]);
+console.log('parseUri: ' + uri);
+```
+
