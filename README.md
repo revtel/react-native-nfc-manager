@@ -2,8 +2,16 @@
 
 Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) and [react-native-ble-manager](https://github.com/innoveit/react-native-ble-manager)
 
+Contributions are welcomed!
+
 ## Supported Platforms
 - Android (API 10+)
+- iOS (iOS11 with iPhone 7/7+, 8/8+)
+
+## Some Words about iOS Support
+
+You will need to setup some capabilities / entitlement / plist stuff to enable NFC development on your device, please follow this great tutorial:
+* https://www.youtube.com/watch?v=SD6Rm4cGyko
 
 ## Install
 ```shell
@@ -19,6 +27,18 @@ react-native link react-native-nfc-manager
 ## Example
 Look into `example/App.js` as a starting point.
 
+The easiest way to test is simple make your `AppRegistry` point to our example component, like this:
+```javascript
+// in your index.ios.js or index.android.js
+import React, { Component } from 'react';
+import {
+  AppRegistry,
+} from 'react-native';
+import App from 'react-native-nfc-manager/example/App'
+
+AppRegistry.registerComponent('NfcManagerDev', () => App);
+```
+
 ## API
 This library provide a default export `NfcManager` and a named export `NdefParser`, like this:
 ```javascript
@@ -31,17 +51,36 @@ All methods in `NfcManager` return a `Promise` object and are resolved to differ
 
 ## NfcManager API
 
-### start()
+### start({onSessionClosedIOS})
 Init the module.
 
-### isEnabled()
+__Arguments__
+- `onSessionClosedIOS` - `function` - [iOS only] the callback to invoke when an `NFCNDEFReaderSession` becomes invalidated
+
+__Examples__
+```js
+NfcManager.start({
+    onSessionClosedIOS: () => {
+        console.log('ios session closed');
+    }
+})
+    .then(result => {
+        console.log('start OK', result);
+    })
+    .catch(error => {
+        console.warn('start fail', error);
+        this.setState({supported: false});
+    })
+```
+
+### isEnabled() [Android only]
 Check if the NFC is enabled.
 Returned `Promise` resolved to a boolean value to indicate whether NFC is enabled.
 
-### goToNfcSetting()
+### goToNfcSetting() [Android only]
 Direct the user to NFC setting.
 
-### getLaunchTagEvent()
+### getLaunchTagEvent() [Android only]
 Get the NFC tag object which launches the app.
 Returned `Promise` resolved to the NFC tag object launching the app and resolved to null if the app isn't launched by NFC tag.
 
