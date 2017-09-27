@@ -10,7 +10,8 @@ const NativeNfcManager = NativeModules.NfcManager;
 const NfcManagerEmitter = new NativeEventEmitter(NativeNfcManager);
 
 const Events = {
-  DiscoverTag: 'NfcManagerDiscoverTag'
+  DiscoverTag: 'NfcManagerDiscoverTag',
+  SessionClosed: 'NfcManagerSessionClosed',
 }
 
 const LOG = 'NfcManagerJs';
@@ -18,13 +19,20 @@ const LOG = 'NfcManagerJs';
 class NfcManager {
   constructor() {
     this._clientTagDiscoveryListener = null;
+    this._clientSessionClosedListener = null;
     this._subscription = null;
   }
 
-  start() {
+  start({onSessionClosedIOS}={}) {
     return new Promise((resolve, reject) => {
       NativeNfcManager.start(resolve);
     })
+      .then(() => {
+        if (Platform.OS === 'ios') {
+          this._clientSessionClosedListener = onSessionClosedIOS;
+          NfcManagerEmitter.addListener(Events.SessionClosed, this._handleSessionClosed)
+        }
+      })
   }
 
   isEnabled() {
@@ -78,6 +86,13 @@ class NfcManager {
     if (this._clientTagDiscoveryListener) {
       this._clientTagDiscoveryListener(tag);
     }
+  }
+
+  _handleSessionClosed = () => {
+      this._clientTagDiscoveryListener = null;
+      this._subscription.remove();
+      this._subscription = null;
+      this._clientSessionClosedListener && this._clientSessionClosedListener();
   }
 }
 
