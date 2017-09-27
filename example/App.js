@@ -4,7 +4,8 @@ import {
     Text,
     Button,
     Platform,
-    TouchableOpacity
+    TouchableOpacity,
+    Linking
 } from 'react-native';
 import NfcManager, {NdefParser} from 'react-native-nfc-manager';
 
@@ -12,59 +13,71 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            supported: true,
             enabled: false,
             tag: {},
         }
     }
 
     componentDidMount() {
-        NfcManager.start()
+        NfcManager.start({
+            onSessionClosedIOS: () => {
+                console.log('ios session closed');
+            }
+        })
             .then(result => {
                 console.log('start OK', result);
             })
             .catch(error => {
                 console.warn('start fail', error);
+                this.setState({supported: false});
             })
-        NfcManager.getLaunchTagEvent()
-            .then(tag => {
-                console.log('launch tag', tag);
-                if (tag) {
-                    this.setState({ tag });
-                }
-            })
-        NfcManager.isEnabled()
-            .then(enabled => {
-                this.setState({ enabled });
-            })
-            .catch(err => {
-                console.log(err);
-            })
-        this._testNdefParser();
+
+        if (Platform.OS === 'android') {
+            NfcManager.getLaunchTagEvent()
+                .then(tag => {
+                    console.log('launch tag', tag);
+                    if (tag) {
+                        this.setState({ tag });
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+            NfcManager.isEnabled()
+                .then(enabled => {
+                    this.setState({ enabled });
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+        }
     }
 
     render() {
-        let { enabled, tag } = this.state;
+        let { supported, enabled, tag } = this.state;
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text>{`Is NFC enabled ? ${enabled}`}</Text>
+                <Text>{`Is NFC supported ? ${supported}`}</Text>
+                <Text>{`Is NFC enabled (Android only)? ${enabled}`}</Text>
 
-                <TouchableOpacity style={{ marginTop: 15 }} onPress={this._startDetection}>
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._startDetection}>
                     <Text style={{ color: 'blue' }}>Start Tag Detection</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{ marginTop: 15 }} onPress={this._stopDetection}>
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._stopDetection}>
                     <Text style={{ color: 'red' }}>Stop Tag Detection</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{ marginTop: 15 }} onPress={this._clearMessages}>
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._clearMessages}>
                     <Text>Clear</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={{ marginTop: 15 }} onPress={this._goToNfcSetting}>
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._goToNfcSetting}>
                     <Text >Go to NFC setting</Text>
                 </TouchableOpacity>
 
-                <Text style={{ marginTop: 15 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
+                <Text style={{ marginTop: 20 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
             </View>
         )
     }
@@ -72,6 +85,13 @@ class App extends Component {
     _onTagDiscovered = tag => {
         console.log('Tag Discovered', tag);
         this.setState({ tag });
+        let url = this._parseUri(tag);
+        if (url) {
+            Linking.openURL(url)
+                .catch(err => {
+                    console.warn(err);
+                })
+        }
     }
 
     _startDetection = () => {
@@ -99,56 +119,25 @@ class App extends Component {
     }
 
     _goToNfcSetting = () => {
-        NfcManager.goToNfcSetting()
-            .then(result => {
-                console.log('goToNfcSetting OK', result)
-            })
-            .catch(error => {
-                console.warn('goToNfcSetting fail', error)
-            })
+        if (Platform.OS === 'android') {
+            NfcManager.goToNfcSetting()
+                .then(result => {
+                    console.log('goToNfcSetting OK', result)
+                })
+                .catch(error => {
+                    console.warn('goToNfcSetting fail', error)
+                })
+        }
     }
 
-    _testNdefParser = () => {
-        const sampleTag = {
-            "id": [
-                4,
-                109,
-                -123,
-                10,
-                116,
-                76,
-                -127,
-            ],
-            "maxSize": 142,
-            "ndefMessage": [
-                {
-                    "id": [],
-                    "payload": [
-                        1,
-                        101,
-                        98,
-                        115,
-                        108,
-                        46,
-                        104,
-                        107,
-                    ],
-                    "tnf": 1,
-                    "type": [
-                        85,
-                    ],
-                },
-            ],
-            "techTypes": [
-                "android.nfc.tech.NfcA",
-                "android.nfc.tech.MifareUltralight",
-                "android.nfc.tech.Ndef",
-            ],
-            "type": "NFC Forum Type 2",
-        };
-
-        let {uri} = NdefParser.parseUri(sampleTag.ndefMessage[0]);
-        console.log('parseUri: ' + uri);
+    _parseUri = (tag) => {
+        let result = NdefParser.parseUri(tag.ndefMessage[0]),
+            uri = result && result.uri;
+        if (uri) {
+            console.log('parseUri: ' + uri);
+            return uri;
+        }
+        return null;
     }
 }
 
