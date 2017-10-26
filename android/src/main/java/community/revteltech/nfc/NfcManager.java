@@ -67,7 +67,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
 		if (nfcAdapter != null) {
 			Log.d(LOG_TAG, "start");
-			callback.invoke(null);
+			callback.invoke();
 		} else {
 			Log.d(LOG_TAG, "not support in this device");
 			callback.invoke("no nfc support");
