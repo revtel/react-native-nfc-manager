@@ -30,7 +30,7 @@ class NfcManager {
       .then(() => {
         if (Platform.OS === 'ios') {
           this._clientSessionClosedListener = onSessionClosedIOS;
-          NfcManagerEmitter.addListener(Events.SessionClosed, this._handleSessionClosed)
+          this._session = NfcManagerEmitter.addListener(Events.SessionClosed, this._handleSessionClosed)
         }
       })
   }
@@ -90,8 +90,8 @@ class NfcManager {
 
   _handleSessionClosed = () => {
       this._clientTagDiscoveryListener = null;
-      this._subscription.remove();
-      this._subscription = null;
+      this._session.remove();
+      this._session = null;
       this._clientSessionClosedListener && this._clientSessionClosedListener();
   }
 }
