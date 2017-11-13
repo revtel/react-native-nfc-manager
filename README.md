@@ -84,11 +84,13 @@ Direct the user to NFC setting.
 Get the NFC tag object which launches the app.
 Returned `Promise` resolved to the NFC tag object launching the app and resolved to null if the app isn't launched by NFC tag.
 
-### registerTagEvent(listener)
+### registerTagEvent(listener, alertMessage, invalidateAfterFirstRead)
 Start to listen to *ANY* NFC tags.
 
 __Arguments__
 - `listener` - `function` - the callback when discovering NFC tags
+- `alertMessage` - `string` - (iOS) the message to display on iOS when the NFCScanning pops up
+- `invalidateAfterFirstRead` - `boolean` - (iOS) when set to true this will not have you prompt to click done after NFC Scan.
 
 __Examples__
 ```js

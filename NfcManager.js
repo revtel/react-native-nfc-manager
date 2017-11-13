@@ -23,7 +23,7 @@ class NfcManager {
     this._subscription = null;
   }
 
-  start({onSessionClosedIOS} = {}) {
+  start({ onSessionClosedIOS } = {}) {
     return new Promise((resolve, reject) => {
       NativeNfcManager.start(resolve);
     })
@@ -55,10 +55,10 @@ class NfcManager {
     })
   }
 
-  registerTagEvent(listener, alertMessage = '') {
+  registerTagEvent(listener, alertMessage = '', invalidateAfterFirstRead = false) {
     if (!this._subscription) {
       return new Promise((resolve, reject) => {
-        NativeNfcManager.registerTagEvent(alertMessage, () => {
+        NativeNfcManager.registerTagEvent(alertMessage, invalidateAfterFirstRead, () => {
           this._clientTagDiscoveryListener = listener;
           this._subscription = NfcManagerEmitter.addListener(Events.DiscoverTag, this._handleDiscoverTag);
           resolve();

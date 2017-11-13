@@ -95,11 +95,11 @@ RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage callback:(nonnull RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage invalidateAfterFirstRead:(bool)invalidateAfterFirstRead callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 11.0, *)) {
         if (session == nil) {
-            session = [[NFCNDEFReaderSession alloc] initWithDelegate:self queue:dispatch_get_main_queue() invalidateAfterFirstRead:false];
+            session = [[NFCNDEFReaderSession alloc] initWithDelegate:self queue:dispatch_get_main_queue() invalidateAfterFirstRead:invalidateAfterFirstRead];
             session.alertMessage = alertMessage;
             [session beginSession];
         }
