@@ -90,8 +90,6 @@ class NfcManager {
 
   _handleSessionClosed = () => {
       this._clientTagDiscoveryListener = null;
-      this._subscription.remove();
-      this._subscription = null;
       this._clientSessionClosedListener && this._clientSessionClosedListener();
   }
 }
