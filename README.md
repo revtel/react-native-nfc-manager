@@ -73,6 +73,9 @@ NfcManager.start({
     })
 ```
 
+### stop()
+Terminates the module. This will remove the onSessionClosedIOS listener that is attached in the `start` function.
+
 ### isEnabled() [Android only]
 Check if the NFC is enabled.
 Returned `Promise` resolved to a boolean value to indicate whether NFC is enabled.
