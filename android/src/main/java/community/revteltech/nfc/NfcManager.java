@@ -102,7 +102,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-    private void registerTagEvent(Callback callback) {
+    private void registerTagEvent(String alertMessage, Boolean invalidateAfterFirstRead, Callback callback) {
         Log.d(LOG_TAG, "registerTag");
 		isForegroundEnabled = true;
 
@@ -147,14 +147,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 			enableDisableForegroundDispatch(true);
 		}
     }
-    
+
     @Override
     public void onHostPause() {
         Log.d(LOG_TAG, "onPause");
 		isResumed = false;
 		enableDisableForegroundDispatch(false);
     }
-    
+
     @Override
     public void onHostDestroy() {
         Log.d(LOG_TAG, "onDestroy");

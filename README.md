@@ -96,7 +96,7 @@ __Examples__
 ```js
 NfcManager.registerTagEvent(tag => {
     console.log('Tag Discovered', tag);
-})
+}, 'Hold your device over the tag', true)
 ```
 
 ### unregisterTagEvent()
