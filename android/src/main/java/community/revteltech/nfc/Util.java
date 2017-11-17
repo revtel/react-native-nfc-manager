@@ -16,6 +16,7 @@ import java.util.List;
 public class Util {
 
     static final String TAG = "NfcPlugin";
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
     static JSONObject ndefToJSON(Ndef ndef) {
         JSONObject json = new JSONObject();
@@ -26,7 +27,7 @@ public class Util {
                 Tag tag = ndef.getTag();
                 // tag is going to be null for NDEF_FORMATABLE until NfcUtil.parseMessage is refactored
                 if (tag != null) {
-                    json.put("id", byteArrayToJSON(tag.getId()));
+                    json.put("id", bytesToHex(tag.getId()));
                     json.put("techTypes", new JSONArray(Arrays.asList(tag.getTechList())));
                 }
 
@@ -54,7 +55,7 @@ public class Util {
 
         if (tag != null) {
             try {
-                json.put("id", byteArrayToJSON(tag.getId()));
+                json.put("id", bytesToHex(tag.getId()));
                 json.put("techTypes", new JSONArray(Arrays.asList(tag.getTechList())));
             } catch (JSONException e) {
                 Log.e(TAG, "Failed to convert tag into json: " + tag.toString(), e);
@@ -101,6 +102,19 @@ public class Util {
         return json;
     }
 
+    public static String bytesToHex(byte[] bytes) {
+      char[] hexChars = new char[bytes.length * 2];
+
+      for ( int j = 0; j < bytes.length; j++ ) {
+          int v = bytes[j] & 0xFF;
+
+          hexChars[j * 2] = hexArray[v >>> 4];
+          hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+      }
+
+      return new String(hexChars);
+    }
+
     static byte[] jsonToByteArray(JSONArray json) throws JSONException {
         byte[] b = new byte[json.length()];
         for (int i = 0; i < json.length(); i++) {
@@ -128,7 +142,7 @@ public class Util {
         try {
             json.put("tnf", record.getTnf());
             json.put("type", byteArrayToJSON(record.getType()));
-            json.put("id", byteArrayToJSON(record.getId()));
+            json.put("id", bytesToHex(record.getId()));
             json.put("payload", byteArrayToJSON(record.getPayload()));
         } catch (JSONException e) {
             //Not sure why this would happen, documentation is unclear.
