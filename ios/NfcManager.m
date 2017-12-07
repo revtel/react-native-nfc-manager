@@ -95,6 +95,18 @@ RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
     }
 }
 
+RCT_EXPORT_METHOD(isEnabled: (nonnull RCTResponseSenderBlock)callback)
+{
+    bool isEnabled = NO;
+    if (@available(iOS 11.0, *)) {
+        NSLog(@"NfcManager initialized");
+        if (NFCNDEFReaderSession.readingAvailable) {
+            isEnabled = true
+        }
+    }
+    callback(isEnabled);
+}
+
 RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage invalidateAfterFirstRead:(BOOL)invalidateAfterFirstRead callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 11.0, *)) {
