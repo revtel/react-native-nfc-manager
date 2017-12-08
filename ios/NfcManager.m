@@ -97,11 +97,11 @@ RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(isEnabled: (nonnull RCTResponseSenderBlock)callback)
 {
-    NSLog(@"NfcManager check NFC is enabled")
+    NSLog(@"NfcManager check NFC is enabled");
     bool isEnabled = NO;
     if (@available(iOS 11.0, *)) {
         if (NFCNDEFReaderSession.readingAvailable) {
-            isEnabled = true
+            isEnabled = YES;
         }
     }
     callback(@[[NSNull null], @(isEnabled)]);
