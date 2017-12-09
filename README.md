@@ -52,7 +52,7 @@ All methods in `NfcManager` return a `Promise` object and are resolved to differ
 ## NfcManager API
 
 ### start({onSessionClosedIOS})
-Init the module.
+Init the module. If the device doesn't support NFC, the returning promise will be rejected.
 
 __Arguments__
 - `onSessionClosedIOS` - `function` - [iOS only] the callback to invoke when an `NFCNDEFReaderSession` becomes invalidated
@@ -68,7 +68,7 @@ NfcManager.start({
         console.log('start OK', result);
     })
     .catch(error => {
-        console.warn('start fail', error);
+        console.warn('device does not support nfc!');
         this.setState({supported: false});
     })
 ```

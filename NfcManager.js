@@ -24,10 +24,15 @@ class NfcManager {
   }
 
   start({ onSessionClosedIOS } = {}) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       NativeNfcManager.start(resolve);
     })
-      .then(() => {
+      .then((err, result) => {
+        if (err) {
+          console.log('NfcManager: nfc not supported');
+          return Promise.reject(err);
+        }
+
         if (Platform.OS === 'ios') {
           this._clientSessionClosedListener = onSessionClosedIOS;
           this._session = NfcManagerEmitter.addListener(Events.SessionClosed, this._handleSessionClosed);
@@ -45,7 +50,7 @@ class NfcManager {
   }
 
   isEnabled() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       NativeNfcManager.isEnabled((err, result) => {
         resolve(result)
       })
@@ -53,20 +58,20 @@ class NfcManager {
   }
 
   goToNfcSetting() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       NativeNfcManager.goToNfcSetting(resolve)
     })
   }
 
   getLaunchTagEvent() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       NativeNfcManager.getLaunchTagEvent((err, tag) => resolve(tag));
     })
   }
 
   registerTagEvent(listener, alertMessage = '', invalidateAfterFirstRead = false) {
     if (!this._subscription) {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         NativeNfcManager.registerTagEvent(alertMessage, invalidateAfterFirstRead, () => {
           this._clientTagDiscoveryListener = listener;
           this._subscription = NfcManagerEmitter.addListener(Events.DiscoverTag, this._handleDiscoverTag);
@@ -82,7 +87,7 @@ class NfcManager {
       this._clientTagDiscoveryListener = null;
       this._subscription.remove();
       this._subscription = null;
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         NativeNfcManager.unregisterTagEvent(() => {
           resolve();
         })
