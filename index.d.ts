@@ -4,7 +4,7 @@
 
 declare module 'react-native-nfc-manager' {
 
-	export interface Tag {
+	export interface NdefRecord {
 		id?: number[];
 		tnf: number;
 		type: number[];
@@ -20,7 +20,7 @@ declare module 'react-native-nfc-manager' {
 	}
 
 	export interface TagEvent {
-		ndefMessage: Tag[];
+		ndefMessage: NdefRecord[];
 		maxSize: number;
 		type: string;
 		techTypes: string[];
@@ -35,7 +35,7 @@ declare module 'react-native-nfc-manager' {
 
 		goToNfcSetting(): Promise<any>;
 
-		getLaunchTagEvent(): Promise<Tag>;
+		getLaunchTagEvent(): Promise<TagEvent>;
 
 		registerTagEvent(listener: (tag: TagEvent) => void): Promise<any>;
 
@@ -46,6 +46,6 @@ declare module 'react-native-nfc-manager' {
 	export default nfcManager;
 
 	export namespace NdefParser {
-		function parseUri(ndef: Tag): ParseUriResult;
+		function parseUri(ndef: NdefRecord): ParseUriResult;
 	}
 }
