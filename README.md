@@ -122,9 +122,9 @@ console.log('parseUri: ' + uri);
 
 ## NFC Hardware requirement on Android
 
-By default react-native-nfc-manager is set to not require NFC hardware on Android. But adds the feature in the AndroidManifest.xml file for react-native-nfc-manager (See android/src/main/AndroidManifest.xml). This setting will overwrite what ever you put in your main AndroidManifest.xml file.
+By default react-native-nfc-manager is set to not require NFC hardware on Android. This setting will overwrite what ever you put in your main AndroidManifest.xml file during `react-native link` phase.
 
-If you want to change this behavior to only have your app support NFC devices you have to fork this project and modify the manifest in react-native-nfc-manager.
+If you want to change this behavior to only have your app support NFC devices you have to override you app manifest manually.
 
 Current setting is:
 ```<uses-feature android:name="android.hardware.nfc" android:required="false" />```
