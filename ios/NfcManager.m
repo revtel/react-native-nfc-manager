@@ -2,6 +2,27 @@
 #import "React/RCTBridge.h"
 #import "React/RCTConvert.h"
 #import "React/RCTEventDispatcher.h"
+#import <sys/utsname.h>
+
+NSString* deviceName()
+{
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    
+    return [NSString stringWithCString:systemInfo.machine
+                              encoding:NSUTF8StringEncoding];
+}
+
+int isSupported() {
+    NSString * device = deviceName();
+    NSLog(@"Device name is %@", device);
+    
+    // only iPhone 7,8,10 supports NFC
+    if ([device hasPrefix:@"iPhone9"] || [device hasPrefix:@"iPhone10"]) {
+        return 1;
+    }
+    return 0;
+}
 
 @implementation NfcManager
 
@@ -86,7 +107,7 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
 {
-    if (@available(iOS 11.0, *)) {
+    if (isSupported() && @available(iOS 11.0, *)) {
         NSLog(@"NfcManager initialized");
         session = nil;
         callback(@[]);
