@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.util.Log;
 import android.provider.Settings;
+
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
@@ -64,10 +65,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    public void isSupported(Callback callback){
+    public void isSupported(Callback callback) {
         Log.d(LOG_TAG, "isSupported");
         boolean result = getReactApplicationContext().getCurrentActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
-        callback.invoke(null,result);
+        callback.invoke(null, result);
     }
 
     @ReactMethod
@@ -262,7 +263,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     // fireNdefFormatableEvent(tag);
                 } else if (tagTech.equals(Ndef.class.getName())) { //
                     Ndef ndef = Ndef.get(tag);
-                    parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+                    parsed = ndef2React(ndef, new NdefMessage[]{ndef.getCachedNdefMessage()});
                 }
             }
         } else if (action.equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
