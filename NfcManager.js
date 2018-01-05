@@ -49,6 +49,14 @@ class NfcManager {
     this._session = null;
   }
 
+  isSupported(){
+    return new Promise(resolve => {
+      NativeNfcManager.isSupported((err,result) => {
+        resolve(result);
+      })
+    })
+  }
+
   isEnabled() {
     return new Promise(resolve => {
       NativeNfcManager.isEnabled((err, result) => {

@@ -39,6 +39,8 @@ import static android.app.Activity.RESULT_OK;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
 
+import android.content.pm.PackageManager;
+
 class NfcManager extends ReactContextBaseJavaModule implements ActivityEventListener, LifecycleEventListener {
 	private static final String LOG_TAG = "NfcManager";
     private final List<IntentFilter> intentFilters = new ArrayList<IntentFilter>();
@@ -72,6 +74,13 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 			Log.d(LOG_TAG, "not support in this device");
 			callback.invoke("no nfc support");
 		}
+	}
+    
+    	@ReactMethod
+	public void isSupported(Callback callback){
+		Log.d(LOG_TAG, "isSupported");
+		boolean result = getReactApplicationContext().getCurrentActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
+		callback.invoke(null,result);
 	}
 
 	@ReactMethod
