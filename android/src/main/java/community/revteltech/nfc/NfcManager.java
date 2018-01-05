@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -75,6 +76,13 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
+	public void isSupported(Callback callback){
+		Log.d(LOG_TAG, "isSupported");
+		boolean result = getReactApplicationContext().getCurrentActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
+		callback.invoke(null,result);
+	}
+
+	@ReactMethod
 	public void isEnabled(Callback callback) {
 		Log.d(LOG_TAG, "isEnabled");
         NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
@@ -141,6 +149,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @Override
     public void onHostResume() {
+		//sendEvent("onResume",null);
         Log.d(LOG_TAG, "onResume");
 		isResumed = true;
 		if (isForegroundEnabled) {
@@ -225,9 +234,13 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	@Override
 	public void onNewIntent(Intent intent) {
         Log.d(LOG_TAG, "onNewIntent " + intent);
+
 		WritableMap nfcTag = parseNfcIntent(intent);
+
 		if (nfcTag != null) {
-			sendEvent("NfcManagerDiscoverTag", nfcTag);
+			WritableMap map = Arguments.createMap();
+			map.putString("id",nfcTag.getString("id"));
+			sendEvent("NfcManagerDiscoverTag", map);
 		}
 	}
 
