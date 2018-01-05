@@ -76,7 +76,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		}
 	}
     
-    @ReactMethod
+    	@ReactMethod
 	public void isSupported(Callback callback){
 		Log.d(LOG_TAG, "isSupported");
 		boolean result = getReactApplicationContext().getCurrentActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
