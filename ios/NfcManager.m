@@ -105,6 +105,15 @@ RCT_EXPORT_MODULE()
                        body:@{}];
 }
 
+RCT_EXPORT_METHOD(isSupported: (nonnull RCTResponseSenderBlock)callback)
+{
+    if (isSupported() && @available(iOS 11.0, *)) {
+        callback(@[[NSNull null], @YES]);
+    } else {
+        callback(@[[NSNull null], @NO]);
+    }
+}
+
 RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
 {
     if (isSupported() && @available(iOS 11.0, *)) {

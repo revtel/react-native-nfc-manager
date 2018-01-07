@@ -20,6 +20,44 @@ class App extends Component {
     }
 
     componentDidMount() {
+        NfcManager.isSupported()
+            .then(supported => {
+                this.setState({ supported });
+                if (supported) {
+                    this._startNfc();
+                }
+            })
+    }
+
+    render() {
+        let { supported, enabled, tag } = this.state;
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text>{`Is NFC supported ? ${supported}`}</Text>
+                <Text>{`Is NFC enabled (Android only)? ${enabled}`}</Text>
+
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._startDetection}>
+                    <Text style={{ color: 'blue' }}>Start Tag Detection</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._stopDetection}>
+                    <Text style={{ color: 'red' }}>Stop Tag Detection</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._clearMessages}>
+                    <Text>Clear</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._goToNfcSetting}>
+                    <Text >Go to NFC setting</Text>
+                </TouchableOpacity>
+
+                <Text style={{ marginTop: 20 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
+            </View>
+        )
+    }
+
+    _startNfc() {
         NfcManager.start({
             onSessionClosedIOS: () => {
                 console.log('ios session closed');
@@ -52,34 +90,6 @@ class App extends Component {
                     console.log(err);
                 })
         }
-    }
-
-    render() {
-        let { supported, enabled, tag } = this.state;
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text>{`Is NFC supported ? ${supported}`}</Text>
-                <Text>{`Is NFC enabled (Android only)? ${enabled}`}</Text>
-
-                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._startDetection}>
-                    <Text style={{ color: 'blue' }}>Start Tag Detection</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._stopDetection}>
-                    <Text style={{ color: 'red' }}>Stop Tag Detection</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._clearMessages}>
-                    <Text>Clear</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._goToNfcSetting}>
-                    <Text >Go to NFC setting</Text>
-                </TouchableOpacity>
-
-                <Text style={{ marginTop: 20 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
-            </View>
-        )
     }
 
     _onTagDiscovered = tag => {
