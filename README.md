@@ -76,7 +76,7 @@ NfcManager.start({
 ### stop()
 Terminates the module. This will remove the onSessionClosedIOS listener that is attached in the `start` function.
 
-### isSupported() [Android only]
+### isSupported() 
 Chck if the NFC is supported by hardware.
 Returned `Promise` resolved to a boolean value to indicate whether NFC is supported.
 
@@ -134,3 +134,8 @@ Current setting is:
 ```<uses-feature android:name="android.hardware.nfc" android:required="false" />```
 
 If you want to only have your app support NFC devices then you have to change required to true.
+
+## Version history (from v0.1.0) 
+
+v0.1.0
+- add `isNfcSupported` 
