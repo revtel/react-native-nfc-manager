@@ -52,9 +52,24 @@ class App extends Component {
                     <Text >Go to NFC setting</Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity style={{ marginTop: 20 }} onPress={this._createNdefMessage}>
+                    <Text >Create Ndef Message</Text>
+                </TouchableOpacity>
+
                 <Text style={{ marginTop: 20 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
             </View>
         )
+    }
+
+    _createNdefMessage = () => {
+        const bytes = [
+            0xD1, 0x01, 0x0F, 0x55, 0x01, 0x72, 0x65, 0x76, 
+            0x74, 0x65, 0x6C, 0x74, 0x65, 0x63, 0x68, 0x2E,
+            0x63, 0x6F, 0x6D,
+        ];
+        NfcManager.createNdefMessage(bytes)
+            .then(() => console.log('it is fine'))
+            .catch(err => console.warn(err));
     }
 
     _startNfc() {

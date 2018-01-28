@@ -49,6 +49,17 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	private ReactApplicationContext reactContext;
 	private Boolean isForegroundEnabled = false;
 	private Boolean isResumed = false;
+	private WriteNdefRequest writeNdefRequest = null;
+
+	class WriteNdefRequest {
+		NdefMessage message;
+		Callback callback;
+
+		WriteNdefRequest(NdefMessage message, Callback callback) {
+			this.message = message;
+			this.callback = callback;
+		}
+	}
 
     public NfcManager(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -62,6 +73,53 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	@Override
 	public String getName() {
 		return "NfcManager";
+	}
+
+	@ReactMethod
+	public void cancelNdefWrite(Callback callback) {
+		synchronized(this) {
+		    if (writeNdefRequest != null) {
+		    	writeNdefRequest.callback.invoke("cancelled");
+				writeNdefRequest = null;
+				callback.invoke();
+		    } else {
+				callback.invoke("no writing request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void requestNdefWrite(byte[] bytes, Callback callback) {
+		synchronized(this) {
+			if (!isForegroundEnabled) {
+				callback.invoke("you should requestTagEvent first");
+				return;
+			}
+
+		    if (writeNdefRequest != null) {
+		    	callback.invoke("You can only issue one request at a time");
+		    } else {
+		        try {
+		    		writeNdefRequest = new WriteNdefRequest(
+						new NdefMessage(bytes), 
+						callback // defer the callback 
+					); 
+		        } catch (FormatException e) {
+		        	callback.invoke("Incorrect ndef format");
+		        }
+		    }
+		}
+	}
+
+	@ReactMethod
+	public void createNdefMessage(byte[] bytes, Callback callback) {
+		NdefMessage msg = null;
+		try {
+			msg = new NdefMessage(bytes);
+			callback.invoke();
+		} catch (FormatException e) {
+			callback.invoke("Incorrect format");
+		}
 	}
 
 	@ReactMethod
@@ -252,6 +310,20 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 		// Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
 
+		synchronized(this) {
+			if (writeNdefRequest != null) {
+				writeNdef(
+					tag, 
+					writeNdefRequest.message, 
+					writeNdefRequest.callback
+				);
+				writeNdefRequest = null;
+
+				// explicitly return null, to avoid extra detection
+				return null;
+			}
+		}
+
 		if (action.equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
 			Ndef ndef = Ndef.get(tag);
 			Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
@@ -280,7 +352,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		} catch (JSONException ex) {
 			return null;
 		}
-
 	}
 
     private WritableMap ndef2React(Ndef ndef, Parcelable[] messages) {
@@ -319,6 +390,24 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         }
         return json;
     }
+
+	private void writeNdef(Tag tag, NdefMessage message, Callback callback) {
+		try {
+			Ndef ndef = Ndef.get(tag);
+			if (ndef == null) {
+				callback.invoke("fail to apply ndef tech");
+			} else if (!ndef.isWritable()) {
+				callback.invoke("tag is not writeable");
+            } else if (ndef.getMaxSize() < message.toByteArray().length) {
+				callback.invoke("tag size is not enough");
+            } else {
+				ndef.writeNdefMessage(message);
+				callback.invoke();
+			}
+		} catch (Exception ex) {
+			callback.invoke("exception during writing ndef");
+		}
+	}
 
 }
 
