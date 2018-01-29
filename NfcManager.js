@@ -24,6 +24,10 @@ class NfcManager {
   }
 
   requestNdefWrite(bytes) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
     return new Promise(resolve => {
       NativeNfcManager.requestNdefWrite(bytes, resolve)
     })
@@ -36,6 +40,10 @@ class NfcManager {
   }
 
   cancelNdefWrite() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
     return new Promise(resolve => {
       NativeNfcManager.cancelNdefWrite(resolve)
     })
@@ -48,6 +56,10 @@ class NfcManager {
   }
 
   createNdefMessage(bytes) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
     return new Promise(resolve => {
       NativeNfcManager.createNdefMessage(bytes, resolve)
     })

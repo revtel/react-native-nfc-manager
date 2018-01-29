@@ -89,7 +89,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-	public void requestNdefWrite(byte[] bytes, Callback callback) {
+	public void requestNdefWrite(ReadableArray rnArray, Callback callback) {
 		synchronized(this) {
 			if (!isForegroundEnabled) {
 				callback.invoke("you should requestTagEvent first");
@@ -100,6 +100,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		    	callback.invoke("You can only issue one request at a time");
 		    } else {
 		        try {
+					byte[] bytes = rnArrayToBytes(rnArray);
 		    		writeNdefRequest = new WriteNdefRequest(
 						new NdefMessage(bytes), 
 						callback // defer the callback 
@@ -112,9 +113,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-	public void createNdefMessage(byte[] bytes, Callback callback) {
+	public void createNdefMessage(ReadableArray rnArray, Callback callback) {
 		NdefMessage msg = null;
 		try {
+			byte[] bytes = rnArrayToBytes(rnArray); 
 			msg = new NdefMessage(bytes);
 			callback.invoke();
 		} catch (FormatException e) {
@@ -393,6 +395,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
 	private void writeNdef(Tag tag, NdefMessage message, Callback callback) {
 		try {
+            Log.d(LOG_TAG, "ready to writeNdef");
 			Ndef ndef = Ndef.get(tag);
 			if (ndef == null) {
 				callback.invoke("fail to apply ndef tech");
@@ -401,12 +404,22 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             } else if (ndef.getMaxSize() < message.toByteArray().length) {
 				callback.invoke("tag size is not enough");
             } else {
+            	Log.d(LOG_TAG, "ready to writeNdef, seriously");
+				ndef.connect();
 				ndef.writeNdefMessage(message);
 				callback.invoke();
 			}
 		} catch (Exception ex) {
-			callback.invoke("exception during writing ndef");
+			callback.invoke(ex.getMessage());
 		}
+	}
+
+	private byte[] rnArrayToBytes(ReadableArray rArray) {
+		byte[] bytes = new byte[rArray.size()];
+		for (int i = 0; i < rArray.size(); i++) {
+			bytes[i] = (byte)(rArray.getInt(i) & 0xff);
+		}
+		return bytes;
 	}
 
 }
