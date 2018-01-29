@@ -55,22 +55,6 @@ class NfcManager {
       })
   }
 
-  createNdefMessage(bytes) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise(resolve => {
-      NativeNfcManager.createNdefMessage(bytes, resolve)
-    })
-      .then((err, result) => {
-        if (err) {
-          return Promise.reject(err);
-        }
-        return Promise.resolve();
-      })
-  }
-
   start({ onSessionClosedIOS } = {}) {
     return new Promise(resolve => {
       NativeNfcManager.start(resolve);

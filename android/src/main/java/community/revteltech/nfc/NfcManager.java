@@ -113,18 +113,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-	public void createNdefMessage(ReadableArray rnArray, Callback callback) {
-		NdefMessage msg = null;
-		try {
-			byte[] bytes = rnArrayToBytes(rnArray); 
-			msg = new NdefMessage(bytes);
-			callback.invoke();
-		} catch (FormatException e) {
-			callback.invoke("Incorrect format");
-		}
-	}
-
-	@ReactMethod
 	public void start(Callback callback) {
 		NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
 		if (nfcAdapter != null) {
