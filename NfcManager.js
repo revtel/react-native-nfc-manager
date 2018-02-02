@@ -23,6 +23,38 @@ class NfcManager {
     this._subscription = null;
   }
 
+  requestNdefWrite(bytes) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise(resolve => {
+      NativeNfcManager.requestNdefWrite(bytes, resolve)
+    })
+      .then((err, result) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(result);
+      })
+  }
+
+  cancelNdefWrite() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise(resolve => {
+      NativeNfcManager.cancelNdefWrite(resolve)
+    })
+      .then((err, result) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(result);
+      })
+  }
+
   start({ onSessionClosedIOS } = {}) {
     return new Promise(resolve => {
       NativeNfcManager.start(resolve);

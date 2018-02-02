@@ -5,7 +5,8 @@ import {
     Button,
     Platform,
     TouchableOpacity,
-    Linking
+    Linking,
+    TextInput,
 } from 'react-native';
 import NfcManager, {NdefParser} from 'react-native-nfc-manager';
 
@@ -15,6 +16,8 @@ class App extends Component {
         this.state = {
             supported: true,
             enabled: false,
+            isWriting: false,
+            urlToWrite: 'google.com',
             tag: {},
         }
     }
@@ -30,7 +33,7 @@ class App extends Component {
     }
 
     render() {
-        let { supported, enabled, tag } = this.state;
+        let { supported, enabled, tag, isWriting, urlToWrite} = this.state;
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Text>{`Is NFC supported ? ${supported}`}</Text>
@@ -49,12 +52,64 @@ class App extends Component {
                 </TouchableOpacity>
 
                 <TouchableOpacity style={{ marginTop: 20 }} onPress={this._goToNfcSetting}>
-                    <Text >Go to NFC setting</Text>
+                    <Text >(android) Go to NFC setting</Text>
                 </TouchableOpacity>
+
+                {
+                    <View style={{padding: 10, marginTop: 20, backgroundColor: '#e0e0e0'}}>
+                        <Text>(android) Write NDEF Test</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text>http://www.</Text>
+                            <TextInput
+                                style={{width: 200}}
+                                value={urlToWrite}
+                                onChangeText={urlToWrite => this.setState({ urlToWrite })}
+                            />
+                        </View>
+
+                        <TouchableOpacity 
+                            style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
+                            onPress={isWriting ? this._cancelNdefWrite : this._requestNdefWrite}>
+                            <Text style={{color: 'blue'}}>{`(android) ${isWriting ? 'Cancel' : 'Write NDEF'}`}</Text>
+                        </TouchableOpacity>
+                    </View>
+                }
 
                 <Text style={{ marginTop: 20 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
             </View>
         )
+    }
+
+    _requestNdefWrite = () => {
+        function strToBytes(str) {
+            let result = [];
+            for (let i = 0; i < str.length; i++) {
+                result.push(str.charCodeAt(i));
+            }
+            return result;
+        }
+
+        let {isWriting, urlToWrite} = this.state;
+        if (isWriting) {
+            return;
+        }
+
+        const urlBytes = strToBytes(urlToWrite);
+        const headerBytes = [0xD1, 0x01, (urlBytes.length + 1), 0x55, 0x01];
+        const bytes = [...headerBytes, ...urlBytes];
+
+        this.setState({isWriting: true});
+        NfcManager.requestNdefWrite(bytes)
+            .then(() => console.log('write completed'))
+            .catch(err => console.warn(err))
+            .then(() => this.setState({isWriting: false}));
+    }
+
+    _cancelNdefWrite = () => {
+        this.setState({isWriting: false});
+        NfcManager.cancelNdefWrite()
+            .then(() => console.log('write cancelled'))
+            .catch(err => console.warn(err))
     }
 
     _startNfc() {
