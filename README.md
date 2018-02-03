@@ -109,6 +109,16 @@ NfcManager.registerTagEvent(tag => {
 ### unregisterTagEvent()
 Stop listening to NFC tags.
 
+### requestNdefWrite(bytes) [Android only]
+Request writing **NdefMessage** (constructed by `bytes` array you passed) into next discovered tag.
+Notice you must call `registerTagEvent` first before calling this. 
+
+__Arguments__
+- `bytes` - `array` - the full NdefMessage, which is an array of number
+
+### cancelNdefWrite() [Android only]
+Cancel the pending ndef writing operation.
+
 
 ## NdefParser API
 
@@ -139,3 +149,6 @@ If you want to only have your app support NFC devices then you have to change re
 
 v0.1.0
 - add `isNfcSupported` 
+
+v0.2.0
+- add `requestNdefWrite` and `cancelNdefWrite` [Android only] 
