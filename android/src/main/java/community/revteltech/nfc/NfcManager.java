@@ -54,10 +54,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	class WriteNdefRequest {
 		NdefMessage message;
 		Callback callback;
+		boolean format;
+		boolean formatReadOnly;
 
-		WriteNdefRequest(NdefMessage message, Callback callback) {
+		WriteNdefRequest(NdefMessage message, Callback callback, boolean format, boolean formatReadOnly) {
 			this.message = message;
 			this.callback = callback;
+			this.format = format;
+			this.formatReadOnly = formatReadOnly;
 		}
 	}
 
@@ -89,7 +93,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-	public void requestNdefWrite(ReadableArray rnArray, Callback callback) {
+	public void requestNdefWrite(ReadableArray rnArray, ReadableMap options, Callback callback) {
 		synchronized(this) {
 			if (!isForegroundEnabled) {
 				callback.invoke("you should requestTagEvent first");
@@ -99,11 +103,16 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		    if (writeNdefRequest != null) {
 		    	callback.invoke("You can only issue one request at a time");
 		    } else {
+				boolean format = options.getBoolean("format");
+				boolean formatReadOnly = options.getBoolean("formatReadOnly");
+				
 		        try {
 					byte[] bytes = rnArrayToBytes(rnArray);
 		    		writeNdefRequest = new WriteNdefRequest(
 						new NdefMessage(bytes), 
-						callback // defer the callback 
+						callback, // defer the callback 
+						format,
+						formatReadOnly
 					); 
 		        } catch (FormatException e) {
 		        	callback.invoke("Incorrect ndef format");
@@ -304,8 +313,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 			if (writeNdefRequest != null) {
 				writeNdef(
 					tag, 
-					writeNdefRequest.message, 
-					writeNdefRequest.callback
+					writeNdefRequest
 				);
 				writeNdefRequest = null;
 
@@ -323,6 +331,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 				Log.d(LOG_TAG, tagTech);
 				if (tagTech.equals(NdefFormatable.class.getName())) {
 					// fireNdefFormatableEvent(tag);
+					parsed = tag2React(tag);
 				} else if (tagTech.equals(Ndef.class.getName())) { //
 					Ndef ndef = Ndef.get(tag);
 					parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
@@ -359,7 +368,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         // ndef is null for peer-to-peer
         // ndef and messages are null for ndef format-able
         if (ndef == null && messages != null) {
-
             try {
 
                 if (messages.length > 0) {
@@ -381,24 +389,50 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         return json;
     }
 
-	private void writeNdef(Tag tag, NdefMessage message, Callback callback) {
-		try {
-            Log.d(LOG_TAG, "ready to writeNdef");
-			Ndef ndef = Ndef.get(tag);
-			if (ndef == null) {
-				callback.invoke("fail to apply ndef tech");
-			} else if (!ndef.isWritable()) {
-				callback.invoke("tag is not writeable");
-            } else if (ndef.getMaxSize() < message.toByteArray().length) {
-				callback.invoke("tag size is not enough");
-            } else {
-            	Log.d(LOG_TAG, "ready to writeNdef, seriously");
-				ndef.connect();
-				ndef.writeNdefMessage(message);
-				callback.invoke();
-			}
-		} catch (Exception ex) {
-			callback.invoke(ex.getMessage());
+	private void writeNdef(Tag tag, WriteNdefRequest request) {
+		NdefMessage message = request.message; 
+		Callback callback = request.callback;
+		boolean formatReadOnly = request.formatReadOnly;
+		boolean format = request.format;
+
+		if (format || formatReadOnly) {
+	    	try {
+                Log.d(LOG_TAG, "ready to writeNdef");
+	    		NdefFormatable formatable = NdefFormatable.get(tag);
+	    		if (formatable == null) {
+	    			callback.invoke("fail to apply ndef formatable tech");
+               } else {
+                	Log.d(LOG_TAG, "ready to format ndef, seriously");
+	    			formatable.connect();
+					if (formatReadOnly) {
+						formatable.formatReadOnly(message);
+					} else {
+						formatable.format(message);
+					}
+	    			callback.invoke();
+	    		}
+	    	} catch (Exception ex) {
+	    		callback.invoke(ex.getMessage());
+	    	}
+		} else {
+	    	try {
+                Log.d(LOG_TAG, "ready to writeNdef");
+	    		Ndef ndef = Ndef.get(tag);
+	    		if (ndef == null) {
+	    			callback.invoke("fail to apply ndef tech");
+	    		} else if (!ndef.isWritable()) {
+	    			callback.invoke("tag is not writeable");
+                } else if (ndef.getMaxSize() < message.toByteArray().length) {
+	    			callback.invoke("tag size is not enough");
+                } else {
+                	Log.d(LOG_TAG, "ready to writeNdef, seriously");
+	    			ndef.connect();
+	    			ndef.writeNdefMessage(message);
+	    			callback.invoke();
+	    		}
+	    	} catch (Exception ex) {
+	    		callback.invoke(ex.getMessage());
+	    	}
 		}
 	}
 
