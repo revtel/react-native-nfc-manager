@@ -107,9 +107,20 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 				boolean formatReadOnly = options.getBoolean("formatReadOnly");
 				
 		        try {
-					byte[] bytes = rnArrayToBytes(rnArray);
+					NdefMessage msgToWrite;
+
+					/// the only case we allow ndef message to be null is when formatting, see:
+					/// https://developer.android.com/reference/android/nfc/tech/NdefFormatable.html#format(android.nfc.NdefMessage)
+					///	this API allows the `firstMessage` to be null
+					if (format && rnArray == null) {
+						msgToWrite = null;
+					} else {
+						byte[] bytes = rnArrayToBytes(rnArray);
+						msgToWrite = new NdefMessage(bytes);
+					}
+
 		    		writeNdefRequest = new WriteNdefRequest(
-						new NdefMessage(bytes), 
+						msgToWrite,
 						callback, // defer the callback 
 						format,
 						formatReadOnly
