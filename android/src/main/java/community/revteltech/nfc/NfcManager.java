@@ -42,7 +42,7 @@ import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
 import android.content.pm.PackageManager;
 
 class NfcManager extends ReactContextBaseJavaModule implements ActivityEventListener, LifecycleEventListener {
-	private static final String LOG_TAG = "NfcManager";
+	private static final String LOG_TAG = "ReactNativeNfcManager";
     private final List<IntentFilter> intentFilters = new ArrayList<IntentFilter>();
     private final ArrayList<String[]> techLists = new ArrayList<String[]>();
 	private Context context;
@@ -138,6 +138,9 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		if (nfcAdapter != null) {
 			Log.d(LOG_TAG, "start");
 			callback.invoke();
+
+			IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
+			getReactApplicationContext().getCurrentActivity().registerReceiver(mReceiver, filter);
 		} else {
 			Log.d(LOG_TAG, "not support in this device");
 			callback.invoke("no nfc support");
@@ -291,6 +294,35 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Log.d(LOG_TAG, "onReceive " + intent);
+			final String action = intent.getAction();
+
+            if (action.equals(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(NfcAdapter.EXTRA_ADAPTER_STATE,
+                                                     NfcAdapter.STATE_OFF);
+				String stateStr = "unknown";
+                switch (state) {
+                case NfcAdapter.STATE_OFF:
+					stateStr = "off";
+                    break;
+                case NfcAdapter.STATE_TURNING_OFF:
+					stateStr = "turning_off";
+                    break;
+                case NfcAdapter.STATE_ON:
+					stateStr = "on";
+                    break;
+                case NfcAdapter.STATE_TURNING_ON:
+					stateStr = "turning_on";
+                    break;
+                }
+
+                try {
+        			WritableMap writableMap = Arguments.createMap();
+					writableMap.putString("state", stateStr);
+                    sendEvent("NfcManagerStateChanged", writableMap);
+                } catch (Exception ex) {
+                    Log.d(LOG_TAG, "send nfc state change event fail: " + ex);
+                }
+            }
 		}
 	};
 

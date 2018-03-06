@@ -33,6 +33,12 @@ class App extends Component {
             })
     }
 
+    componentWillUnmount() {
+        if (this._stateChangedSubscription) {
+            this._stateChangedSubscription.remove();
+        }
+    }
+
     render() {
         let { supported, enabled, tag, isWriting, urlToWrite} = this.state;
         return (
@@ -78,7 +84,7 @@ class App extends Component {
                             <TouchableOpacity 
                                 style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
                                 onPress={isWriting ? this._cancelNdefWrite : this._requestFormat}>
-                                <Text style={{color: 'blue'}}>{`(android) ${isWriting ? 'Cancel' : 'Format'}`}</Text>
+                                <Text style={{color: 'blue'}}>{`(android experimental) ${isWriting ? 'Cancel' : 'Format'}`}</Text>
                             </TouchableOpacity>
                         </View>
                     }
@@ -165,6 +171,27 @@ class App extends Component {
                 })
                 .catch(err => {
                     console.log(err);
+                })
+            NfcManager.onStateChanged(
+                event => {
+                    if (event.state === 'on') {
+                        this.setState({enabled: true});
+                    } else if (event.state === 'off') {
+                        this.setState({enabled: false});
+                    } else if (event.state === 'turning_on') {
+                        // do whatever you want
+                    } else if (event.state === 'turning_off') {
+                        // do whatever you want
+                    }
+                }
+            )
+                .then(sub => {
+                    this._stateChangedSubscription = sub; 
+                    // remember to call this._stateChangedSubscription.remove()
+                    // when you don't want to listen to this anymore
+                })
+                .catch(err => {
+                    console.warn(err);
                 })
         }
     }

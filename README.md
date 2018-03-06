@@ -119,6 +119,36 @@ __Arguments__
 ### cancelNdefWrite() [Android only]
 Cancel the pending ndef writing operation.
 
+### onStateChanged(listener) [Android only]
+Listen to NFC state change (on/off/turning_on/turning_off)
+
+__Arguments__
+- `listener` - `function` - the callback when NFC state changed
+
+__Examples__
+```js
+NfcManager.onStateChanged(
+    event => {
+        if (event.state === 'on') {
+            // do whatever you want
+        } else if (event.state === 'off') {
+            // do whatever you want
+        } else if (event.state === 'turning_on') {
+            // do whatever you want
+        } else if (event.state === 'turning_off') {
+            // do whatever you want
+        }
+    }
+)
+    .then(sub => {
+        this._stateChangedSub = sub; 
+        // remember to call this._stateChangedSub.remove()
+        // when you don't want to listen to this anymore
+    })
+    .catch(err => {
+        console.warn(err);
+    })
+```
 
 ## NdefParser API
 

@@ -12,6 +12,7 @@ const NfcManagerEmitter = new NativeEventEmitter(NativeNfcManager);
 const Events = {
   DiscoverTag: 'NfcManagerDiscoverTag',
   SessionClosed: 'NfcManagerSessionClosed',
+  StateChanged: 'NfcManagerStateChanged',
 }
 
 const LOG = 'NfcManagerJs';
@@ -145,6 +146,14 @@ class NfcManager {
   _handleSessionClosed = () => {
     this._clientTagDiscoveryListener = null;
     this._clientSessionClosedListener && this._clientSessionClosedListener();
+  }
+
+  onStateChanged(listener) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return Promise.resolve(NfcManagerEmitter.addListener(Events.StateChanged, listener));
   }
 }
 
