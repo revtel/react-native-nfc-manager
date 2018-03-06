@@ -6,12 +6,23 @@ Contributions are welcomed!
 
 ## Supported Platforms
 - Android (API 10+)
-- iOS (iOS11 with iPhone 7/7+, 8/8+)
+- iOS (iOS11 with iPhone 7/7+, 8/8+, 10)
 
 ## Some Words about iOS Support
 
 You will need to setup some capabilities / entitlement / plist stuff to enable NFC development on your device, please follow this great tutorial:
 * https://www.youtube.com/watch?v=SD6Rm4cGyko
+
+## Version history (from v0.1.0) 
+
+v0.1.0
+- add `isNfcSupported` 
+
+v0.2.0
+- add `requestNdefWrite` and `cancelNdefWrite` [Android only] 
+
+v0.3.0
+- add `onStateChanged` [Android only] 
 
 ## Install
 ```shell
@@ -174,15 +185,4 @@ Current setting is:
 ```<uses-feature android:name="android.hardware.nfc" android:required="false" />```
 
 If you want to only have your app support NFC devices then you have to change required to true.
-
-## Version history (from v0.1.0) 
-
-v0.1.0
-- add `isNfcSupported` 
-
-v0.2.0
-- add `requestNdefWrite` and `cancelNdefWrite` [Android only] 
-
-v0.3.0
-- add `onStateChanged` [Android only] 
 
