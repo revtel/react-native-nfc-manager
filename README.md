@@ -182,3 +182,7 @@ v0.1.0
 
 v0.2.0
 - add `requestNdefWrite` and `cancelNdefWrite` [Android only] 
+
+v0.3.0
+- add `onStateChanged` [Android only] 
+
