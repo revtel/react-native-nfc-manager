@@ -23,6 +23,7 @@ v0.2.0
 
 v0.3.0
 - add `onStateChanged` [Android only] 
+- add options for `requestNdefWrite` to allow NDEF formating [Android only]
 
 ## Install
 ```shell
@@ -120,12 +121,26 @@ NfcManager.registerTagEvent(tag => {
 ### unregisterTagEvent()
 Stop listening to NFC tags.
 
-### requestNdefWrite(bytes) [Android only]
+### requestNdefWrite(bytes, options) [Android only]
 Request writing **NdefMessage** (constructed by `bytes` array you passed) into next discovered tag.
 Notice you must call `registerTagEvent` first before calling this. 
 
 __Arguments__
 - `bytes` - `array` - the full NdefMessage, which is an array of number
+- `options` - `object` - optional argument used to trigger actions such as `format` or `formatReadOnly`
+
+__Examples__
+```js
+// write ndef
+NfcManager.requestNdefWrite(bytes)
+    .then(() => console.log('write completed'))
+    .catch(err => console.warn(err))
+
+// request ndef formating (first argument can be null in this case)
+NfcManager.requestNdefWrite(null, {format: true})
+    .then(() => console.log('format completed'))
+    .catch(err => console.warn(err))
+```
 
 ### cancelNdefWrite() [Android only]
 Cancel the pending ndef writing operation.

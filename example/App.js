@@ -245,11 +245,13 @@ class App extends Component {
     }
 
     _parseUri = (tag) => {
-        let result = NdefParser.parseUri(tag.ndefMessage[0]),
-            uri = result && result.uri;
-        if (uri) {
-            console.log('parseUri: ' + uri);
-            return uri;
+        if (tag.ndefMessage) {
+            let result = NdefParser.parseUri(tag.ndefMessage[0]),
+                uri = result && result.uri;
+            if (uri) {
+                console.log('parseUri: ' + uri);
+                return uri;
+            }
         }
         return null;
     }
