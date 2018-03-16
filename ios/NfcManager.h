@@ -7,7 +7,7 @@
 #import “RCTBridgeModule.h”
 #import <React/RCTEventEmitter.h>
 #endif
-#import <CoreNfc/CoreNfc.h>
+#import <CoreNFC/CoreNFC.h>
 
 @interface NfcManager : RCTEventEmitter <RCTBridgeModule, NFCNDEFReaderSessionDelegate> {
 
