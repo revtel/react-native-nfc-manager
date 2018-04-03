@@ -8,10 +8,11 @@ Contributions are welcomed!
 - Android (API 10+)
 - iOS (iOS11 with iPhone 7/7+, 8/8+, 10)
 
-## Some Words about iOS Support
+## iOS Setup 
 
-You will need to setup some capabilities / entitlement / plist stuff to enable NFC development on your device, please follow this great tutorial:
-* https://www.youtube.com/watch?v=SD6Rm4cGyko
+You will need to setup some capabilities / entitlement / plist stuff to enable NFC development on your device, this repo explains these requirements very well:
+
+* https://github.com/hansemannn/iOS11-NFC-Example 
 
 ## Version history (from v0.1.0) 
 
