@@ -16,15 +16,19 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 ## Version history (from v0.1.0) 
 
-v0.1.0
-- add `isNfcSupported` 
-
-v0.2.0
-- add `requestNdefWrite` and `cancelNdefWrite` [Android only] 
+v0.3.2
+- change `isSupported` API to utilize `NFCNDEFReaderSession.readingAvailable` [iOS]
+- change minSdkVersion to 16 [Android]
 
 v0.3.0
-- add `onStateChanged` [Android only] 
-- add options for `requestNdefWrite` to allow NDEF formating [Android only]
+- add `onStateChanged` [Android] 
+- add options for `requestNdefWrite` to allow NDEF formating [Android]
+
+v0.2.0
+- add `requestNdefWrite` and `cancelNdefWrite` [Android] 
+
+v0.1.0
+- add `isNfcSupported` 
 
 ## Install
 ```shell
