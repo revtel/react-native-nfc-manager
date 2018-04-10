@@ -2,7 +2,7 @@
 
 Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) and [react-native-ble-manager](https://github.com/innoveit/react-native-ble-manager)
 
-Contributions are welcomed!
+Contributions are welcome!
 
 ## Supported Platforms
 - Android (API 10+)
