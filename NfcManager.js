@@ -91,6 +91,10 @@ class NfcManager {
   }
 
   isEnabled() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
     return new Promise(resolve => {
       NativeNfcManager.isEnabled((err, result) => {
         resolve(result)

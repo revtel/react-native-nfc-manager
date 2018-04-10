@@ -2,26 +2,15 @@
 #import "React/RCTBridge.h"
 #import "React/RCTConvert.h"
 #import "React/RCTEventDispatcher.h"
-#import <sys/utsname.h>
-
-NSString* deviceName()
-{
-    struct utsname systemInfo;
-    uname(&systemInfo);
-    
-    return [NSString stringWithCString:systemInfo.machine
-                              encoding:NSUTF8StringEncoding];
-}
 
 int isSupported() {
-    NSString * device = deviceName();
-    NSLog(@"Device name is %@", device);
-    
-    // only iPhone 7,8,10 supports NFC
-    if ([device hasPrefix:@"iPhone9"] || [device hasPrefix:@"iPhone10"]) {
-        return 1;
+    bool result = NO;
+    if (@available(iOS 11.0, *)) {
+        if (NFCNDEFReaderSession.readingAvailable) {
+            result = YES;
+        }
     }
-    return 0;
+    return result;
 }
 
 @implementation NfcManager
@@ -107,7 +96,7 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(isSupported: (nonnull RCTResponseSenderBlock)callback)
 {
-    if (isSupported() && @available(iOS 11.0, *)) {
+    if (isSupported()) {
         callback(@[[NSNull null], @YES]);
     } else {
         callback(@[[NSNull null], @NO]);
@@ -116,25 +105,13 @@ RCT_EXPORT_METHOD(isSupported: (nonnull RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
 {
-    if (isSupported() && @available(iOS 11.0, *)) {
+    if (isSupported()) {
         NSLog(@"NfcManager initialized");
         session = nil;
         callback(@[]);
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
     }
-}
-
-RCT_EXPORT_METHOD(isEnabled: (nonnull RCTResponseSenderBlock)callback)
-{
-    NSLog(@"NfcManager check NFC is enabled");
-    bool isEnabled = NO;
-    if (@available(iOS 11.0, *)) {
-        if (NFCNDEFReaderSession.readingAvailable) {
-            isEnabled = YES;
-        }
-    }
-    callback(@[[NSNull null], @(isEnabled)]);
 }
 
 RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage invalidateAfterFirstRead:(BOOL)invalidateAfterFirstRead callback:(nonnull RCTResponseSenderBlock)callback)
