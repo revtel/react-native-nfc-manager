@@ -43,6 +43,8 @@ class App extends Component {
         let { supported, enabled, tag, isWriting, urlToWrite} = this.state;
         return (
             <ScrollView style={{flex: 1}}>
+                { Platform.OS === 'ios' && <View style={{ height: 60 }} /> }
+
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text>{`Is NFC supported ? ${supported}`}</Text>
                     <Text>{`Is NFC enabled (Android only)? ${enabled}`}</Text>
@@ -84,7 +86,7 @@ class App extends Component {
                             <TouchableOpacity 
                                 style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
                                 onPress={isWriting ? this._cancelNdefWrite : this._requestFormat}>
-                                <Text style={{color: 'blue'}}>{`(android experimental) ${isWriting ? 'Cancel' : 'Format'}`}</Text>
+                                <Text style={{color: 'blue'}}>{`(android) ${isWriting ? 'Cancel' : 'Format'}`}</Text>
                             </TouchableOpacity>
                         </View>
                     }
