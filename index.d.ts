@@ -71,9 +71,9 @@ declare module 'react-native-nfc-manager' {
 		onStateChanged(listener: (event: EventStateChange) => void): Promise<EmitterSubscription>;
 	}
 	const nfcManager: NfcManager;
-	export default nfcManager;
-
 	export namespace NdefParser {
 		function parseUri(ndef: NdefRecord): ParseUriResult;
 	}
 }
+
+export default nfcManager;
