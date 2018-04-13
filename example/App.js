@@ -19,6 +19,7 @@ class App extends Component {
             enabled: false,
             isWriting: false,
             urlToWrite: 'google.com',
+            parsedText: null,
             tag: {},
         }
     }
@@ -40,7 +41,7 @@ class App extends Component {
     }
 
     render() {
-        let { supported, enabled, tag, isWriting, urlToWrite} = this.state;
+        let { supported, enabled, tag, isWriting, urlToWrite, parsedText } = this.state;
         return (
             <ScrollView style={{flex: 1}}>
                 { Platform.OS === 'ios' && <View style={{ height: 60 }} /> }
@@ -92,6 +93,7 @@ class App extends Component {
                     }
 
                     <Text style={{ marginTop: 20 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
+                    { parsedText && <Text style={{ marginTop: 10 }}>{`Parsed Text: ${parsedText}`}</Text>}
                 </View>
             </ScrollView>
         )
@@ -208,6 +210,9 @@ class App extends Component {
                     console.warn(err);
                 })
         }
+
+        let text = this._parseText(tag);
+        this.setState({parsedText: text});
     }
 
     _startDetection = () => {
@@ -254,6 +259,13 @@ class App extends Component {
                 console.log('parseUri: ' + uri);
                 return uri;
             }
+        }
+        return null;
+    }
+
+    _parseText = (tag) => {
+        if (tag.ndefMessage) {
+            return NdefParser.parseText(tag.ndefMessage[0]);
         }
         return null;
     }
