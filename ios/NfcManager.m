@@ -94,6 +94,11 @@ RCT_EXPORT_MODULE()
                        body:@{}];
 }
 
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
 RCT_EXPORT_METHOD(isSupported: (nonnull RCTResponseSenderBlock)callback)
 {
     if (isSupported()) {
