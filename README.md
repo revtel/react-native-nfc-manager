@@ -16,6 +16,9 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 ## Version history (from v0.1.0) 
 
+v0.4.0
+- support `NdefParser.parseText` for RTD_TEXT parsing 
+
 v0.3.2
 - change `isSupported` API to utilize `NFCNDEFReaderSession.readingAvailable` [iOS]
 - change minSdkVersion to 16 [Android]
@@ -190,7 +193,7 @@ NfcManager.onStateChanged(
 ## NdefParser API
 
 ### parseUri(ndef)
-Try to parse uri from a NdefMessage, return an object with an `uri` property.
+Try to parse RTD_URI from a NdefMessage, return an object with an `uri` property.
 
 __Arguments__
 - `ndef` - `object` - this object should be obtained from nfc tag object with this form: `tag.ndefMessage[0]`. (NFC tag object can be obtained by `getLaunchTagEvent` or `registerTagEvent`)
@@ -199,6 +202,18 @@ __Examples__
 ```js
 let {uri} = NdefParser.parseUri(sampleTag.ndefMessage[0]);
 console.log('parseUri: ' + uri);
+```
+
+### parseText(ndef)
+Try to parse RTD_TEXT from a NdefMessage, return parsed string or null if the operation fail. Currently only support utf8.
+
+__Arguments__
+- `ndef` - `object` - this object should be obtained from nfc tag object with this form: `tag.ndefMessage[0]`. (NFC tag object can be obtained by `getLaunchTagEvent` or `registerTagEvent`)
+
+__Examples__
+```js
+let text = NdefParser.parseText(sampleTag.ndefMessage[0]);
+console.log('parsedText: ' + text);
 ```
 
 ## NFC Hardware requirement on Android
