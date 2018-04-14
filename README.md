@@ -41,6 +41,12 @@ npm i --save react-native-nfc-manager
 react-native link react-native-nfc-manager
 ```
 
+### Install with cocopods
+Include this line inside of your Podfile
+```shell
+ pod 'react-native-nfc-manager', :path => '../node_modules/react-native-nfc-manager/'
+ ```
+
 ## Example
 Look into `example/App.js` as a starting point.
 
