@@ -1,9 +1,10 @@
+import { EmitterSubscription } from "react-native";
+
 // Type definitions for react-native-nfc-manager
 // Project: https://github.com/whitedogg13/react-native-nfc-manager
 // Definitions by: April Ayres <april.ayres@papercut.com> and Paul Huynh <paul.huynh@papercut.com>
 
 declare module 'react-native-nfc-manager' {
-
 	export interface NdefRecord {
 		id?: number[];
 		tnf: number;
@@ -27,6 +28,13 @@ declare module 'react-native-nfc-manager' {
 		id: number[];
 	}
 
+	interface NdefWriteOpts {
+		format?: boolean
+		formatReadOnly?: boolean
+	}
+	interface EventStateChange {
+		state: string
+	}
 	interface NfcManager {
 
 		start(options?: StartOptions): Promise<any>;
@@ -57,12 +65,15 @@ declare module 'react-native-nfc-manager' {
 		): Promise<any>;
 
 		unregisterTagEvent(): Promise<any>;
-
+		/* android only */
+		cancelNdefWrite(): Promise<any>;
+		requestNdefWrite(bytes: number[], opts?: NdefWriteOpts): Promise<any>;
+		onStateChanged(listener: (event: EventStateChange) => void): Promise<EmitterSubscription>;
 	}
 	const nfcManager: NfcManager;
-	export default nfcManager;
-
 	export namespace NdefParser {
 		function parseUri(ndef: NdefRecord): ParseUriResult;
 	}
 }
+
+export default nfcManager;
