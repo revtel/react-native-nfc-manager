@@ -34,3 +34,7 @@ npm-debug.log
 reference
 
 yarn-error.log
+
+# Vim 
+.ctags
+tags
