@@ -1,10 +1,10 @@
 #if __has_include(<React/RCTBridgeModule.h>)
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
-#elif __has_include(“React/RCTBridgeModule.h”)
-#import “React/RCTBridgeModule.h”
+#elif __has_include("React/RCTBridgeModule.h")
+#import "React/RCTBridgeModule.h"
 #else
-#import “RCTBridgeModule.h”
+#import "RCTBridgeModule.h"
 #import <React/RCTEventEmitter.h>
 #endif
 #import <CoreNFC/CoreNFC.h>
