@@ -11,6 +11,11 @@ import {
 } from 'react-native';
 import NfcManager, {NdefParser} from 'react-native-nfc-manager';
 
+const RtdType = {
+    URL: 0,
+    TEXT: 1,
+};
+
 class App extends Component {
     constructor(props) {
         super(props);
@@ -18,7 +23,8 @@ class App extends Component {
             supported: true,
             enabled: false,
             isWriting: false,
-            urlToWrite: 'google.com',
+            urlToWrite: 'www.google.com',
+            rtdType: RtdType.URL,
             parsedText: null,
             tag: {},
         }
@@ -41,7 +47,7 @@ class App extends Component {
     }
 
     render() {
-        let { supported, enabled, tag, isWriting, urlToWrite, parsedText } = this.state;
+        let { supported, enabled, tag, isWriting, urlToWrite, parsedText, rtdType } = this.state;
         return (
             <ScrollView style={{flex: 1}}>
                 { Platform.OS === 'ios' && <View style={{ height: 60 }} /> }
@@ -69,8 +75,26 @@ class App extends Component {
                     {
                         <View style={{padding: 10, marginTop: 20, backgroundColor: '#e0e0e0'}}>
                             <Text>(android) Write NDEF Test</Text>
+                            <View style={{flexDirection: 'row', marginTop: 10}}>
+                                <Text style={{marginRight: 15}}>Types:</Text>
+                                {
+                                    Object.keys(RtdType).map(
+                                        key => (
+                                            <TouchableOpacity 
+                                                key={key}
+                                                style={{marginRight: 10}}
+                                                onPress={() => this.setState({rtdType: RtdType[key]})}
+                                            >
+                                                <Text style={{color: rtdType === RtdType[key] ? 'blue' : '#aaa'}}>
+                                                    {key}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )
+                                    )
+                                }
+                            </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Text>http://www.</Text>
+                                { rtdType === RtdType.URL && <Text>http://.</Text> }
                                 <TextInput
                                     style={{width: 200}}
                                     value={urlToWrite}
@@ -93,7 +117,7 @@ class App extends Component {
                     }
 
                     <Text style={{ marginTop: 20 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
-                    { parsedText && <Text style={{ marginTop: 10 }}>{`Parsed Text: ${parsedText}`}</Text>}
+                    { parsedText && <Text style={{ marginTop: 10, marginBottom: 20, fontSize: 18 }}>{`Parsed Text: ${parsedText}`}</Text>}
                 </View>
             </ScrollView>
         )
@@ -121,14 +145,32 @@ class App extends Component {
             return result;
         }
 
-        let {isWriting, urlToWrite} = this.state;
+        function buildUrlPayload(valueToWrite) {
+            const urlBytes = strToBytes(valueToWrite);
+            // in this example, we always use `http://` 
+            const headerBytes = [0xD1, 0x01, (urlBytes.length + 1), 0x55, 0x03]; 
+            return [...headerBytes, ...urlBytes];
+        }
+
+        function buildTextPayload(valueToWrite) {
+            const textBytes = strToBytes(valueToWrite);
+            // in this example. we always use `en`
+            const headerBytes = [0xD1, 0x01, (textBytes.length + 3), 0x54, 0x02, 0x65, 0x6e];
+            return [...headerBytes, ...textBytes];
+        }
+
+        let {isWriting, urlToWrite, rtdType} = this.state;
         if (isWriting) {
             return;
         }
 
-        const urlBytes = strToBytes(urlToWrite);
-        const headerBytes = [0xD1, 0x01, (urlBytes.length + 1), 0x55, 0x01];
-        const bytes = [...headerBytes, ...urlBytes];
+        let bytes;
+
+        if (rtdType === RtdType.URL) {
+            bytes = buildUrlPayload(urlToWrite);
+        } else if (rtdType === RtdType.TEXT) {
+            bytes = buildTextPayload(urlToWrite);
+        }
 
         this.setState({isWriting: true});
         NfcManager.requestNdefWrite(bytes)
