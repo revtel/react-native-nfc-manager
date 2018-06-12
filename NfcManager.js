@@ -159,6 +159,102 @@ class NfcManager {
 
     return Promise.resolve(NfcManagerEmitter.addListener(Events.StateChanged, listener));
   }
+
+  requestTechnology(tech) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise(resolve => {
+      NativeNfcManager.requestTagTechnology(tech, resolve)
+    })
+      .then((err, result) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(result);
+      })
+  }
+
+  cancelTechnologyRequest() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise(resolve => {
+      NativeNfcManager.cancelTechnologyRequest(resolve)
+    })
+      .then((err, result) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(result);
+      })
+  }
+
+  closeTechnology() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise(resolve => {
+      NativeNfcManager.closeTechnology(resolve)
+    })
+      .then((err, result) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(result);
+      })
+  }
+
+  writeNdefMessage(bytes) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise(resolve => {
+      NativeNfcManager.writeNdefMessage(bytes, resolve)
+    })
+      .then((err, result) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(result);
+      })
+  }
+
+  getNdefMessage() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise(resolve => {
+      NativeNfcManager.getNdefMessage(resolve)
+    })
+      .then((err, result) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(result);
+      })
+  }
+
+  getCachedNdefMessage() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise(resolve => {
+      NativeNfcManager.getCachedNdefMessage(resolve)
+    })
+      .then((err, result) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return Promise.resolve(result);
+      })
+  }
 }
 
 export default new NfcManager();

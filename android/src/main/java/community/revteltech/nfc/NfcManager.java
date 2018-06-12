@@ -50,6 +50,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	private Boolean isForegroundEnabled = false;
 	private Boolean isResumed = false;
 	private WriteNdefRequest writeNdefRequest = null;
+	private TagTechnologyRequest techRequest = null;
 
 	class WriteNdefRequest {
 		NdefMessage message;
@@ -79,6 +80,108 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		return "NfcManager";
 	}
 
+	private boolean hasPendingRequest() {
+		return writeNdefRequest != null || techRequest != null; 
+	}
+
+	@ReactMethod
+	public void cancelTechnologyRequest(Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				techRequest.close();
+				techRequest.getPendingCallback().invoke("cancelled");
+				techRequest = null;
+				callback.invoke();
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void requestTechnology(String tech, Callback callback) {
+		synchronized(this) {
+			if (!isForegroundEnabled) {
+				callback.invoke("you should requestTagEvent first");
+				return;
+			}
+
+		    if (hasPendingRequest()) {
+		    	callback.invoke("You can only issue one request at a time");
+		    } else {
+				techRequest = new TagTechnologyRequest(tech, callback);
+			}
+		}
+	}
+
+	@ReactMethod
+	public void closeTechnology(Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				techRequest.close();
+				techRequest = null;
+				callback.invoke();
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void getCachedNdefMessage(Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				try {
+				    Ndef ndef = (Ndef)techRequest.getTechHandle();
+				    WritableMap parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+				    callback.invoke(null, parsed);
+				} catch (Exception ex) {
+					Log.d(LOG_TAG, "getCachedNdefMessage fail");
+					callback.invoke("getCachedNdefMessage fail");
+				}
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void getNdefMessage(Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				try {
+				    Ndef ndef = (Ndef)techRequest.getTechHandle();
+				    WritableMap parsed = ndef2React(ndef, new NdefMessage[] { ndef.getNdefMessage() });
+				    callback.invoke(null, parsed);
+				} catch (Exception ex) {
+					Log.d(LOG_TAG, "getNdefMessage fail");
+					callback.invoke("getNdefMessage fail");
+				}
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void writeNdefMessage(ReadableArray rnArray, Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				try {
+				    Ndef ndef = (Ndef)techRequest.getTechHandle();
+				    byte[] bytes = rnArrayToBytes(rnArray);
+				    ndef.writeNdefMessage(new NdefMessage(bytes));
+				    callback.invoke();
+				} catch (Exception ex) {
+					Log.d(LOG_TAG, "writeNdefMessage fail");
+					callback.invoke("writeNdefMessage fail");
+				}
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
 	@ReactMethod
 	public void cancelNdefWrite(Callback callback) {
 		synchronized(this) {
@@ -100,7 +203,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 				return;
 			}
 
-		    if (writeNdefRequest != null) {
+		    if (hasPendingRequest()) {
 		    	callback.invoke("You can only issue one request at a time");
 		    } else {
 				boolean format = options.getBoolean("format");
@@ -359,6 +462,19 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					writeNdefRequest
 				);
 				writeNdefRequest = null;
+
+				// explicitly return null, to avoid extra detection
+				return null;
+			} else if (techRequest != null) {
+				if (!techRequest.isConnected()) {
+					boolean result = techRequest.connect(tag);
+					if (result) {
+						techRequest.getPendingCallback().invoke();
+					} else {
+						techRequest.getPendingCallback().invoke("fail to connect tag");
+						techRequest = null;
+					}
+				}
 
 				// explicitly return null, to avoid extra detection
 				return null;
