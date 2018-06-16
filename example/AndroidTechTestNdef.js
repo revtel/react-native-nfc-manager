@@ -29,6 +29,7 @@ class App extends Component {
         this.state = {
             supported: false,
             enabled: false,
+            isTestRunning: false,
             text: 'hi, nfc!',
             parsedText: null,
             tag: null,
@@ -46,7 +47,7 @@ class App extends Component {
     }
 
     render() {
-        let { supported, enabled, tag, text, parsedText} = this.state;
+        let { supported, enabled, tag, text, parsedText, isTestRunning} = this.state;
         return (
             <ScrollView style={{flex: 1}}>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
@@ -63,12 +64,25 @@ class App extends Component {
                                     onChangeText={text => this.setState({text})} 
                                 />
                             </View>
-                            <TouchableOpacity 
-                                style={{margin: 10}} 
-                                onPress={() => this._runTest(text)}
-                            >
-                                <Text style={{color: 'blue', textAlign: 'center', fontSize: 20}}>CLICK TO RUN TEST</Text>
-                            </TouchableOpacity>
+
+                            {!isTestRunning && (
+                                <TouchableOpacity
+                                    style={{ margin: 10 }}
+                                    onPress={() => this._runTest(text)}
+                                >
+                                    <Text style={{ color: 'blue', textAlign: 'center', fontSize: 20 }}>CLICK TO RUN TEST</Text>
+                                </TouchableOpacity>
+                            )}
+                            
+                            {isTestRunning && (
+                                <TouchableOpacity
+                                    style={{ margin: 10 }}
+                                    onPress={() => this._cancelTest()}
+                                >
+                                    <Text style={{ color: 'red', textAlign: 'center', fontSize: 20 }}>CLICK TO CANCEL TEST</Text>
+                                </TouchableOpacity>
+                            )}
+
                             <Text style={{color: 'grey', textAlign: 'center'}}>
                                 {`When the tag is available, this demo will:\n1. read original NdefMessage from the tag\n2. write a NdefMessage contains a RTD_TEXT into it `}
                             </Text>
@@ -90,18 +104,20 @@ class App extends Component {
     }
 
     _runTest = textToWrite => {
-        function cleanUp() {
+        const cleanUp = () => {
+            this.setState({isTestRunning: false});
             NfcManager.closeTechnology()
             NfcManager.unregisterTagEvent();
         }
 
-        function parseText(tag) {
+        const parseText = (tag) => {
             if (tag.ndefMessage) {
                 return NdefParser.parseText(tag.ndefMessage[0]);
             }
             return null;
         }
 
+        this.setState({isTestRunning: true});
         NfcManager.registerTagEvent(tag => console.log(tag))
             .then(() => NfcManager.requestTechnology(NfcTech.Ndef))
             .then(() => NfcManager.getNdefMessage())
@@ -117,6 +133,10 @@ class App extends Component {
             })
     }
 
+    _cancelTest = () => {
+        NfcManager.cancelTechnologyRequest()
+            .catch(err => console.warn(err));
+    }
 
     _startNfc = () => {
         NfcManager.start()
