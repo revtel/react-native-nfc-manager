@@ -96,10 +96,6 @@ class App extends Component {
 
                     {
                         <View style={{padding: 10, marginTop: 20, backgroundColor: '#e0e0e0'}}>
-                            <TouchableOpacity style={{margin: 10}} onPress={this._runNdefTechTest}>
-                                <Text>(android) Ndef Tech Test</Text>
-                            </TouchableOpacity>
-
                             <Text>(android) Write NDEF Test</Text>
                             <View style={{flexDirection: 'row', marginTop: 10}}>
                                 <Text style={{marginRight: 15}}>Types:</Text>
@@ -160,26 +156,6 @@ class App extends Component {
             .then(() => console.log('format completed'))
             .catch(err => console.warn(err))
             .then(() => this.setState({isWriting: false}));
-    }
-
-    _runNdefTechTest = () => {
-        NfcManager.requestTechnology('Ndef')
-            .then(() => {
-                console.warn('Ndef tech is OK!');
-                return NfcManager.getNdefMessage()
-            })
-            .then(msg => {
-                this.setState({tag: msg});
-                let bytes = buildTextPayload("hi, nfc!");
-                return NfcManager.writeNdefMessage(bytes)
-            })
-            .then(() => {
-                return NfcManager.closeTechnology();
-            })
-            .catch(err => {
-                console.warn(err);
-                NfcManager.closeTechnology();
-            })
     }
 
     _requestNdefWrite = () => {
