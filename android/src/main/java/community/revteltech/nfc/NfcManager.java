@@ -93,7 +93,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 				techRequest = null;
 				callback.invoke();
 		    } else {
-				callback.invoke("no tech request available");
+				// explicitly allow this
+				callback.invoke();
 			}
 		}
 	}
@@ -122,7 +123,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 				techRequest = null;
 				callback.invoke();
 		    } else {
-				callback.invoke("no tech request available");
+				// explicitly allow this
+				callback.invoke();
 			}
 		}
 	}
