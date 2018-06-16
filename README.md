@@ -22,6 +22,12 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 ## Version history (from v0.1.0) 
 
+v0.5.0
+- support `NfcTech.Ndef` [Android only]:
+    - representing `android.nfc.tech.Ndef` [link](https://stuff.mit.edu/afs/sipb/project/android/docs/reference/android/nfc/tech/Ndef.html)
+    - supported methods: `writeNdefMessage`, `getNdefMessage`, `getCachedNdefMessage`
+    - please see `examples/AndroidTechTestNdef.js` for a concrete example
+
 v0.4.0
 - support `NdefParser.parseText` for RTD_TEXT parsing 
 
@@ -57,6 +63,7 @@ Include this line inside of your Podfile
  ```
 
 ## Example
+
 Look into `example/App.js` as a starting point.
 
 The easiest way to test is simple make your `AppRegistry` point to our example component, like this:
@@ -195,6 +202,29 @@ NfcManager.onStateChanged(
         console.warn(err);
     })
 ```
+
+### requestTechnology(tech) [Android only]
+Request specific NFC Technology to perform advanced actions. 
+- Please refer to [Android Advanced NFC Guide](https://stuff.mit.edu/afs/sipb/project/android/docs/guide/topics/connectivity/nfc/advanced-nfc.html) to understand what a `NFC Technology` means.
+
+> This method returns a promise:
+> * if resolved, it means you already find and connect to the tag supporting the requested technology, so the technology specific API can be called. 
+> * if rejected, it means either the request is cancelled or the discovered tag doesn't support the requested technology.
+
+Notice you must call `registerTagEvent` first before calling this. 
+
+__Arguments__
+- `tech` - `string` - the NFC Technology you want to use 
+    - the available ones are defined in `NfcTech` (please do `import {NfcTech} from 'react-native-nfc-manager`) 
+
+__Examples__
+> A concrete example using NFC Technology can be found in `examples/AndroidTechTestNdef.js`
+
+### cancelTechnologyRequest() [Android only]
+Cancel previous NFC Technology request. 
+
+### closeTechnology() [Android only]
+When all your NFC Technology operations are finished, you should call this API to disconnect from the tag and release resources.
 
 ## NdefParser API
 
