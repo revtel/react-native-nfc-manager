@@ -165,15 +165,14 @@ class NfcManager {
       return Promise.reject('not implemented');
     }
 
-    return new Promise(resolve => {
-      NativeNfcManager.requestTagTechnology(tech, resolve)
-    })
-      .then((err, result) => {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.requestTechnology(tech, (err, result) => {
         if (err) {
-          return Promise.reject(err);
+          return reject(err);
         }
-        return Promise.resolve(result);
+        return resolve(result);
       })
+    })
   }
 
   cancelTechnologyRequest() {
@@ -181,15 +180,14 @@ class NfcManager {
       return Promise.reject('not implemented');
     }
 
-    return new Promise(resolve => {
-      NativeNfcManager.cancelTechnologyRequest(resolve)
-    })
-      .then((err, result) => {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.cancelTechnologyRequest((err, result) => {
         if (err) {
-          return Promise.reject(err);
+          return reject(err);
         }
-        return Promise.resolve(result);
+        return resolve(result);
       })
+    })
   }
 
   closeTechnology() {
@@ -197,15 +195,14 @@ class NfcManager {
       return Promise.reject('not implemented');
     }
 
-    return new Promise(resolve => {
-      NativeNfcManager.closeTechnology(resolve)
-    })
-      .then((err, result) => {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.closeTechnology((err, result) => {
         if (err) {
-          return Promise.reject(err);
+          return reject(err);
         }
-        return Promise.resolve(result);
+        return resolve(result);
       })
+    })
   }
 
   writeNdefMessage(bytes) {
@@ -213,15 +210,14 @@ class NfcManager {
       return Promise.reject('not implemented');
     }
 
-    return new Promise(resolve => {
-      NativeNfcManager.writeNdefMessage(bytes, resolve)
-    })
-      .then((err, result) => {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.writeNdefMessage(bytes, (err, result) => {
         if (err) {
-          return Promise.reject(err);
+          return reject(err);
         }
-        return Promise.resolve(result);
+        return resolve(result);
       })
+    })
   }
 
   getNdefMessage() {
@@ -229,15 +225,14 @@ class NfcManager {
       return Promise.reject('not implemented');
     }
 
-    return new Promise(resolve => {
-      NativeNfcManager.getNdefMessage(resolve)
-    })
-      .then((err, result) => {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.getNdefMessage((err, result) => {
         if (err) {
-          return Promise.reject(err);
+          return reject(err);
         }
-        return Promise.resolve(result);
+        return resolve(result);
       })
+    })
   }
 
   getCachedNdefMessage() {
@@ -245,15 +240,14 @@ class NfcManager {
       return Promise.reject('not implemented');
     }
 
-    return new Promise(resolve => {
-      NativeNfcManager.getCachedNdefMessage(resolve)
-    })
-      .then((err, result) => {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.getCachedNdefMessage((err, result) => {
         if (err) {
-          return Promise.reject(err);
+          return reject(err);
         }
-        return Promise.resolve(result);
+        return resolve(result);
       })
+    })
   }
 }
 

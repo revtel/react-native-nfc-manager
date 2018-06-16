@@ -16,6 +16,28 @@ const RtdType = {
     TEXT: 1,
 };
 
+function strToBytes(str) {
+    let result = [];
+    for (let i = 0; i < str.length; i++) {
+        result.push(str.charCodeAt(i));
+    }
+    return result;
+}
+
+function buildUrlPayload(valueToWrite) {
+    const urlBytes = strToBytes(valueToWrite);
+    // in this example, we always use `http://` 
+    const headerBytes = [0xD1, 0x01, (urlBytes.length + 1), 0x55, 0x03]; 
+    return [...headerBytes, ...urlBytes];
+}
+
+function buildTextPayload(valueToWrite) {
+    const textBytes = strToBytes(valueToWrite);
+    // in this example. we always use `en`
+    const headerBytes = [0xD1, 0x01, (textBytes.length + 3), 0x54, 0x02, 0x65, 0x6e];
+    return [...headerBytes, ...textBytes];
+}
+
 class App extends Component {
     constructor(props) {
         super(props);
@@ -74,6 +96,10 @@ class App extends Component {
 
                     {
                         <View style={{padding: 10, marginTop: 20, backgroundColor: '#e0e0e0'}}>
+                            <TouchableOpacity style={{margin: 10}} onPress={this._runNdefTechTest}>
+                                <Text>(android) Ndef Tech Test</Text>
+                            </TouchableOpacity>
+
                             <Text>(android) Write NDEF Test</Text>
                             <View style={{flexDirection: 'row', marginTop: 10}}>
                                 <Text style={{marginRight: 15}}>Types:</Text>
@@ -136,29 +162,27 @@ class App extends Component {
             .then(() => this.setState({isWriting: false}));
     }
 
+    _runNdefTechTest = () => {
+        NfcManager.requestTechnology('Ndef')
+            .then(() => {
+                console.warn('Ndef tech is OK!');
+                return NfcManager.getNdefMessage()
+            })
+            .then(msg => {
+                this.setState({tag: msg});
+                let bytes = buildTextPayload("hi, nfc!");
+                return NfcManager.writeNdefMessage(bytes)
+            })
+            .then(() => {
+                return NfcManager.closeTechnology();
+            })
+            .catch(err => {
+                console.warn(err);
+                NfcManager.closeTechnology();
+            })
+    }
+
     _requestNdefWrite = () => {
-        function strToBytes(str) {
-            let result = [];
-            for (let i = 0; i < str.length; i++) {
-                result.push(str.charCodeAt(i));
-            }
-            return result;
-        }
-
-        function buildUrlPayload(valueToWrite) {
-            const urlBytes = strToBytes(valueToWrite);
-            // in this example, we always use `http://` 
-            const headerBytes = [0xD1, 0x01, (urlBytes.length + 1), 0x55, 0x03]; 
-            return [...headerBytes, ...urlBytes];
-        }
-
-        function buildTextPayload(valueToWrite) {
-            const textBytes = strToBytes(valueToWrite);
-            // in this example. we always use `en`
-            const headerBytes = [0xD1, 0x01, (textBytes.length + 3), 0x54, 0x02, 0x65, 0x6e];
-            return [...headerBytes, ...textBytes];
-        }
-
         let {isWriting, urlToWrite, rtdType} = this.state;
         if (isWriting) {
             return;
