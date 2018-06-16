@@ -28,68 +28,40 @@ class NfcManager {
     this._subscription = null;
   }
 
-  requestNdefWrite(bytes, {format=false, formatReadOnly=false}={}) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise(resolve => {
-      NativeNfcManager.requestNdefWrite(bytes, {format, formatReadOnly}, resolve)
-    })
-      .then((err, result) => {
-        if (err) {
-          return Promise.reject(err);
-        }
-        return Promise.resolve(result);
-      })
-  }
-
-  cancelNdefWrite() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise(resolve => {
-      NativeNfcManager.cancelNdefWrite(resolve)
-    })
-      .then((err, result) => {
-        if (err) {
-          return Promise.reject(err);
-        }
-        return Promise.resolve(result);
-      })
-  }
-
   start({ onSessionClosedIOS } = {}) {
-    return new Promise(resolve => {
-      NativeNfcManager.start(resolve);
-    })
-      .then((err, result) => {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.start((err, result) => {
         if (err) {
-          console.log('NfcManager: nfc not supported');
-          return Promise.reject(err);
-        }
-
-        if (Platform.OS === 'ios') {
-          this._clientSessionClosedListener = onSessionClosedIOS;
-          this._session = NfcManagerEmitter.addListener(Events.SessionClosed, this._handleSessionClosed);
+          reject(err);
         } else {
-          this._session = {
-            remove: () => {},
-          };
+          if (Platform.OS === 'ios') {
+            this._clientSessionClosedListener = onSessionClosedIOS;
+            this._session = NfcManagerEmitter.addListener(Events.SessionClosed, this._handleSessionClosed);
+          } else {
+            this._session = {
+              remove: () => { },
+            };
+          }
+          resolve();
         }
-      })
+      });
+    })
   }
 
   stop() {
     this._session.remove();
     this._session = null;
+    return Promise.resolve();
   }
 
   isSupported(){
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       NativeNfcManager.isSupported((err,result) => {
-        resolve(result);
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
       })
     })
   }
@@ -99,32 +71,52 @@ class NfcManager {
       return Promise.reject('not implemented');
     }
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       NativeNfcManager.isEnabled((err, result) => {
-        resolve(result)
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result)
+        }
       })
     })
   }
 
   goToNfcSetting() {
-    return new Promise(resolve => {
-      NativeNfcManager.goToNfcSetting(resolve)
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.goToNfcSetting((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
     })
   }
 
   getLaunchTagEvent() {
-    return new Promise(resolve => {
-      NativeNfcManager.getLaunchTagEvent((err, tag) => resolve(tag));
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.getLaunchTagEvent((err, tag) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(tag)
+        }
+      });
     })
   }
 
   registerTagEvent(listener, alertMessage = '', invalidateAfterFirstRead = false) {
     if (!this._subscription) {
-      return new Promise(resolve => {
-        NativeNfcManager.registerTagEvent(alertMessage, invalidateAfterFirstRead, () => {
-          this._clientTagDiscoveryListener = listener;
-          this._subscription = NfcManagerEmitter.addListener(Events.DiscoverTag, this._handleDiscoverTag);
-          resolve();
+      return new Promise((resolve, reject) => {
+        NativeNfcManager.registerTagEvent(alertMessage, invalidateAfterFirstRead, (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            this._clientTagDiscoveryListener = listener;
+            this._subscription = NfcManagerEmitter.addListener(Events.DiscoverTag, this._handleDiscoverTag);
+            resolve(result);
+          }
         })
       })
     }
@@ -136,9 +128,13 @@ class NfcManager {
       this._clientTagDiscoveryListener = null;
       this._subscription.remove();
       this._subscription = null;
-      return new Promise(resolve => {
-        NativeNfcManager.unregisterTagEvent(() => {
-          resolve();
+      return new Promise((resolve, reject) => {
+        NativeNfcManager.unregisterTagEvent((err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result)
+          }
         })
       })
     }
@@ -165,7 +161,42 @@ class NfcManager {
   }
 
   // -------------------------------------
-  // NfcTech requesting API  
+  // Ndef Writing request API  
+  // -------------------------------------
+  requestNdefWrite(bytes, {format=false, formatReadOnly=false}={}) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.requestNdefWrite(bytes, {format, formatReadOnly}, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  cancelNdefWrite() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.cancelNdefWrite((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  // -------------------------------------
+  // Nfc Tech request API  
   // -------------------------------------
   requestTechnology(tech) {
     if (Platform.OS === 'ios') {
@@ -175,9 +206,10 @@ class NfcManager {
     return new Promise((resolve, reject) => {
       NativeNfcManager.requestTechnology(tech, (err, result) => {
         if (err) {
-          return reject(err);
+          reject(err);
+        } else {
+          resolve(result);
         }
-        return resolve(result);
       })
     })
   }
@@ -190,9 +222,10 @@ class NfcManager {
     return new Promise((resolve, reject) => {
       NativeNfcManager.cancelTechnologyRequest((err, result) => {
         if (err) {
-          return reject(err);
+          reject(err);
+        } else {
+          resolve(result);
         }
-        return resolve(result);
       })
     })
   }
@@ -205,15 +238,16 @@ class NfcManager {
     return new Promise((resolve, reject) => {
       NativeNfcManager.closeTechnology((err, result) => {
         if (err) {
-          return reject(err);
+          reject(err);
+        } else {
+          resolve(result);
         }
-        return resolve(result);
       })
     })
   }
 
   // -------------------------------------
-  // NfcTech.Ndef
+  // NfcTech.Ndef API
   // -------------------------------------
   writeNdefMessage(bytes) {
     if (Platform.OS === 'ios') {
@@ -223,9 +257,10 @@ class NfcManager {
     return new Promise((resolve, reject) => {
       NativeNfcManager.writeNdefMessage(bytes, (err, result) => {
         if (err) {
-          return reject(err);
+          reject(err);
+        } else {
+          resolve(result);
         }
-        return resolve(result);
       })
     })
   }
@@ -238,9 +273,10 @@ class NfcManager {
     return new Promise((resolve, reject) => {
       NativeNfcManager.getNdefMessage((err, result) => {
         if (err) {
-          return reject(err);
+          reject(err);
+        } else {
+          resolve(result);
         }
-        return resolve(result);
       })
     })
   }
@@ -253,9 +289,10 @@ class NfcManager {
     return new Promise((resolve, reject) => {
       NativeNfcManager.getCachedNdefMessage((err, result) => {
         if (err) {
-          return reject(err);
+          reject(err);
+        } else {
+          resolve(result);
         }
-        return resolve(result);
       })
     })
   }
