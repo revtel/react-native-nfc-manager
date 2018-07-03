@@ -5,6 +5,7 @@ import android.nfc.Tag;
 import android.nfc.TagLostException;
 import android.nfc.tech.TagTechnology;
 import android.nfc.tech.Ndef;
+import android.nfc.tech.NfcA;
 import android.nfc.tech.IsoDep;
 import android.util.Log;
 import com.facebook.react.bridge.*;
@@ -19,6 +20,10 @@ class TagTechnologyRequest {
     TagTechnologyRequest(String techType, Callback cb) {
         mTechType = techType;
         mJsCallback = cb;
+    }
+
+    String getTechType() {
+        return mTechType;
     }
 
     Callback getPendingCallback() {
@@ -38,6 +43,8 @@ class TagTechnologyRequest {
         mTag = tag;
         if (mTechType.equals("Ndef")) {
             mTech = Ndef.get(tag);
+        } else if (mTechType.equals("NfcA")) {
+            mTech = NfcA.get(tag);
         } else if (mTechType.equals("IsoDep")) {
             mTech = IsoDep.get(tag);
         }

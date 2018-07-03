@@ -27,6 +27,7 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.TagLostException;
 import android.nfc.tech.Ndef;
+import android.nfc.tech.NfcA;
 import android.nfc.tech.NdefFormatable;
 import android.os.Parcelable;
 
@@ -178,6 +179,31 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					Log.d(LOG_TAG, "writeNdefMessage fail");
 					callback.invoke("writeNdefMessage fail");
 				}
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void transceive(ReadableArray rnArray, Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				try {
+					String tech = techRequest.getTechType();
+				    byte[] bytes = rnArrayToBytes(rnArray);
+					if (tech.equals("NfcA")) {
+						NfcA techHandle = (NfcA)techRequest.getTechHandle();
+				    	byte[] resultBytes = techHandle.transceive(bytes);
+						WritableArray resultRnArray = bytesToRnArray(resultBytes);
+				    	callback.invoke(null, resultRnArray);
+						return;
+					}
+				} catch (Exception ex) {
+					Log.d(LOG_TAG, "transceive fail");
+				}
+
+				callback.invoke("transceive fail");
 		    } else {
 				callback.invoke("no tech request available");
 			}
@@ -605,5 +631,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		return bytes;
 	}
 
+	public WritableArray bytesToRnArray(byte[] bytes) {
+        WritableArray value = Arguments.createArray();
+        for (int i = 0; i < bytes.length; i++) {
+            value.pushInt((bytes[i] & 0xFF));
+		}
+        return value;
+    }
 }
 
