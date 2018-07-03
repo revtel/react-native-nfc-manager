@@ -8,7 +8,7 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
-> ### Warning: version `0.4.1` has some issues, please update to latest `0.4.2`, thanks!
+> ### Warning: version `0.4.1` has some issues, please update to latest version, thanks!
 
 ## Supported Platforms
 - Android (API 10+)
@@ -22,9 +22,14 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 ## Version history (from v0.1.0) 
 
+v0.5.1
+- support `NfcTech.NfcA` [Android only]:
+    - representing `android.nfc.tech.NfcA` [link](https://developer.android.com/reference/android/nfc/tech/NfcA)
+    - supported methods: `transceive`
+
 v0.5.0
 - support `NfcTech.Ndef` [Android only]:
-    - representing `android.nfc.tech.Ndef` [link](https://stuff.mit.edu/afs/sipb/project/android/docs/reference/android/nfc/tech/Ndef.html)
+    - representing `android.nfc.tech.Ndef` [link](https://developer.android.com/reference/android/nfc/tech/Ndef)
     - supported methods: `writeNdefMessage`, `getNdefMessage`, `getCachedNdefMessage`
     - please see `examples/AndroidTechTestNdef.js` for a concrete example
 
