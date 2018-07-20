@@ -161,6 +161,22 @@ class NfcManager {
     return Promise.resolve(NfcManagerEmitter.addListener(Events.StateChanged, listener));
   }
 
+  setNdefPushMessage(bytes) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.setNdefPushMessage(bytes, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
   // -------------------------------------
   // Ndef Writing request API  
   // -------------------------------------

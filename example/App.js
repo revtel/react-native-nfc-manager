@@ -135,6 +135,12 @@ class App extends Component {
                                 onPress={isWriting ? this._cancelNdefWrite : this._requestFormat}>
                                 <Text style={{color: 'blue'}}>{`(android) ${isWriting ? 'Cancel' : 'Format'}`}</Text>
                             </TouchableOpacity>
+
+                            <TouchableOpacity 
+                                style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
+                                onPress={isWriting ? this._cancelAndroidBeam : this._requestAndroidBeam}>
+                                <Text style={{color: 'blue'}}>{`${isWriting ? 'Cancel ' : ''}Android Beam`}</Text>
+                            </TouchableOpacity>
                         </View>
                     }
 
@@ -183,6 +189,33 @@ class App extends Component {
         this.setState({isWriting: false});
         NfcManager.cancelNdefWrite()
             .then(() => console.log('write cancelled'))
+            .catch(err => console.warn(err))
+    }
+
+    _requestAndroidBeam = () => {
+        let {isWriting, urlToWrite, rtdType} = this.state;
+        if (isWriting) {
+            return;
+        }
+
+        let bytes;
+
+        if (rtdType === RtdType.URL) {
+            bytes = buildUrlPayload(urlToWrite);
+        } else if (rtdType === RtdType.TEXT) {
+            bytes = buildTextPayload(urlToWrite);
+        }
+
+        this.setState({isWriting: true});
+        NfcManager.setNdefPushMessage(bytes)
+            .then(() => console.log('beam request completed'))
+            .catch(err => console.warn(err))
+    }
+
+    _cancelAndroidBeam = () => {
+        this.setState({isWriting: false});
+        NfcManager.setNdefPushMessage(null)
+            .then(() => console.log('beam cancelled'))
             .catch(err => console.warn(err))
     }
 
