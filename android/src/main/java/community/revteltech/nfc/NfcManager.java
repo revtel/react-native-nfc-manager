@@ -314,21 +314,33 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
 		if (nfcAdapter != null) {
 			Log.d(LOG_TAG, "start");
-			callback.invoke();
 
 			IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
-			getReactApplicationContext().getCurrentActivity().registerReceiver(mReceiver, filter);
+			Activity currentActivity = getCurrentActivity();
+		    if (currentActivity == null) {
+		    	callback.invoke("fail to get current activity");
+		    	return;
+		    }
+
+			currentActivity.registerReceiver(mReceiver, filter);
+			callback.invoke();
 		} else {
 			Log.d(LOG_TAG, "not support in this device");
 			callback.invoke("no nfc support");
 		}
 	}
     
-    	@ReactMethod
+   	@ReactMethod
 	public void isSupported(Callback callback){
 		Log.d(LOG_TAG, "isSupported");
-		boolean result = getReactApplicationContext().getCurrentActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
-		callback.invoke(null,result);
+        Activity currentActivity = getCurrentActivity();
+		if (currentActivity == null) {
+			callback.invoke("fail to get current activity");
+			return;
+		}
+
+		boolean result = currentActivity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
+		callback.invoke(null, result);
 	}
 
 	@ReactMethod
@@ -346,6 +358,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	public void goToNfcSetting(Callback callback) {
 		Log.d(LOG_TAG, "goToNfcSetting");
         Activity currentActivity = getCurrentActivity();
+		if (currentActivity == null) {
+			callback.invoke("fail to get current activity");
+			return;
+		}
+
 		currentActivity.startActivity(new Intent(Settings.ACTION_NFC_SETTINGS));
 		callback.invoke();
 	}
@@ -353,6 +370,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	@ReactMethod
 	public void getLaunchTagEvent(Callback callback) {
         Activity currentActivity = getCurrentActivity();
+		if (currentActivity == null) {
+			callback.invoke("fail to get current activity");
+			return;
+		}
+
 		Intent launchIntent = currentActivity.getIntent();
 		WritableMap nfcTag = parseNfcIntent(launchIntent);
 		callback.invoke(null, nfcTag);
