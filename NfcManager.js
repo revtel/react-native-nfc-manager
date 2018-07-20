@@ -314,6 +314,22 @@ class NfcManager {
     })
   }
 
+  makeReadOnly() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.makeReadOnly((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
   // -------------------------------------
   // NfcTech.NfcA API
   // -------------------------------------

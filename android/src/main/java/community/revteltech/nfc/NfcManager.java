@@ -186,6 +186,24 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
+	public void makeReadOnly(Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				try {
+				    Ndef ndef = (Ndef)techRequest.getTechHandle();
+					boolean result = ndef.makeReadOnly();
+				    callback.invoke(null, result);
+				} catch (Exception ex) {
+					Log.d(LOG_TAG, "makeReadOnly fail");
+					callback.invoke("makeReadOnly fail");
+				}
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
 	public void transceive(ReadableArray rnArray, Callback callback) {
 		synchronized(this) {
 		    if (techRequest != null) {
