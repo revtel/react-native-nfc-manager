@@ -24,6 +24,7 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 v0.5.2
 - support **Android Beam** via `setNdefPushMessage` API [Android only]
+    - please see `examples/App.js` for a concrete example
 - new methods for `NfcTech.Ndef` [Android only]
     - supported methods: `makeReadOnly`
 - bug fix: guard against getCurrentActivity() returns null
@@ -239,15 +240,17 @@ When all your NFC Technology operations are finished, you should call this API t
 
 ### setNdefPushMessage(bytes) [Android only]
 This API triggers [**Android Beam**](https://developer.android.com/guide/topics/connectivity/nfc/nfc#p2p), it can send Ndef (constructed by `bytes` array you passed) to remote device.
-
-When you want to cancel the Ndef sending, call this API again and pass `null` to it.
-
 Notice you must call `registerTagEvent` first before calling this. 
+
+> When you want to cancel the Ndef sending, simply call this API again and pass `null` to it.
 
 __Arguments__
 - `bytes` - `array` - the full NdefMessage, which is an array of number
 
 __Examples__
+
+> Please see `examples/App.js` for a concrete example
+
 ```js
 // register Android Beam 
 NfcManager.setNdefPushMessage(bytes)
