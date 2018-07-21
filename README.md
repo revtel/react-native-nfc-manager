@@ -22,6 +22,12 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 ## Version history (from v0.1.0) 
 
+v0.5.2
+- support **Android Beam** via `setNdefPushMessage` API [Android only]
+- new methods for `NfcTech.Ndef` [Android only]
+    - supported methods: `makeReadOnly`
+- bug fix: guard against getCurrentActivity() returns null
+
 v0.5.1
 - support `NfcTech.NfcA` [Android only]:
     - representing `android.nfc.tech.NfcA` [link](https://developer.android.com/reference/android/nfc/tech/NfcA)
@@ -230,6 +236,29 @@ Cancel previous NFC Technology request.
 
 ### closeTechnology() [Android only]
 When all your NFC Technology operations are finished, you should call this API to disconnect from the tag and release resources.
+
+### setNdefPushMessage(bytes) [Android only]
+This API triggers [**Android Beam**](https://developer.android.com/guide/topics/connectivity/nfc/nfc#p2p), it can send Ndef (constructed by `bytes` array you passed) to remote device.
+
+When you want to cancel the Ndef sending, call this API again and pass `null` to it.
+
+Notice you must call `registerTagEvent` first before calling this. 
+
+__Arguments__
+- `bytes` - `array` - the full NdefMessage, which is an array of number
+
+__Examples__
+```js
+// register Android Beam 
+NfcManager.setNdefPushMessage(bytes)
+    .then(() => console.log('ready to beam'))
+    .catch(err => console.warn(err))
+
+// cancel Android Beam
+NfcManager.setNdefPushMessage(null)
+    .then(() => console.log('beam cancelled'))
+    .catch(err => console.warn(err))
+```
 
 ## NdefParser API
 
