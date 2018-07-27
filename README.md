@@ -8,8 +8,6 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
-> ### Warning: version `0.4.1` has some issues, please update to latest version, thanks!
-
 ## Supported Platforms
 - Android (API 10+)
 - iOS (iOS11 with iPhone 7/7+, 8/8+, 10)
