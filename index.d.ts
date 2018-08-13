@@ -73,6 +73,7 @@ declare module 'react-native-nfc-manager' {
 	const nfcManager: NfcManager;
 	export namespace NdefParser {
 		function parseUri(ndef: NdefRecord): ParseUriResult;
+		function parseText(ndef: NdefRecord): string | null;
 	}
 }
 
