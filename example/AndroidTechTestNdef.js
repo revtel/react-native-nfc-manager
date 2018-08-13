@@ -120,6 +120,10 @@ class App extends Component {
         this.setState({isTestRunning: true});
         NfcManager.registerTagEvent(tag => console.log(tag))
             .then(() => NfcManager.requestTechnology(NfcTech.Ndef))
+            .then(() => NfcManager.getTag())
+            .then(tag => {
+                console.log(JSON.stringify(tag));
+            })
             .then(() => NfcManager.getNdefMessage())
             .then(tag => {
                 let parsedText = parseText(tag);

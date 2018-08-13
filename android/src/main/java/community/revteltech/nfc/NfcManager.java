@@ -26,6 +26,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.TagLostException;
+import android.nfc.tech.TagTechnology;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
 import android.nfc.tech.NdefFormatable;
@@ -126,6 +127,25 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		    } else {
 				// explicitly allow this
 				callback.invoke();
+			}
+		}
+	}
+
+	@ReactMethod
+	public void getTag(Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				try {
+				    TagTechnology tagTech = techRequest.getTechHandle();
+                    Tag tag = tagTech.getTag();
+				    WritableMap parsed = tag2React(tag);
+				    callback.invoke(null, parsed);
+				} catch (Exception ex) {
+					Log.d(LOG_TAG, "getTag fail");
+					callback.invoke("getTag fail");
+				}
+		    } else {
+				callback.invoke("no tech request available");
 			}
 		}
 	}
