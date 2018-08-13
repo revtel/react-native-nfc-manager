@@ -29,6 +29,9 @@
     "name": "Richie",
     "url": "https://github.com/whitedogg13"
   },
+  "jest": {
+    "testEnvironment": "node"
+  },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-jest": "^22.4.3",
