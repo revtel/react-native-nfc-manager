@@ -20,6 +20,11 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 ## Version history (from v0.1.0) 
 
+v0.5.4
+- (android) support `getTag` for all NFC technologies
+- (android) update **compileSdkVersion** and **buildToolsVersion** to 26
+- (ios) bug fix: clear event subscription when reader session closed
+
 v0.5.2
 - support **Android Beam** via `setNdefPushMessage` API [Android only]
     - please see `examples/App.js` for a concrete example
