@@ -18,48 +18,6 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 * https://github.com/hansemannn/iOS11-NFC-Example 
 
-## Version history (from v0.1.0) 
-
-v0.5.4
-- (android) support `getTag` for all NFC technologies
-- (android) update **compileSdkVersion** and **buildToolsVersion** to 26
-- (ios) bug fix: clear event subscription when reader session closed
-
-v0.5.2
-- support **Android Beam** via `setNdefPushMessage` API [Android only]
-    - please see `examples/App.js` for a concrete example
-- new methods for `NfcTech.Ndef` [Android only]
-    - supported methods: `makeReadOnly`
-- bug fix: guard against getCurrentActivity() returns null
-
-v0.5.1
-- support `NfcTech.NfcA` [Android only]:
-    - representing `android.nfc.tech.NfcA` [link](https://developer.android.com/reference/android/nfc/tech/NfcA)
-    - supported methods: `transceive`
-
-v0.5.0
-- support `NfcTech.Ndef` [Android only]:
-    - representing `android.nfc.tech.Ndef` [link](https://developer.android.com/reference/android/nfc/tech/Ndef)
-    - supported methods: `writeNdefMessage`, `getNdefMessage`, `getCachedNdefMessage`
-    - please see `examples/AndroidTechTestNdef.js` for a concrete example
-
-v0.4.0
-- support `NdefParser.parseText` for RTD_TEXT parsing 
-
-v0.3.2
-- change `isSupported` API to utilize `NFCNDEFReaderSession.readingAvailable` [iOS]
-- change minSdkVersion to 16 [Android]
-
-v0.3.0
-- add `onStateChanged` [Android] 
-- add options for `requestNdefWrite` to allow NDEF formating [Android]
-
-v0.2.0
-- add `requestNdefWrite` and `cancelNdefWrite` [Android] 
-
-v0.1.0
-- add `isNfcSupported` 
-
 ## Install
 ```shell
 npm i --save react-native-nfc-manager
@@ -303,3 +261,45 @@ Current setting is:
 
 If you want to only have your app support NFC devices then you have to change required to true.
 
+
+## Version history (from v0.1.0) 
+
+v0.5.4
+- (android) support `getTag` for all NFC technologies
+- (android) update **compileSdkVersion** and **buildToolsVersion** to 26
+- (ios) bug fix: clear event subscription when reader session closed
+
+v0.5.2
+- support **Android Beam** via `setNdefPushMessage` API [Android only]
+    - please see `examples/App.js` for a concrete example
+- new methods for `NfcTech.Ndef` [Android only]
+    - supported methods: `makeReadOnly`
+- bug fix: guard against getCurrentActivity() returns null
+
+v0.5.1
+- support `NfcTech.NfcA` [Android only]:
+    - representing `android.nfc.tech.NfcA` [link](https://developer.android.com/reference/android/nfc/tech/NfcA)
+    - supported methods: `transceive`
+
+v0.5.0
+- support `NfcTech.Ndef` [Android only]:
+    - representing `android.nfc.tech.Ndef` [link](https://developer.android.com/reference/android/nfc/tech/Ndef)
+    - supported methods: `writeNdefMessage`, `getNdefMessage`, `getCachedNdefMessage`
+    - please see `examples/AndroidTechTestNdef.js` for a concrete example
+
+v0.4.0
+- support `NdefParser.parseText` for RTD_TEXT parsing 
+
+v0.3.2
+- change `isSupported` API to utilize `NFCNDEFReaderSession.readingAvailable` [iOS]
+- change minSdkVersion to 16 [Android]
+
+v0.3.0
+- add `onStateChanged` [Android] 
+- add options for `requestNdefWrite` to allow NDEF formating [Android]
+
+v0.2.0
+- add `requestNdefWrite` and `cancelNdefWrite` [Android] 
+
+v0.1.0
+- add `isNfcSupported` 
