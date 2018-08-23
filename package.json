@@ -1,6 +1,6 @@
 {
   "name": "react-native-nfc-manager",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "A NFC module for react native.",
   "main": "NfcManager",
   "repository": {
@@ -22,6 +22,7 @@
     "index.d.ts",
     "android",
     "ios",
+    "react-native-nfc-manager.podspec", 
     "example"
   ],
   "license": "Apache-2.0",
