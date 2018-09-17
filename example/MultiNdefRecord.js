@@ -11,23 +11,6 @@ import {
 } from 'react-native';
 import NfcManager, {Ndef} from 'react-native-nfc-manager';
 
-const RtdType = {
-    URL: 0,
-    TEXT: 1,
-};
-
-function buildUrlPayload(valueToWrite) {
-    return Ndef.encodeMessage([
-        Ndef.uriRecord(valueToWrite),
-    ]);
-}
-
-function buildTextPayload(valueToWrite) {
-    return Ndef.encodeMessage([
-        Ndef.textRecord(valueToWrite),
-    ]);
-}
-
 class App extends Component {
     constructor(props) {
         super(props);
@@ -35,10 +18,8 @@ class App extends Component {
             supported: true,
             enabled: false,
             isWriting: false,
-            urlToWrite: 'https://www.google.com',
-            rtdType: RtdType.URL,
-            parsedText: null,
             tag: {},
+            parsed: null,
         }
     }
 
@@ -59,7 +40,7 @@ class App extends Component {
     }
 
     render() {
-        let { supported, enabled, tag, isWriting, urlToWrite, parsedText, rtdType } = this.state;
+        let { supported, enabled, tag, isWriting, parsed } = this.state;
         return (
             <ScrollView style={{flex: 1}}>
                 { Platform.OS === 'ios' && <View style={{ height: 60 }} /> }
@@ -80,92 +61,34 @@ class App extends Component {
                         <Text>Clear</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={{ marginTop: 20 }} onPress={this._goToNfcSetting}>
-                        <Text >(android) Go to NFC setting</Text>
-                    </TouchableOpacity>
-
                     {
                         <View style={{padding: 10, marginTop: 20, backgroundColor: '#e0e0e0'}}>
                             <Text>(android) Write NDEF Test</Text>
-                            <View style={{flexDirection: 'row', marginTop: 10}}>
-                                <Text style={{marginRight: 15}}>Types:</Text>
-                                {
-                                    Object.keys(RtdType).map(
-                                        key => (
-                                            <TouchableOpacity 
-                                                key={key}
-                                                style={{marginRight: 10}}
-                                                onPress={() => this.setState({rtdType: RtdType[key]})}
-                                            >
-                                                <Text style={{color: rtdType === RtdType[key] ? 'blue' : '#aaa'}}>
-                                                    {key}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        )
-                                    )
-                                }
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <TextInput
-                                    style={{width: 200}}
-                                    value={urlToWrite}
-                                    onChangeText={urlToWrite => this.setState({ urlToWrite })}
-                                />
-                            </View>
-
                             <TouchableOpacity 
                                 style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
                                 onPress={isWriting ? this._cancelNdefWrite : this._requestNdefWrite}>
                                 <Text style={{color: 'blue'}}>{`(android) ${isWriting ? 'Cancel' : 'Write NDEF'}`}</Text>
                             </TouchableOpacity>
-
-                            <TouchableOpacity 
-                                style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
-                                onPress={isWriting ? this._cancelNdefWrite : this._requestFormat}>
-                                <Text style={{color: 'blue'}}>{`(android) ${isWriting ? 'Cancel' : 'Format'}`}</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity 
-                                style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
-                                onPress={isWriting ? this._cancelAndroidBeam : this._requestAndroidBeam}>
-                                <Text style={{color: 'blue'}}>{`${isWriting ? 'Cancel ' : ''}Android Beam`}</Text>
-                            </TouchableOpacity>
                         </View>
                     }
 
                     <Text style={{ marginTop: 20 }}>{`Current tag JSON: ${JSON.stringify(tag)}`}</Text>
-                    { parsedText && <Text style={{ marginTop: 10, marginBottom: 20, fontSize: 18 }}>{`Parsed Text: ${parsedText}`}</Text>}
+                    { parsed && <Text style={{ marginTop: 10, marginBottom: 20, fontSize: 18 }}>{`Parsed: ${JSON.stringify(parsed)}`}</Text>}
                 </View>
             </ScrollView>
         )
     }
 
-    _requestFormat = () => {
+    _requestNdefWrite = () => {
         let {isWriting} = this.state;
         if (isWriting) {
             return;
         }
 
-        this.setState({isWriting: true});
-        NfcManager.requestNdefWrite(null, {format: true})
-            .then(() => console.log('format completed'))
-            .catch(err => console.warn(err))
-            .then(() => this.setState({isWriting: false}));
-    }
-
-    _requestNdefWrite = () => {
-        let {isWriting, urlToWrite, rtdType} = this.state;
-        if (isWriting) {
-            return;
-        }
-
-        let bytes;
-
-        if (rtdType === RtdType.URL) {
-            bytes = buildUrlPayload(urlToWrite);
-        } else if (rtdType === RtdType.TEXT) {
-            bytes = buildTextPayload(urlToWrite);
-        }
+        let bytes = Ndef.encodeMessage([
+            Ndef.textRecord("hello, world"),
+            Ndef.uriRecord("http://nodejs.org"),
+        ]);
 
         this.setState({isWriting: true});
         NfcManager.requestNdefWrite(bytes)
@@ -178,33 +101,6 @@ class App extends Component {
         this.setState({isWriting: false});
         NfcManager.cancelNdefWrite()
             .then(() => console.log('write cancelled'))
-            .catch(err => console.warn(err))
-    }
-
-    _requestAndroidBeam = () => {
-        let {isWriting, urlToWrite, rtdType} = this.state;
-        if (isWriting) {
-            return;
-        }
-
-        let bytes;
-
-        if (rtdType === RtdType.URL) {
-            bytes = buildUrlPayload(urlToWrite);
-        } else if (rtdType === RtdType.TEXT) {
-            bytes = buildTextPayload(urlToWrite);
-        }
-
-        this.setState({isWriting: true});
-        NfcManager.setNdefPushMessage(bytes)
-            .then(() => console.log('beam request completed'))
-            .catch(err => console.warn(err))
-    }
-
-    _cancelAndroidBeam = () => {
-        this.setState({isWriting: false});
-        NfcManager.setNdefPushMessage(null)
-            .then(() => console.log('beam cancelled'))
             .catch(err => console.warn(err))
     }
 
@@ -267,16 +163,28 @@ class App extends Component {
     _onTagDiscovered = tag => {
         console.log('Tag Discovered', tag);
         this.setState({ tag });
-        let url = this._parseUri(tag);
-        if (url) {
-            Linking.openURL(url)
-                .catch(err => {
-                    console.warn(err);
-                })
+
+        let parsed = null;
+        if (tag.ndefMessage && tag.ndefMessage.length > 0) {
+            // ndefMessage is actually an array of NdefRecords, 
+            // and we can iterate through each NdefRecord, decode its payload 
+            // according to its TNF & type
+            const ndefRecords = tag.ndefMessage;
+
+            function decodeNdefRecord(record) {
+                if (Ndef.isType(record, Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
+                    return ['text', Ndef.text.decodePayload(record.payload)];
+                } else if (Ndef.isType(record, Ndef.TNF_WELL_KNOWN, Ndef.RTD_URI)) {
+                    return ['uri', Ndef.uri.decodePayload(record.payload)];
+                }
+
+                return ['unknown', '---']
+            }
+
+            parsed = ndefRecords.map(decodeNdefRecord);
         }
 
-        let text = this._parseText(tag);
-        this.setState({parsedText: text});
+        this.setState({parsed});
     }
 
     _startDetection = () => {
@@ -300,41 +208,7 @@ class App extends Component {
     }
 
     _clearMessages = () => {
-        this.setState({tag: null});
-    }
-
-    _goToNfcSetting = () => {
-        if (Platform.OS === 'android') {
-            NfcManager.goToNfcSetting()
-                .then(result => {
-                    console.log('goToNfcSetting OK', result)
-                })
-                .catch(error => {
-                    console.warn('goToNfcSetting fail', error)
-                })
-        }
-    }
-
-    _parseUri = (tag) => {
-        try {
-            if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_URI)) {
-                return Ndef.uri.decodePayload(tag.ndefMessage[0].payload);
-            }
-        } catch (e) {
-            console.log(e);
-        }
-        return null;
-    }
-
-    _parseText = (tag) => {
-        try {
-            if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
-                return Ndef.text.decodePayload(tag.ndefMessage[0].payload);
-            }
-        } catch (e) {
-            console.log(e);
-        }
-        return null;
+        this.setState({tag: null, parsed: null});
     }
 }
 

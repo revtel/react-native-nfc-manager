@@ -19,10 +19,11 @@
   "files": [
     "NfcManager.js",
     "NdefParser.js",
+    "ndef-lib",
     "index.d.ts",
     "android",
     "ios",
-    "react-native-nfc-manager.podspec", 
+    "react-native-nfc-manager.podspec",
     "example"
   ],
   "license": "Apache-2.0",

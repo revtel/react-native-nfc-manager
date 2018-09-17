@@ -1,4 +1,4 @@
-const ndef = require("./ndef-lib/ndef");
+const ndef = require("./ndef-lib");
 const textHelper = require("./ndef-lib/ndef-text");
 
 const textMessageHelloWorld = [ 209, 1, 15, 84, 2, 101, 110, 104, 101, 108, 108, 111,

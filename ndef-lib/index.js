@@ -388,7 +388,7 @@ var ndef = {
     isType: function(record, tnf, type) {
 
         if (record.tnf === tnf) {
-            return (s(record) === s(type));
+            return (s(record.type) === s(type));
         }
         return false;
 
