@@ -54,12 +54,14 @@ AppRegistry.registerComponent('NfcManagerDev', () => App);
 ## API
 This library provide a default export `NfcManager` and a named export `NdefParser`, like this:
 ```javascript
-import NfcManager, {NdefParser} from 'react-native-nfc-manager'
+import NfcManager, {Ndef, NdefParser} from 'react-native-nfc-manager'
 ```
 
 All methods in `NfcManager` return a `Promise` object and are resolved to different types of data according to individual API.
 
-`NdefParser` is an utility class to parse some well-known NDEF format, currently only support `RTD URI`.
+`Ndef` is an utility module to encode and decode some well-known NDEF format.
+
+* `NdefParser` is an old utility class to parse some well-known NDEF format, which will be deprecated later.
 
 ## NfcManager API
 
@@ -224,7 +226,56 @@ NfcManager.setNdefPushMessage(null)
     .catch(err => console.warn(err))
 ```
 
-## NdefParser API
+## Ndef API 
+
+This module is integrated from [`ndef-js`](https://github.com/don/ndef-js) to perform Ndef encoding & decoding. Great thanks for their brilliant work!
+
+We mainly remove the dependency to NodeJS `Buffer` and maintain most of the original structure.
+
+### Encode example:
+
+```js
+let bytes = Ndef.encodeMessage([
+    Ndef.textRecord("hello, world"),
+    Ndef.uriRecord("http://nodejs.org"),
+]);
+
+// then you can pass `bytes` into API such as NfcManager.requestNdefWrite()
+}
+```
+
+### Decode example:
+
+```js
+_onTagDiscovered = tag => {
+    console.log('Tag Discovered', tag);
+    this.setState({ tag });
+
+    let parsed = null;
+    if (tag.ndefMessage && tag.ndefMessage.length > 0) {
+        // ndefMessage is actually an array of NdefRecords, 
+        // and we can iterate through each NdefRecord, decode its payload 
+        // according to its TNF & type
+        const ndefRecords = tag.ndefMessage;
+
+        function decodeNdefRecord(record) {
+            if (Ndef.isType(record, Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
+                return ['text', Ndef.text.decodePayload(record.payload)];
+            } else if (Ndef.isType(record, Ndef.TNF_WELL_KNOWN, Ndef.RTD_URI)) {
+                return ['uri', Ndef.uri.decodePayload(record.payload)];
+            }
+
+            return ['unknown', '---']
+        }
+
+        parsed = ndefRecords.map(decodeNdefRecord);
+    }
+
+    this.setState({parsed});
+}
+```
+
+## NdefParser API (deprecated, please use `Ndef` instead)
 
 ### parseUri(ndef)
 Try to parse RTD_URI from a NdefMessage, return an object with an `uri` property.
@@ -263,6 +314,11 @@ If you want to only have your app support NFC devices then you have to change re
 
 
 ## Version history (from v0.1.0) 
+
+v0.6.0
+- integrate [`ndef-js`](https://github.com/don/ndef-js) to perform Ndef encoding & decoding. Great thanks for their brilliant work!
+- as a result of previous integration, users can now easily handle the NdefMessage consists of multi NdefRecords. 
+    - see `example/MultiNdefRecord.js` for a full example to write or read such an NdefMessage.
 
 v0.5.4
 - (android) support `getTag` for all NFC technologies
