@@ -6,6 +6,7 @@ import android.nfc.TagLostException;
 import android.nfc.tech.TagTechnology;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
+import android.nfc.tech.MifareClassic;
 import android.nfc.tech.IsoDep;
 import android.util.Log;
 import com.facebook.react.bridge.*;
@@ -47,6 +48,8 @@ class TagTechnologyRequest {
             mTech = NfcA.get(tag);
         } else if (mTechType.equals("IsoDep")) {
             mTech = IsoDep.get(tag);
+        } else if (mTechType.equals("MifareClassic")) {
+            mTech = MifareClassic.get(tag);
         }
 
         if (mTech == null) {

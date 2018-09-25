@@ -30,12 +30,14 @@ import android.nfc.tech.TagTechnology;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
 import android.nfc.tech.NdefFormatable;
+import android.nfc.tech.MifareClassic;
 import android.os.Parcelable;
 
 import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.util.*;
+import java.nio.charset.Charset;
 
 import static android.app.Activity.RESULT_OK;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -204,6 +206,105 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 			}
 		}
 	}
+
+	private void mifareClassicAuthenticate(char type, int sector, String key, Callback callback) {
+		if (techRequest != null) {
+			MifareClassic mifareTag = null;
+			try {
+				TagTechnology tagTech = techRequest.getTechHandle();
+				Tag tag = tagTech.getTag();
+				mifareTag = MifareClassic.get(tag);
+				if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+					// Not a mifare card, fail
+					callback.invoke("mifareClassicAuthenticate fail: TYPE_UNKNOWN");
+					return;
+				} else if (sector >= mifareTag.getSectorCount()) {
+					// Not a mifare card, fail
+					String msg = String.format("mifareClassicAuthenticate fail: invalid sector %d (max %d)", sector, mifareTag.getSectorCount());
+					callback.invoke(msg);
+					return;
+				} else if (key.length() != 6) {
+					// Invalid key length
+					String msg = String.format("mifareClassicAuthenticate fail: invalid key (needs length 6 but has %d characters)", key.length());
+					callback.invoke(msg);
+					return;
+				}
+
+				byte[] keyBytes = new byte[key.length()];
+				for (int i = 0; i < key.length(); i++) {
+					keyBytes[i] = (byte)(key.charAt(i) & 0xFF);
+				}
+
+				if (!mifareTag.authenticateSectorWithKeyA(sector, keyBytes)) {
+					callback.invoke("mifareClassicAuthenticate fail: AUTH_FAIL");
+					return;
+				}
+
+				callback.invoke(null, true);
+			} catch (TagLostException ex) {
+				callback.invoke("getMifareClassicMessage fail: TAG_LOST");
+			} catch (Exception ex) {
+				callback.invoke("getMifareClassicMessage fail: " + ex.toString());
+			}
+		} else {
+			callback.invoke("no tech request available");
+		}
+	}
+
+	@ReactMethod
+	public void mifareClassicAuthenticateA(int sector, String key, Callback callback) {
+		synchronized(this) {
+			mifareClassicAuthenticate('A', sector, key, callback);
+		}
+	}
+
+	@ReactMethod
+	public void mifareClassicAuthenticateB(int sector, String key, Callback callback) {
+		synchronized(this) {
+			mifareClassicAuthenticate('B', sector, key, callback);
+		}
+	}
+
+	@ReactMethod
+	public void getMifareClassicMessage(int sector, Callback callback) {
+		synchronized(this) {
+			if (techRequest != null) {
+				MifareClassic mifareTag = null;
+				try {
+					TagTechnology tagTech = techRequest.getTechHandle();
+					Tag tag = tagTech.getTag();
+					mifareTag = MifareClassic.get(tag);
+					if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+						// Not a mifare card, fail
+						callback.invoke("getMifareClassicMessage fail: TYPE_UNKNOWN");
+						return;
+					} else if (sector >= mifareTag.getSectorCount()) {
+						// Not a mifare card, fail
+						String msg = String.format("getMifareClassicMessage fail: invalid sector %d (max %d)", sector, mifareTag.getSectorCount());
+						callback.invoke(msg);
+						return;
+					}
+
+					String result = "";
+					int blocks = mifareTag.getBlockCountInSector(sector);
+					byte[] buffer = new byte[MifareClassic.BLOCK_SIZE];
+					for (int i = 0; i < blocks; i++) {
+						buffer = mifareTag.readBlock(mifareTag.sectorToBlock(sector)+i);
+						result += new String(buffer, Charset.forName("US-ASCII"));
+					}
+
+					callback.invoke(null, result);
+				} catch (TagLostException ex) {
+					callback.invoke("getMifareClassicMessage fail: TAG_LOST");
+				} catch (Exception ex) {
+					callback.invoke("getMifareClassicMessage fail: " + ex.toString());
+				}
+			} else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
 
 	@ReactMethod
 	public void makeReadOnly(Callback callback) {
