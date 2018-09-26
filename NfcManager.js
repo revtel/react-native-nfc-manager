@@ -19,6 +19,7 @@ const Events = {
 const NfcTech = {
   Ndef: 'Ndef',
   NfcA: 'NfcA',
+  MifareClassic: 'MifareClassic',
 }
 
 const LOG = 'NfcManagerJs';
@@ -342,6 +343,58 @@ class NfcManager {
 
     return new Promise((resolve, reject) => {
       NativeNfcManager.makeReadOnly((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+
+  // -------------------------------------
+  // NfcTech.MifareClassic API
+  // -------------------------------------
+  mifareClassicAuthenticateA(sector, key, callback) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareClassicAuthenticateA(sector, key, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  mifareClassicAuthenticateB(sector, key, callback) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareClassicAuthenticateB(sector, key, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  getMifareClassicMessage(sector, callback) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.getMifareClassicMessage(sector, (err, result) => {
         if (err) {
           reject(err);
         } else {
