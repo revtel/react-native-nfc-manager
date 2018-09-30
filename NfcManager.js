@@ -356,7 +356,7 @@ class NfcManager {
   // -------------------------------------
   // NfcTech.MifareClassic API
   // -------------------------------------
-  mifareClassicAuthenticateA(sector, key, callback) {
+  mifareClassicAuthenticateA(sector, key) {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
     }
@@ -372,7 +372,7 @@ class NfcManager {
     })
   }
 
-  mifareClassicAuthenticateB(sector, key, callback) {
+  mifareClassicAuthenticateB(sector, key) {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
     }
@@ -388,7 +388,7 @@ class NfcManager {
     })
   }
 
-  getMifareClassicMessage(sector, callback) {
+  getMifareClassicMessage(sector) {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
     }
