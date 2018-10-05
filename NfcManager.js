@@ -4,6 +4,7 @@ import {
   NativeEventEmitter,
   Platform
 } from 'react-native'
+import ByteParser from './ByteParser'
 import NdefParser from './NdefParser'
 import Ndef from './ndef-lib'
 
@@ -361,6 +362,10 @@ class NfcManager {
       return Promise.reject('not implemented');
     }
 
+    if (!key || !Array.isArray(key) || key.length !== 6) {
+      return Promise.reject('key should be an Array[6] of integers (0 - 255)');
+    }
+
     return new Promise((resolve, reject) => {
       NativeNfcManager.mifareClassicAuthenticateA(sector, key, (err, result) => {
         if (err) {
@@ -375,6 +380,10 @@ class NfcManager {
   mifareClassicAuthenticateB(sector, key) {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
+    }
+
+    if (!key || !Array.isArray(key) || key.length !== 6) {
+      return Promise.reject('key should be an Array[6] of integers (0 - 255)');
     }
 
     return new Promise((resolve, reject) => {
@@ -427,6 +436,7 @@ class NfcManager {
 export default new NfcManager();
 
 export {
+  ByteParser,
   NdefParser,
   NfcTech,
   Ndef,

@@ -207,7 +207,21 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		}
 	}
 
-	private void mifareClassicAuthenticate(char type, int sector, String key, Callback callback) {
+	public static byte[] readableArrayToBytes(ReadableArray array) {
+		byte[] result = new byte[array.size()];
+		for (int i = 0; i < array.size(); i++) {
+			result[i] = new Integer(array.getInt(i)).byteValue();
+		}
+		return result;
+	}
+
+	public static void appendBytesToWritableArray(WritableArray array, byte[] bytes) {
+		for (int i = 0; i < bytes.length; i++) {
+			array.pushInt((bytes[i] & 0xFF));
+		}
+	}
+
+	private void mifareClassicAuthenticate(char type, int sector, ReadableArray key, Callback callback) {
 		if (techRequest != null) {
 			MifareClassic mifareTag = null;
 			try {
@@ -223,19 +237,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					String msg = String.format("mifareClassicAuthenticate fail: invalid sector %d (max %d)", sector, mifareTag.getSectorCount());
 					callback.invoke(msg);
 					return;
-				} else if (key.length() != 6) {
+				} else if (key.size() != 6) {
 					// Invalid key length
-					String msg = String.format("mifareClassicAuthenticate fail: invalid key (needs length 6 but has %d characters)", key.length());
+					String msg = String.format("mifareClassicAuthenticate fail: invalid key (needs length 6 but has %d characters)", key.size());
 					callback.invoke(msg);
 					return;
 				}
 
-				byte[] keyBytes = new byte[key.length()];
-				for (int i = 0; i < key.length(); i++) {
-					keyBytes[i] = (byte)(key.charAt(i) & 0xFF);
-				}
-
-				if (!mifareTag.authenticateSectorWithKeyA(sector, keyBytes)) {
+				if (!mifareTag.authenticateSectorWithKeyA(sector, readableArrayToBytes(key))) {
 					callback.invoke("mifareClassicAuthenticate fail: AUTH_FAIL");
 					return;
 				}
@@ -252,14 +261,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-	public void mifareClassicAuthenticateA(int sector, String key, Callback callback) {
+	public void mifareClassicAuthenticateA(int sector, ReadableArray key, Callback callback) {
 		synchronized(this) {
 			mifareClassicAuthenticate('A', sector, key, callback);
 		}
 	}
 
 	@ReactMethod
-	public void mifareClassicAuthenticateB(int sector, String key, Callback callback) {
+	public void mifareClassicAuthenticateB(int sector, ReadableArray key, Callback callback) {
 		synchronized(this) {
 			mifareClassicAuthenticate('B', sector, key, callback);
 		}
@@ -285,12 +294,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 						return;
 					}
 
-					String result = "";
+					WritableArray result = Arguments.createArray();
 					int blocks = mifareTag.getBlockCountInSector(sector);
 					byte[] buffer = new byte[MifareClassic.BLOCK_SIZE];
 					for (int i = 0; i < blocks; i++) {
 						buffer = mifareTag.readBlock(mifareTag.sectorToBlock(sector)+i);
-						result += new String(buffer, Charset.forName("US-ASCII"));
+						appendBytesToWritableArray(result, buffer);
 					}
 
 					callback.invoke(null, result);
@@ -304,7 +313,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 			}
 		}
 	}
-
 
 	@ReactMethod
 	public void makeReadOnly(Callback callback) {
