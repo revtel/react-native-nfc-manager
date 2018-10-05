@@ -40,6 +40,11 @@ class TagTechnologyRequest {
     }
 
     boolean connect(Tag tag) {
+        if (tag == null) {
+            Log.d(LOG_TAG, "received null tag at connect()");
+            return false;
+        }
+
         mTech = null;
         mTag = tag;
         if (mTechType.equals("Ndef")) {
