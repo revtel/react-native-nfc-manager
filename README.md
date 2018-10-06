@@ -52,14 +52,16 @@ AppRegistry.registerComponent('NfcManagerDev', () => App);
 ```
 
 ## API
-This library provide a default export `NfcManager` and a named export `NdefParser`, like this:
+This library provide a default export `NfcManager` and 2 named exports `ByteParser` and `NdefParser`, like this:
 ```javascript
-import NfcManager, {Ndef, NdefParser} from 'react-native-nfc-manager'
+import NfcManager, {ByteParser, Ndef, NdefParser} from 'react-native-nfc-manager'
 ```
 
 All methods in `NfcManager` return a `Promise` object and are resolved to different types of data according to individual API.
 
-`Ndef` is an utility module to encode and decode some well-known NDEF format.
+* `ByteParser` is an utility module to encode and decode byte[] arrays (used in Mifare Classic technology).
+
+* `Ndef` is an utility module to encode and decode some well-known NDEF format.
 
 * `NdefParser` is an old utility class to parse some well-known NDEF format, which will be deprecated later.
 
@@ -193,7 +195,7 @@ __Arguments__
     - the available ones are defined in `NfcTech` (please do `import {NfcTech} from 'react-native-nfc-manager`) 
 
 __Examples__
-> A concrete example using NFC Technology can be found in `examples/AndroidTechTestNdef.js`
+> Concrete examples using NFC Technology can be found in `example/AndroidTechTestNdef.js` and `example/AndroidMifareClassic.js`
 
 ### cancelTechnologyRequest() [Android only]
 Cancel previous NFC Technology request. 
@@ -299,6 +301,119 @@ __Examples__
 ```js
 let text = NdefParser.parseText(sampleTag.ndefMessage[0]);
 console.log('parsedText: ' + text);
+```
+
+## Mifare Classic API [Android only]
+
+This module enables you to read encrypted [Mifare Classic](https://en.wikipedia.org/wiki/MIFARE#MIFARE_Classic_family) cards (as long as you have the authentication keys). A concrete example can be found in `example/AndroidMifareClassic.js`
+
+To find more information about the low level APIs of Mifare Classic on Android checkout this excellent blog post: [MiFare Classic Detection on Android](http://mifareclassicdetectiononandroid.blogspot.com/2011/04/reading-mifare-classic-1k-from-android.html)
+
+At the time of writing, iOS 12 still doesn't support any Mifare cards, or any NFC technology that doesn't use the NDEF standards.
+
+To use the Mifare Classic API, you first need to request the `NfcTech.MifareClassic` technology (see `requestTechnology`). Once you have the tech request, you can use the following methods to interact with the Mifare Classic cards:
+
+### mifareClassicAuthenticateA(sector, key) and mifareClassicAuthenticateB(sector, key) [Android only]
+Authenticate to the Mifare Classic card using key A or key B.
+
+> This method returns a promise:
+> * if resolved, it means you successfully authenticated to the Mifare Classic card, and a read request can be called.
+> * if rejected, it means either the request is cancelled, the discovered tag doesn't support the requested technology or the authentication simply failed. The returned error should give you some insights about what went wrong.
+
+Notice you must have successfully requested the Mifare Classic technology with the `requestTechnology` call before using this method.
+
+__Arguments__
+- `sector` - `number` - the Mifare Classic sector to authenticate to (e.g. 0 - 15 for Mifare Classic 1K cards)
+- `key` - `byte[]` - an array of bytes (numbers) that contains the key
+
+__Examples__
+> A concrete example using Mifare Classic can be found in `example/AndroidMifareClassic.js`
+```js
+NfcManager.mifareClassicAuthenticateA(0, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]).then(() => {
+  /* ...do your stuff here... */
+});
+```
+
+### mifareClassicReadBlock(sector) [Android only]
+Gets a block from a Mifare Classic card where you previously authenticated to.
+
+> This method returns a promise:
+> * if resolved, it returns the block (array of bytes (numbers)) from the specified sector.
+> * if rejected, it means either the request is cancelled, the discovered tag doesn't support the requested technology, the authentication failed or something else went wrong. The returned error should give you some insights about what went wrong.
+
+Notice you must be successfully authenticated with the `mifareClassicAuthenticateA` or  `mifareClassicAuthenticateB` call before using this method.
+
+__Arguments__
+- `sector` - `number` - the Mifare Classic sector to authenticate to (0 - 15) for 1K cards
+
+__Return value__
+- `block` - `byte[]` - an array of bytes (numbers)
+
+For convenience, a class `ByteParser` is included in the NfcManager exports. This class contains 2 methods `byteToHexString` and `byteToString` who can be used to get the raw data into a hex string or a string, depending on what data is stored on the card.
+
+__Examples__
+> A concrete example using Mifare Classic can be found in `example/AndroidMifareClassic.js`
+```js
+NfcManager.mifareClassicReadBlock(0).then((message) => {
+  const str = ByteParser.byteToString(message);
+  /* ...do your stuff here... */
+});
+```
+
+### Read authenticated example:
+
+The following is some wrapper code that uses the `async/await` syntax.
+
+```js
+const readAuthenticatedA = async (sector, code) => {
+  return new Promise((resolve, reject) => {
+    NfcManager.mifareClassicAuthenticateA(sector, code)
+      .then(() => {
+        console.log(`mifareClassicAuthenticateA(${sector}) completed`);
+        NfcManager.mifareClassicReadBlock(sector)
+          .then(data => {
+            console.log(`mifareClassicReadBlock(${sector}) completed`);
+            resolve(data);
+          })
+          .catch(err => {
+            console.log(`mifareClassicReadBlock(${sector}) failed:`, err);
+            reject(err);
+          });
+      })
+      .catch(err => {
+        console.log(`mifareClassicAuthenticateA(${sector}) failed:`, err);
+        reject(err);
+      });
+  });
+};
+
+const sector0Data = await readAuthenticatedA(0, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+```
+
+## ByteParser API (simple utility for working with byte[] arrays like in Mifare Classic cards)
+
+### byteToHexString(bytes)
+Converts a byte array `byte[]` to a hex string.
+
+__Arguments__
+- `bytes` - `byte[]` - the result of a mifareClassicReadBlock call.
+
+__Examples__
+```js
+let hexString = ByteParser.byteToHexString(result);
+console.log('hex string: ' + hexString);
+```
+
+### byteToString(bytes)
+Converts a byte array `byte[]` to a string (if the data represents an ASCII string).
+
+__Arguments__
+- `bytes` - `byte[]` - the result of a mifareClassicReadBlock call.
+
+__Examples__
+```js
+let str = ByteParser.byteToString(result);
+console.log('string: ' + str);
 ```
 
 ## NFC Hardware requirement on Android

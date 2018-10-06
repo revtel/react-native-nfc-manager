@@ -21,7 +21,7 @@ class App extends Component {
       keyAorB: KeyTypes[1], // 'B'
       keyToUse: 'FFFFFFFFFFFF',
       sector: 0,
-      tag: {},
+      tag: null,
       parsedText: null,
     };
   }
@@ -120,7 +120,7 @@ class App extends Component {
                   style={{ width: 200 }}
                   value={sector.toString(10)}
                   onChangeText={sector =>
-                    this.setState({ sector: parseInt(sector, 10) })
+                    this.setState({ sector: sector })
                   }
                 />
               </View>
@@ -172,19 +172,25 @@ class App extends Component {
         this.setState({ tag });
       })
       .then(() => {
+        let sector = parseInt(this.state.sector);
+        if (isNaN(sector)) {
+          this.setState({ sector: '0' });
+          sector = 0;
+        }
+
         // Convert the key to a UInt8Array
         const key = [];
         for (let i = 0; i < this.state.keyToUse.length - 1; i += 2) {
           key.push(parseInt(this.state.keyToUse.substring(i, i + 2), 16));
         }
 
-        if (this.state.keyAOrB === KeyTypes[0]) {
-          return NfcManager.mifareClassicAuthenticateA(this.state.sector, key);
+        if (this.state.keyAorB === KeyTypes[0]) {
+          return NfcManager.mifareClassicAuthenticateA(sector, key);
         } else {
-          return NfcManager.mifareClassicAuthenticateB(this.state.sector, key);
+          return NfcManager.mifareClassicAuthenticateB(sector, key);
         }
       })
-      .then(() => NfcManager.getMifareClassicMessage(this.state.sector))
+      .then(() => NfcManager.mifareClassicReadBlock(parseInt(this.state.sector)))
       .then(tag => {
         let parsedText = ByteParser.byteToHexString(tag);
         this.setState({ parsedText });

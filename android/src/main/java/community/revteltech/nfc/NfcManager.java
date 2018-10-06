@@ -244,16 +244,23 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					return;
 				}
 
-				if (!mifareTag.authenticateSectorWithKeyA(sector, readableArrayToBytes(key))) {
+				boolean result = false;
+				if (type == 'A') {
+					result = mifareTag.authenticateSectorWithKeyA(sector, readableArrayToBytes(key));
+				} else {
+					result = mifareTag.authenticateSectorWithKeyB(sector, readableArrayToBytes(key));
+				}
+
+				if (!result) {
 					callback.invoke("mifareClassicAuthenticate fail: AUTH_FAIL");
 					return;
 				}
 
 				callback.invoke(null, true);
 			} catch (TagLostException ex) {
-				callback.invoke("getMifareClassicMessage fail: TAG_LOST");
+				callback.invoke("mifareClassicAuthenticate fail: TAG_LOST");
 			} catch (Exception ex) {
-				callback.invoke("getMifareClassicMessage fail: " + ex.toString());
+				callback.invoke("mifareClassicAuthenticate fail: " + ex.toString());
 			}
 		} else {
 			callback.invoke("no tech request available");
@@ -275,7 +282,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-	public void getMifareClassicMessage(int sector, Callback callback) {
+	public void mifareClassicReadBlock(int sector, Callback callback) {
 		synchronized(this) {
 			if (techRequest != null) {
 				MifareClassic mifareTag = null;
@@ -285,11 +292,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					mifareTag = MifareClassic.get(tag);
 					if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
 						// Not a mifare card, fail
-						callback.invoke("getMifareClassicMessage fail: TYPE_UNKNOWN");
+						callback.invoke("mifareClassicReadBlock fail: TYPE_UNKNOWN");
 						return;
 					} else if (sector >= mifareTag.getSectorCount()) {
 						// Not a mifare card, fail
-						String msg = String.format("getMifareClassicMessage fail: invalid sector %d (max %d)", sector, mifareTag.getSectorCount());
+						String msg = String.format("mifareClassicReadBlock fail: invalid sector %d (max %d)", sector, mifareTag.getSectorCount());
 						callback.invoke(msg);
 						return;
 					}
@@ -304,9 +311,9 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
 					callback.invoke(null, result);
 				} catch (TagLostException ex) {
-					callback.invoke("getMifareClassicMessage fail: TAG_LOST");
+					callback.invoke("mifareClassicReadBlock fail: TAG_LOST");
 				} catch (Exception ex) {
-					callback.invoke("getMifareClassicMessage fail: " + ex.toString());
+					callback.invoke("mifareClassicReadBlock fail: " + ex.toString());
 				}
 			} else {
 				callback.invoke("no tech request available");

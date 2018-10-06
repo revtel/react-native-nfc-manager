@@ -17,6 +17,7 @@
     "nfc"
   ],
   "files": [
+    "ByteParser.js",
     "NfcManager.js",
     "NdefParser.js",
     "ndef-lib",
