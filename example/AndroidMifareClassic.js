@@ -184,7 +184,7 @@ class App extends Component {
           return NfcManager.mifareClassicAuthenticateB(this.state.sector, key);
         }
       })
-      .then(() => NfcManager.getMifareClassicMessage(this.state.sector))
+      .then(() => NfcManager.mifareClassicReadBlock(this.state.sector))
       .then(tag => {
         let parsedText = ByteParser.byteToHexString(tag);
         this.setState({ parsedText });

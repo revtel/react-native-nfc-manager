@@ -334,7 +334,7 @@ NfcManager.mifareClassicAuthenticateA(0, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]).t
 });
 ```
 
-### getMifareClassicMessage(sector) [Android only]
+### mifareClassicReadBlock(sector) [Android only]
 Gets a block from a Mifare Classic card where you previously authenticated to.
 
 > This method returns a promise:
@@ -354,7 +354,7 @@ For convenience, a class `ByteParser` is included in the NfcManager exports. Thi
 __Examples__
 > A concrete example using Mifare Classic can be found in `example/AndroidMifareClassic.js`
 ```js
-NfcManager.getMifareClassicMessage(0).then((message) => {
+NfcManager.mifareClassicReadBlock(0).then((message) => {
   const str = ByteParser.byteToString(message);
   /* ...do your stuff here... */
 });
@@ -370,13 +370,13 @@ const readAuthenticatedA = async (sector, code) => {
     NfcManager.mifareClassicAuthenticateA(sector, code)
       .then(() => {
         console.log(`mifareClassicAuthenticateA(${sector}) completed`);
-        NfcManager.getMifareClassicMessage(sector)
+        NfcManager.mifareClassicReadBlock(sector)
           .then(data => {
-            console.log(`getMifareClassicMessage(${sector}) completed`);
+            console.log(`mifareClassicReadBlock(${sector}) completed`);
             resolve(data);
           })
           .catch(err => {
-            console.log(`getMifareClassicMessage(${sector}) failed:`, err);
+            console.log(`mifareClassicReadBlock(${sector}) failed:`, err);
             reject(err);
           });
       })
@@ -396,7 +396,7 @@ const sector0Data = await readAuthenticatedA(0, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0
 Converts a byte array `byte[]` to a hex string.
 
 __Arguments__
-- `bytes` - `byte[]` - the result of a getMifareClassicMessage call.
+- `bytes` - `byte[]` - the result of a mifareClassicReadBlock call.
 
 __Examples__
 ```js
@@ -408,7 +408,7 @@ console.log('hex string: ' + hexString);
 Converts a byte array `byte[]` to a string (if the data represents an ASCII string).
 
 __Arguments__
-- `bytes` - `byte[]` - the result of a getMifareClassicMessage call.
+- `bytes` - `byte[]` - the result of a mifareClassicReadBlock call.
 
 __Examples__
 ```js
