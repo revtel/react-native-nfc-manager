@@ -244,7 +244,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					return;
 				}
 
-				if (!mifareTag.authenticateSectorWithKeyA(sector, readableArrayToBytes(key))) {
+				boolean result = false;
+				if (type == 'A') {
+					result = mifareTag.authenticateSectorWithKeyA(sector, readableArrayToBytes(key));
+				} else {
+					result = mifareTag.authenticateSectorWithKeyB(sector, readableArrayToBytes(key));
+				}
+
+				if (!result) {
 					callback.invoke("mifareClassicAuthenticate fail: AUTH_FAIL");
 					return;
 				}
