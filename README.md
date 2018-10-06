@@ -430,6 +430,10 @@ If you want to only have your app support NFC devices then you have to change re
 
 ## Version history (from v0.1.0) 
 
+v0.7.0
+- basic support for Mifare Classic (thanks to @poison)
+    - see `example/AndroidMifareClassic.js` for a full example.
+
 v0.6.0
 - integrate [`ndef-js`](https://github.com/don/ndef-js) to perform Ndef encoding & decoding. Great thanks for their brilliant work!
 - as a result of previous integration, users can now easily handle the NdefMessage consists of multi NdefRecords. 
