@@ -397,13 +397,13 @@ class NfcManager {
     })
   }
 
-  mifareClassicReadBlock(sector) {
+  mifareClassicReadSector(sector) {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
     }
 
     return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicReadBlock(sector, (err, result) => {
+      NativeNfcManager.mifareClassicReadSector(sector, (err, result) => {
         if (err) {
           reject(err);
         } else {

@@ -223,7 +223,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					callback.invoke("mifareClassicAuthenticate fail: TYPE_UNKNOWN");
 					return;
 				} else if (sector >= mifareTag.getSectorCount()) {
-					// Not a mifare card, fail
+					// Check if in range
 					String msg = String.format("mifareClassicAuthenticate fail: invalid sector %d (max %d)", sector, mifareTag.getSectorCount());
 					callback.invoke(msg);
 					return;
@@ -272,7 +272,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-	public void mifareClassicReadBlock(int sector, Callback callback) {
+	public void mifareClassicReadSector(int sectorIndex, Callback callback) {
 		synchronized(this) {
 			if (techRequest != null) {
 				MifareClassic mifareTag = null;
@@ -282,28 +282,28 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					mifareTag = MifareClassic.get(tag);
 					if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
 						// Not a mifare card, fail
-						callback.invoke("mifareClassicReadBlock fail: TYPE_UNKNOWN");
+						callback.invoke("mifareClassicReadSector fail: TYPE_UNKNOWN");
 						return;
-					} else if (sector >= mifareTag.getSectorCount()) {
-						// Not a mifare card, fail
-						String msg = String.format("mifareClassicReadBlock fail: invalid sector %d (max %d)", sector, mifareTag.getSectorCount());
+					} else if (sectorIndex >= mifareTag.getSectorCount()) {
+						// Check if in range
+						String msg = String.format("mifareClassicReadSector fail: invalid sector %d (max %d)", sectorIndex, mifareTag.getSectorCount());
 						callback.invoke(msg);
 						return;
 					}
 
 					WritableArray result = Arguments.createArray();
-					int blocks = mifareTag.getBlockCountInSector(sector);
+					int blocks = mifareTag.getBlockCountInSector(sectorIndex);
 					byte[] buffer = new byte[MifareClassic.BLOCK_SIZE];
 					for (int i = 0; i < blocks; i++) {
-						buffer = mifareTag.readBlock(mifareTag.sectorToBlock(sector)+i);
+						buffer = mifareTag.readBlock(mifareTag.sectorToBlock(sectorIndex)+i);
 						appendBytesToRnArray(result, buffer);
 					}
 
 					callback.invoke(null, result);
 				} catch (TagLostException ex) {
-					callback.invoke("mifareClassicReadBlock fail: TAG_LOST");
+					callback.invoke("mifareClassicReadSector fail: TAG_LOST");
 				} catch (Exception ex) {
-					callback.invoke("mifareClassicReadBlock fail: " + ex.toString());
+					callback.invoke("mifareClassicReadSector fail: " + ex.toString());
 				}
 			} else {
 				callback.invoke("no tech request available");
