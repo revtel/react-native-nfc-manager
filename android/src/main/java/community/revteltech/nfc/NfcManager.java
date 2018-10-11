@@ -272,6 +272,91 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
+	public void mifareClassicGetBlockCountInSector(int sectorIndex, Callback callback) {
+		synchronized(this) {
+			if (techRequest != null) {
+				MifareClassic mifareTag = null;
+				try {
+					TagTechnology tagTech = techRequest.getTechHandle();
+					Tag tag = tagTech.getTag();
+					mifareTag = MifareClassic.get(tag);
+					if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+						// Not a mifare card, fail
+						callback.invoke("mifareClassicGetBlockCountInSector fail: TYPE_UNKNOWN");
+						return;
+					} else if (sectorIndex >= mifareTag.getSectorCount()) {
+						// Check if in range
+						String msg = String.format("mifareClassicGetBlockCountInSector fail: invalid sector %d (max %d)", sectorIndex, mifareTag.getSectorCount());
+						callback.invoke(msg);
+						return;
+					}
+
+					callback.invoke(null, mifareTag.getBlockCountInSector(sectorIndex));
+				} catch (Exception ex) {
+					callback.invoke("mifareClassicGetBlockCountInSector fail: " + ex.toString());
+				}
+			} else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void mifareClassicGetSectorCount(Callback callback) {
+		synchronized(this) {
+			if (techRequest != null) {
+				MifareClassic mifareTag = null;
+				try {
+					TagTechnology tagTech = techRequest.getTechHandle();
+					Tag tag = tagTech.getTag();
+					mifareTag = MifareClassic.get(tag);
+					if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+						// Not a mifare card, fail
+						callback.invoke("mifareClassicGetSectorCount fail: TYPE_UNKNOWN");
+						return;
+					}
+
+					callback.invoke(null, mifareTag.getSectorCount());
+				} catch (Exception ex) {
+					callback.invoke("mifareClassicGetSectorCount fail: " + ex.toString());
+				}
+			} else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void mifareClassicSectorToBlock(int sectorIndex, Callback callback) {
+		synchronized(this) {
+			if (techRequest != null) {
+				MifareClassic mifareTag = null;
+				try {
+					TagTechnology tagTech = techRequest.getTechHandle();
+					Tag tag = tagTech.getTag();
+					mifareTag = MifareClassic.get(tag);
+					if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+						// Not a mifare card, fail
+						callback.invoke("mifareClassicSectorToBlock fail: TYPE_UNKNOWN");
+						return;
+					} else if (sectorIndex >= mifareTag.getSectorCount()) {
+						// Check if in range
+						String msg = String.format("mifareClassicSectorToBlock fail: invalid sector %d (max %d)", sectorIndex, mifareTag.getSectorCount());
+						callback.invoke(msg);
+						return;
+					}
+
+					callback.invoke(null, mifareTag.sectorToBlock(sectorIndex));
+				} catch (Exception ex) {
+					callback.invoke("mifareClassicSectorToBlock fail: " + ex.toString());
+				}
+			} else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
 	public void mifareClassicReadBlock(int blockIndex, Callback callback) {
 		synchronized(this) {
 			if (techRequest != null) {
