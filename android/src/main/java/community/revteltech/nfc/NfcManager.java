@@ -211,20 +211,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		}
 	}
 
-	public static byte[] readableArrayToBytes(ReadableArray array) {
-		byte[] result = new byte[array.size()];
-		for (int i = 0; i < array.size(); i++) {
-			result[i] = new Integer(array.getInt(i)).byteValue();
-		}
-		return result;
-	}
-
-	public static void appendBytesToWritableArray(WritableArray array, byte[] bytes) {
-		for (int i = 0; i < bytes.length; i++) {
-			array.pushInt((bytes[i] & 0xFF));
-		}
-	}
-
 	private void mifareClassicAuthenticate(char type, int sector, ReadableArray key, Callback callback) {
 		if (techRequest != null) {
 			MifareClassic mifareTag = null;
@@ -250,9 +236,9 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
 				boolean result = false;
 				if (type == 'A') {
-					result = mifareTag.authenticateSectorWithKeyA(sector, readableArrayToBytes(key));
+					result = mifareTag.authenticateSectorWithKeyA(sector, rnArrayToBytes(key));
 				} else {
-					result = mifareTag.authenticateSectorWithKeyB(sector, readableArrayToBytes(key));
+					result = mifareTag.authenticateSectorWithKeyB(sector, rnArrayToBytes(key));
 				}
 
 				if (!result) {
@@ -310,7 +296,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					byte[] buffer = new byte[MifareClassic.BLOCK_SIZE];
 					for (int i = 0; i < blocks; i++) {
 						buffer = mifareTag.readBlock(mifareTag.sectorToBlock(sector)+i);
-						appendBytesToWritableArray(result, buffer);
+						appendBytesToRnArray(result, buffer);
 					}
 
 					callback.invoke(null, result);
@@ -859,7 +845,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		}
 	}
 
-	private byte[] rnArrayToBytes(ReadableArray rArray) {
+	private static byte[] rnArrayToBytes(ReadableArray rArray) {
 		byte[] bytes = new byte[rArray.size()];
 		for (int i = 0; i < rArray.size(); i++) {
 			bytes[i] = (byte)(rArray.getInt(i) & 0xff);
@@ -867,12 +853,15 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		return bytes;
 	}
 
-	public WritableArray bytesToRnArray(byte[] bytes) {
-        WritableArray value = Arguments.createArray();
-        for (int i = 0; i < bytes.length; i++) {
-            value.pushInt((bytes[i] & 0xFF));
+	public static WritableArray bytesToRnArray(byte[] bytes) {
+		return appendBytesToRnArray(Arguments.createArray(), bytes);
+	}
+
+	public static WritableArray appendBytesToRnArray(WritableArray value, byte[] bytes) {
+		for (int i = 0; i < bytes.length; i++) {
+			value.pushInt((bytes[i] & 0xFF));
 		}
-        return value;
-    }
+		return value;
+	}
 }
 
