@@ -6,6 +6,9 @@ import android.nfc.TagLostException;
 import android.nfc.tech.TagTechnology;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
+import android.nfc.tech.NfcB;
+import android.nfc.tech.NfcV;
+import android.nfc.tech.NfcF;
 import android.nfc.tech.MifareClassic;
 import android.nfc.tech.IsoDep;
 import android.util.Log;
@@ -51,6 +54,12 @@ class TagTechnologyRequest {
             mTech = Ndef.get(tag);
         } else if (mTechType.equals("NfcA")) {
             mTech = NfcA.get(tag);
+        } else if (mTechType.equals("NfcB")) {
+            mTech = NfcB.get(tag);
+        } else if (mTechType.equals("NfcF")) {
+            mTech = NfcF.get(tag);
+        } else if (mTechType.equals("NfcV")) {
+            mTech = NfcV.get(tag);
         } else if (mTechType.equals("IsoDep")) {
             mTech = IsoDep.get(tag);
         } else if (mTechType.equals("MifareClassic")) {

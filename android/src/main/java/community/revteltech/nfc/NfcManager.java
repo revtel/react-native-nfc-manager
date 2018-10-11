@@ -29,6 +29,10 @@ import android.nfc.TagLostException;
 import android.nfc.tech.TagTechnology;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
+import android.nfc.tech.NfcB;
+import android.nfc.tech.NfcF;
+import android.nfc.tech.NfcV;
+import android.nfc.tech.IsoDep;
 import android.nfc.tech.NdefFormatable;
 import android.nfc.tech.MifareClassic;
 import android.os.Parcelable;
@@ -346,8 +350,36 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 				try {
 					String tech = techRequest.getTechType();
 				    byte[] bytes = rnArrayToBytes(rnArray);
+
+					TagTechnology baseTechHandle = techRequest.getTechHandle();
+					// TagTechnology is the base class for each tech (ex, NfcA, NfcB, IsoDep ...)
+					// but it doesn't provide transceive in its interface, so we need to explicitly cast it 
 					if (tech.equals("NfcA")) {
-						NfcA techHandle = (NfcA)techRequest.getTechHandle();
+						NfcA techHandle = (NfcA)baseTechHandle;
+				    	byte[] resultBytes = techHandle.transceive(bytes);
+						WritableArray resultRnArray = bytesToRnArray(resultBytes);
+				    	callback.invoke(null, resultRnArray);
+						return;
+					} else if (tech.equals("NfcB")) {
+						NfcB techHandle = (NfcB)baseTechHandle;
+				    	byte[] resultBytes = techHandle.transceive(bytes);
+						WritableArray resultRnArray = bytesToRnArray(resultBytes);
+				    	callback.invoke(null, resultRnArray);
+						return;
+					} else if (tech.equals("NfcF")) {
+						NfcF techHandle = (NfcF)baseTechHandle;
+				    	byte[] resultBytes = techHandle.transceive(bytes);
+						WritableArray resultRnArray = bytesToRnArray(resultBytes);
+				    	callback.invoke(null, resultRnArray);
+						return;
+					} else if (tech.equals("NfcV")) {
+						NfcV techHandle = (NfcV)baseTechHandle;
+				    	byte[] resultBytes = techHandle.transceive(bytes);
+						WritableArray resultRnArray = bytesToRnArray(resultBytes);
+				    	callback.invoke(null, resultRnArray);
+						return;
+					} else if (tech.equals("IsoDep")) {
+						IsoDep techHandle = (IsoDep)baseTechHandle;
 				    	byte[] resultBytes = techHandle.transceive(bytes);
 						WritableArray resultRnArray = bytesToRnArray(resultBytes);
 				    	callback.invoke(null, resultRnArray);
