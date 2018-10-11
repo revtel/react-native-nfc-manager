@@ -22,7 +22,10 @@ class App extends Component {
       keyToUse: 'FFFFFFFFFFFF',
       sector: 0,
       tag: null,
+      sectorCount: null,
+      blocksInSector: null,
       parsedText: null,
+      firstBlockInSector: null,
     };
   }
 
@@ -50,7 +53,10 @@ class App extends Component {
       keyToUse,
       sector,
       tag,
+      sectorCount,
+      blocksInSector,
       parsedText,
+      firstBlockInSector,
     } = this.state;
 
     return (
@@ -119,9 +125,7 @@ class App extends Component {
                 <TextInput
                   style={{ width: 200 }}
                   value={sector.toString(10)}
-                  onChangeText={sector =>
-                    this.setState({ sector: sector })
-                  }
+                  onChangeText={sector => this.setState({ sector: sector })}
                 />
               </View>
             </View>
@@ -137,12 +141,17 @@ class App extends Component {
           >
             <Text>{`Original tag content:`}</Text>
             <Text style={{ marginTop: 5, color: 'grey' }}>{`${
-              tag ? JSON.stringify(tag) : '---'
+              tag ? `${JSON.stringify(tag)} (${sectorCount} sectors)` : '---'
             }`}</Text>
             {parsedText && (
               <Text
                 style={{ marginTop: 5 }}
-              >{`(Parsed Text: ${parsedText})`}</Text>
+              >{`Parsed Text:\n${parsedText}`}</Text>
+            )}
+            {firstBlockInSector && (
+              <Text
+                style={{ marginTop: 5 }}
+              >{`First block in sector:\n${firstBlockInSector} [${blocksInSector} blocks]`}</Text>
             )}
           </View>
 
@@ -170,6 +179,10 @@ class App extends Component {
       .then(() => NfcManager.getTag())
       .then(tag => {
         this.setState({ tag });
+        return NfcManager.mifareClassicGetSectorCount();
+      })
+      .then(sectorCount => {
+        this.setState({ sectorCount });
       })
       .then(() => {
         let sector = parseInt(this.state.sector);
@@ -190,10 +203,28 @@ class App extends Component {
           return NfcManager.mifareClassicAuthenticateB(sector, key);
         }
       })
-      .then(() => NfcManager.mifareClassicReadBlock(parseInt(this.state.sector)))
+      .then(() =>
+        NfcManager.mifareClassicGetBlockCountInSector(
+          parseInt(this.state.sector),
+        ),
+      )
+      .then(blocksInSector => {
+        this.setState({ blocksInSector });
+      })
+      .then(() =>
+        NfcManager.mifareClassicReadSector(parseInt(this.state.sector)),
+      )
       .then(tag => {
         let parsedText = ByteParser.byteToHexString(tag);
         this.setState({ parsedText });
+      })
+      .then(() =>
+        NfcManager.mifareClassicSectorToBlock(parseInt(this.state.sector)),
+      )
+      .then(block => NfcManager.mifareClassicReadBlock(block))
+      .then(data => {
+        const parsedText = ByteParser.byteToHexString(data);
+        this.setState({ firstBlockInSector: parsedText });
       })
       .then(cleanUp)
       .catch(err => {
@@ -219,7 +250,13 @@ class App extends Component {
   };
 
   _clearMessages = () => {
-    this.setState({ tag: null, parsedText: null });
+    this.setState({
+      tag: null,
+      sectorCount: null,
+      blocksInSector: null,
+      parsedText: null,
+      firstBlockInSector: null,
+    });
   };
 }
 
