@@ -272,6 +272,42 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
+	public void mifareClassicReadBlock(int blockIndex, Callback callback) {
+		synchronized(this) {
+			if (techRequest != null) {
+				MifareClassic mifareTag = null;
+				try {
+					TagTechnology tagTech = techRequest.getTechHandle();
+					Tag tag = tagTech.getTag();
+					mifareTag = MifareClassic.get(tag);
+					if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+						// Not a mifare card, fail
+						callback.invoke("mifareClassicReadBlock fail: TYPE_UNKNOWN");
+						return;
+					} else if (blockIndex >= mifareTag.getBlockCount()) {
+						// Check if in range
+						String msg = String.format("mifareClassicReadBlock fail: invalid block %d (max %d)", blockIndex, mifareTag.getBlockCount());
+						callback.invoke(msg);
+						return;
+					}
+
+					byte[] buffer = new byte[MifareClassic.BLOCK_SIZE];
+					buffer = mifareTag.readBlock(blockIndex);
+
+					WritableArray result = bytesToRnArray(buffer);
+					callback.invoke(null, result);
+				} catch (TagLostException ex) {
+					callback.invoke("mifareClassicReadBlock fail: TAG_LOST");
+				} catch (Exception ex) {
+					callback.invoke("mifareClassicReadBlock fail: " + ex.toString());
+				}
+			} else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
 	public void mifareClassicReadSector(int sectorIndex, Callback callback) {
 		synchronized(this) {
 			if (techRequest != null) {
