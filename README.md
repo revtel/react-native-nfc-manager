@@ -392,7 +392,7 @@ NfcManager.mifareClassicReadBlock(0).then((message) => {
 });
 ```
 
-### Read authenticated example:
+#### Read authenticated example:
 
 The following is some wrapper code that uses the `async/await` syntax.
 
@@ -420,6 +420,29 @@ const readAuthenticatedA = async (sector, code) => {
 };
 
 const sector0Data = await readAuthenticatedA(0, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+```
+
+### mifareClassicWriteBlock(block, data) [Android only]
+Writes a block to a Mifare Classic card. You must be authenticated according to the card's configuration, or this promise will be rejected with `mifareClassicWriteBlock fail: java.io.IOException: Transceive failed`.
+
+To write a full sector, you must first get the blockIndex of the specified sector by calling `mifareClassicSectorToBlock` and write all the blocks in the sector (`mifareClassicGetBlockCountInSector` times).
+
+> This method returns a promise:
+> * if resolved, it returns true.
+> * if rejected, it means either the request is cancelled, the discovered card doesn't support the requested technology, the authentication failed or something else went wrong. The returned error should give you some insights about what went wrong.
+
+Notice you must be successfully authenticated with the `mifareClassicAuthenticateA` or `mifareClassicAuthenticateB` call before using this method.
+
+__Arguments__
+- `block` - `number` - the Mifare Classic block to write (the number of blocks/sector might depend on the detected card type)
+- `data` - `byte[]` - an array of bytes (numbers) with length of `NfcManager.MIFARE_BLOCK_SIZE`
+
+__Examples__
+> A concrete example using Mifare Classic can be found in `example/AndroidMifareClassic.js`
+```js
+NfcManager.mifareClassicWriteBlock(0, [ 72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33, 0, 0, 0 ]).then(() => {
+  console.log('Wrote "Hello, world!" to the card');
+});
 ```
 
 ## ByteParser API (simple utility for working with byte[] arrays like in Mifare Classic cards)
