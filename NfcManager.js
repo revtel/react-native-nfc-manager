@@ -397,13 +397,77 @@ class NfcManager {
     })
   }
 
-  mifareClassicReadBlock(sector) {
+  mifareClassicGetBlockCountInSector(sector) {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
     }
 
     return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicReadBlock(sector, (err, result) => {
+      NativeNfcManager.mifareClassicGetBlockCountInSector(sector, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  mifareClassicGetSectorCount() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareClassicGetSectorCount((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  mifareClassicSectorToBlock(sector) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareClassicSectorToBlock(sector, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  mifareClassicReadBlock(block) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareClassicReadBlock(block, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  mifareClassicReadSector(sector) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareClassicReadSector(sector, (err, result) => {
         if (err) {
           reject(err);
         } else {

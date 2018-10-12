@@ -318,7 +318,7 @@ Authenticate to the Mifare Classic card using key A or key B.
 
 > This method returns a promise:
 > * if resolved, it means you successfully authenticated to the Mifare Classic card, and a read request can be called.
-> * if rejected, it means either the request is cancelled, the discovered tag doesn't support the requested technology or the authentication simply failed. The returned error should give you some insights about what went wrong.
+> * if rejected, it means either the request is cancelled, the discovered card doesn't support the requested technology or the authentication simply failed. The returned error should give you some insights about what went wrong.
 
 Notice you must have successfully requested the Mifare Classic technology with the `requestTechnology` call before using this method.
 
@@ -334,20 +334,52 @@ NfcManager.mifareClassicAuthenticateA(0, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]).t
 });
 ```
 
-### mifareClassicReadBlock(sector) [Android only]
-Gets a block from a Mifare Classic card where you previously authenticated to.
+### mifareClassicGetBlockCountInSector(sector) [Android only]
+Returns a promise with the number of blocks in a given sector.
 
-> This method returns a promise:
-> * if resolved, it returns the block (array of bytes (numbers)) from the specified sector.
-> * if rejected, it means either the request is cancelled, the discovered tag doesn't support the requested technology, the authentication failed or something else went wrong. The returned error should give you some insights about what went wrong.
-
-Notice you must be successfully authenticated with the `mifareClassicAuthenticateA` or  `mifareClassicAuthenticateB` call before using this method.
+Note: because the block count and sector count can vary from card to card, the card must be successfully detected by the `NfcManager.requestTechnology(NfcTech.MifareClassic)` callback first before calling this method. Does not cause any RF activity and does not block.
 
 __Arguments__
-- `sector` - `number` - the Mifare Classic sector to authenticate to (0 - 15) for 1K cards
+- `sector` - `number` - the Mifare Classic sector to get the number of blocks from (the number of blocks might depend on the detected card type)
 
 __Return value__
-- `block` - `byte[]` - an array of bytes (numbers)
+- `blocks` - `number` - the number of blocks
+
+### mifareClassicGetSectorCount() [Android only]
+Returns a promise with the number of sectors on the card.
+
+Note: because the sector count can vary from card to card, the card must be successfully detected by the `NfcManager.requestTechnology(NfcTech.MifareClassic)` callback first before calling this method. Does not cause any RF activity and does not block.
+
+__Return value__
+- `sectors` - `number` - the number of sectors
+
+### mifareClassicSectorToBlock(sector) [Android only]
+Returns a promise with the blockIndex for a given sector.
+
+Note: because the block count and sector count can vary from card to card, the card must be successfully detected by the `NfcManager.requestTechnology(NfcTech.MifareClassic)` callback first before calling this method. Does not cause any RF activity and does not block.
+
+__Arguments__
+- `sector` - `number` - the Mifare Classic sector to get the blockIndex from (the number of blocks might depend on the detected card type)
+
+__Return value__
+- `blockIndex` - `number` - the block index of the sector
+
+### mifareClassicReadBlock(block) and mifareClassicReadSector(sector) [Android only]
+Reads a block/sector from a Mifare Classic card. You must be authenticated according to the card's configuration, or this promise will be rejected with `mifareClassicReadBlock fail: java.io.IOException: Transceive failed`.
+
+The difference between readBlock and readSector is that readBlock will only read one block, while readSector will first get the blockIndex of the specified sector, and will read as many blocks as there are in the specified sector. It's generally speaking faster than calling `mifareClassicGetBlockCountInSector` yourself and doing consecutive reads yourself.
+
+> This method returns a promise:
+> * if resolved, it returns the data (array of bytes (numbers)) from the specified block/sector.
+> * if rejected, it means either the request is cancelled, the discovered card doesn't support the requested technology, the authentication failed or something else went wrong. The returned error should give you some insights about what went wrong.
+
+Notice you must be successfully authenticated with the `mifareClassicAuthenticateA` or `mifareClassicAuthenticateB` call before using this method.
+
+__Arguments__
+- `block/sector` - `number` - the Mifare Classic block/sector to read (the number of blocks/sector might depend on the detected card type)
+
+__Return value__
+- `data` - `byte[]` - an array of bytes (numbers)
 
 For convenience, a class `ByteParser` is included in the NfcManager exports. This class contains 2 methods `byteToHexString` and `byteToString` who can be used to get the raw data into a hex string or a string, depending on what data is stored on the card.
 
@@ -370,13 +402,13 @@ const readAuthenticatedA = async (sector, code) => {
     NfcManager.mifareClassicAuthenticateA(sector, code)
       .then(() => {
         console.log(`mifareClassicAuthenticateA(${sector}) completed`);
-        NfcManager.mifareClassicReadBlock(sector)
+        NfcManager.mifareClassicReadSector(sector)
           .then(data => {
-            console.log(`mifareClassicReadBlock(${sector}) completed`);
+            console.log(`mifareClassicReadSector(${sector}) completed`);
             resolve(data);
           })
           .catch(err => {
-            console.log(`mifareClassicReadBlock(${sector}) failed:`, err);
+            console.log(`mifareClassicReadSector(${sector}) failed:`, err);
             reject(err);
           });
       })
