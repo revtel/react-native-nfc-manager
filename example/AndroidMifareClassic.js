@@ -18,6 +18,7 @@ class App extends Component {
       supported: false,
       enabled: false,
       isDetecting: false,
+      mode: 'read',
       keyAorB: KeyTypes[1], // 'B'
       keyToUse: 'FFFFFFFFFFFF',
       sector: 0,
@@ -26,6 +27,7 @@ class App extends Component {
       blocksInSector: null,
       parsedText: null,
       firstBlockInSector: null,
+      textToWrite: 'Hello, world!',
     };
   }
 
@@ -57,6 +59,7 @@ class App extends Component {
       blocksInSector,
       parsedText,
       firstBlockInSector,
+      textToWrite,
     } = this.state;
 
     return (
@@ -77,7 +80,7 @@ class App extends Component {
               <Text
                 style={{ color: 'blue', textAlign: 'center', fontSize: 20 }}
               >
-                CLICK TO START DETECTING
+                {`CLICK TO START DETECTING ${this.state.mode === 'read' ? 'READ' : 'WRITE'}`}
               </Text>
             </TouchableOpacity>
           )}
@@ -88,7 +91,7 @@ class App extends Component {
               onPress={() => this._stopDetection()}
             >
               <Text style={{ color: 'red', textAlign: 'center', fontSize: 20 }}>
-                CLICK TO STOP DETECTING
+                {`CLICK TO STOP DETECTING ${this.state.mode === 'read' ? 'READ' : 'WRITE'}`}
               </Text>
             </TouchableOpacity>
           )}
@@ -97,7 +100,34 @@ class App extends Component {
             <View
               style={{ padding: 10, marginTop: 20, backgroundColor: '#e0e0e0' }}
             >
-              <Text>(android) Read MiFare Classic Test</Text>
+              <View style={{ flexDirection: 'row' }}>
+                <TouchableOpacity
+                  style={[{ flex: 1, alignItems: 'center' }, this.state.mode === 'read' ? {backgroundColor: '#cc0000'} : {backgroundColor: '#d0d0d0'}]}
+                  onPress={() => this.setState({
+                    tag: null,
+                    mode: 'read',
+                    sectorCount: null,
+                    blocksInSector: null,
+                    parsedText: null,
+                    firstBlockInSector: null,
+                  })}
+                >
+                  <Text>READ</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[{ flex: 1, alignItems: 'center' }, this.state.mode !== 'read' ? {backgroundColor: '#cc0000'} : {backgroundColor: '#d0d0d0'}]}
+                  onPress={() => this.setState({
+                    tag: null,
+                    mode: 'write',
+                    sectorCount: null,
+                    blocksInSector: null,
+                    parsedText: null,
+                    firstBlockInSector: null,
+                  })}
+                >
+                  <Text>WRITE</Text>
+                </TouchableOpacity>
+              </View>
               <View style={{ flexDirection: 'row', marginTop: 10 }}>
                 <Text style={{ marginRight: 33 }}>Key to use:</Text>
                 {KeyTypes.map(key => (
@@ -128,6 +158,16 @@ class App extends Component {
                   onChangeText={sector => this.setState({ sector: sector })}
                 />
               </View>
+              {this.state.mode !== 'read' && (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ marginRight: 15 }}>Text to write:</Text>
+                  <TextInput
+                    style={{ width: 200 }}
+                    value={textToWrite}
+                    onChangeText={textToWrite => this.setState({ textToWrite })}
+                  />
+                </View>
+              )}
             </View>
           }
 
@@ -173,6 +213,47 @@ class App extends Component {
       NfcManager.unregisterTagEvent();
     };
 
+    const read = () => {
+      return NfcManager.mifareClassicGetBlockCountInSector(parseInt(this.state.sector))
+        .then(blocksInSector => {
+          this.setState({ blocksInSector });
+        })
+        .then(() =>
+          NfcManager.mifareClassicReadSector(parseInt(this.state.sector)),
+        )
+        .then(tag => {
+          let parsedText = ByteParser.byteToHexString(tag);
+          this.setState({ parsedText });
+        })
+        .then(() =>
+          NfcManager.mifareClassicSectorToBlock(parseInt(this.state.sector)),
+        )
+        .then(block => NfcManager.mifareClassicReadBlock(block))
+        .then(data => {
+          const parsedText = ByteParser.byteToString(data);
+          this.setState({ firstBlockInSector: parsedText });
+        })
+    };
+
+    const write = () => {
+      return NfcManager.mifareClassicSectorToBlock(parseInt(this.state.sector))
+        .then(block => {
+          // Create 1 block
+          let data = [];
+          for (let i = 0; i < NfcManager.MIFARE_BLOCK_SIZE; i++) {
+            data.push(0);
+          }
+
+          // Fill the block with our text, but don't exceed the block size
+          for (let i = 0; i < this.state.textToWrite.length && i < NfcManager.MIFARE_BLOCK_SIZE; i++) {
+            data[i] = parseInt(this.state.textToWrite.charCodeAt(i));
+          }
+
+          return NfcManager.mifareClassicWriteBlock(block, data);
+        })
+        .then(read)
+    };
+
     this.setState({ isDetecting: true });
     NfcManager.registerTagEvent(tag => console.log(tag))
       .then(() => NfcManager.requestTechnology(NfcTech.MifareClassic))
@@ -203,29 +284,7 @@ class App extends Component {
           return NfcManager.mifareClassicAuthenticateB(sector, key);
         }
       })
-      .then(() =>
-        NfcManager.mifareClassicGetBlockCountInSector(
-          parseInt(this.state.sector),
-        ),
-      )
-      .then(blocksInSector => {
-        this.setState({ blocksInSector });
-      })
-      .then(() =>
-        NfcManager.mifareClassicReadSector(parseInt(this.state.sector)),
-      )
-      .then(tag => {
-        let parsedText = ByteParser.byteToHexString(tag);
-        this.setState({ parsedText });
-      })
-      .then(() =>
-        NfcManager.mifareClassicSectorToBlock(parseInt(this.state.sector)),
-      )
-      .then(block => NfcManager.mifareClassicReadBlock(block))
-      .then(data => {
-        const parsedText = ByteParser.byteToHexString(data);
-        this.setState({ firstBlockInSector: parsedText });
-      })
+      .then(() => { return this.state.mode === 'read' ? read() : write() })
       .then(cleanUp)
       .catch(err => {
         console.warn(err);

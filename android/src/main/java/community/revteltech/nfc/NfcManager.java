@@ -88,6 +88,15 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		return "NfcManager";
 	}
 
+	@Override
+	public Map<String, Object> getConstants() {
+		final Map<String, Object> constants = new HashMap<>();
+
+		constants.put("MIFARE_BLOCK_SIZE", MifareClassic.BLOCK_SIZE);
+
+		return constants;
+	}
+
 	private boolean hasPendingRequest() {
 		return writeNdefRequest != null || techRequest != null; 
 	}
@@ -407,6 +416,43 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					callback.invoke("mifareClassicReadSector fail: TAG_LOST");
 				} catch (Exception ex) {
 					callback.invoke("mifareClassicReadSector fail: " + ex.toString());
+				}
+			} else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void mifareClassicWriteBlock(int blockIndex, ReadableArray block, Callback callback) {
+		synchronized(this) {
+			if (techRequest != null) {
+				try {
+					MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
+					if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+						// Not a mifare card, fail
+						callback.invoke("mifareClassicWriteBlock fail: TYPE_UNKNOWN");
+						return;
+					} else if (blockIndex >= mifareTag.getSectorCount()) {
+						// Check if in range
+						String msg = String.format("mifareClassicWriteBlock fail: invalid block %d (max %d)", blockIndex, mifareTag.getBlockCount());
+						callback.invoke(msg);
+						return;
+					} else if (block.size() != MifareClassic.BLOCK_SIZE) {
+						// Wrong block count
+						String msg = String.format("mifareClassicWriteBlock fail: invalid block size %d (should be %d)", block.size(), MifareClassic.BLOCK_SIZE);
+						callback.invoke(msg);
+						return;
+					}
+
+					byte[] buffer = rnArrayToBytes(block);
+					mifareTag.writeBlock(blockIndex, buffer);
+
+					callback.invoke(null, true);
+				} catch (TagLostException ex) {
+					callback.invoke("mifareClassicWriteBlock fail: TAG_LOST");
+				} catch (Exception ex) {
+					callback.invoke("mifareClassicWriteBlock fail: " + ex.toString());
 				}
 			} else {
 				callback.invoke("no tech request available");

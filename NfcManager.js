@@ -32,6 +32,9 @@ class NfcManager {
     this._subscription = null;
   }
 
+  // Constants, by the lack of ES7 we do it with getters
+  get MIFARE_BLOCK_SIZE() { return NativeNfcManager.MIFARE_BLOCK_SIZE };
+
   start({ onSessionClosedIOS } = {}) {
     return new Promise((resolve, reject) => {
       NativeNfcManager.start((err, result) => {
@@ -468,6 +471,26 @@ class NfcManager {
 
     return new Promise((resolve, reject) => {
       NativeNfcManager.mifareClassicReadSector(sector, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  mifareClassicWriteBlock(block, data) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    if (!data || !Array.isArray(data) || data.length !== this.MIFARE_BLOCK_SIZE) {
+      return Promise.reject(`data should be a non-empty Array[${this.MIFARE_BLOCK_SIZE}] of integers (0 - 255)`);
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareClassicWriteBlock(block, data, (err, result) => {
         if (err) {
           reject(err);
         } else {
