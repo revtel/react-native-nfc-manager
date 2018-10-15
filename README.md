@@ -52,18 +52,26 @@ AppRegistry.registerComponent('NfcManagerDev', () => App);
 ```
 
 ## API
-This library provide a default export `NfcManager` and 2 named exports `ByteParser` and `NdefParser`, like this:
+This library provide a default export `NfcManager` and 3 named exports `Ndef`, `NfcTech` and `ByteParser`, like this:
 ```javascript
-import NfcManager, {ByteParser, Ndef, NdefParser} from 'react-native-nfc-manager'
+import NfcManager, {Ndef, NfcTech, ByteParser} from 'react-native-nfc-manager'
 ```
 
 All methods in `NfcManager` return a `Promise` object and are resolved to different types of data according to individual API.
 
-* `ByteParser` is an utility module to encode and decode byte[] arrays (used in Mifare Classic technology).
-
 * `Ndef` is an utility module to encode and decode some well-known NDEF format.
+* `ByteParser` is an utility module to encode and decode byte[] arrays (used in Mifare Classic technology).
+* `NfcTech` contains predefined constants for specific NFC technologies, which include `NfcA`, `NfcB`, `NfcF`, `NfcV`, `IsoDep` and `MifareClassic`.
+    * These constants should be used with `requestTechnology` (Android Only) to obtain a NFC technology handle, and use it to perform technology specific operations.
 
-* `NdefParser` is an old utility class to parse some well-known NDEF format, which will be deprecated later.
+Detailed API document is grouped into 6 parts:
+
+* [NfcManager API](##NfcManager-API)
+* [Ndef API](##Ndef-API)
+* [NfcTech.Ndef API](##NfcTech.NfcA-/-NfcB-/-NfcF-/-NfcV-/-IsoDep-API-[Android-only])
+* [NfcTech.NfcA/B/F/V/IsoDep API](##NfcTech.NfcA-/-NfcB-/-NfcF-/-NfcV-/-IsoDep-API-[Android-only])
+* [NfcTech.MifareClassic API](##NfcTech.MifareClassic-API-[Android-only])
+* [ByteParser API](##ByteParser-API)
 
 ## NfcManager API
 
@@ -243,7 +251,6 @@ let bytes = Ndef.encodeMessage([
 ]);
 
 // then you can pass `bytes` into API such as NfcManager.requestNdefWrite()
-}
 ```
 
 ### Decode example:
@@ -276,34 +283,56 @@ _onTagDiscovered = tag => {
     this.setState({parsed});
 }
 ```
+## NfcTech.Ndef API [Android only]
 
-## NdefParser API (deprecated, please use `Ndef` instead)
+To use the NfcTech.Ndef API, you first need to request the `NfcTech.Ndef` technology (see `requestTechnology`). Once you have the tech request, you can use the following methods:
 
-### parseUri(ndef)
-Try to parse RTD_URI from a NdefMessage, return an object with an `uri` property.
+### writeNdefMessage(bytes) [Android only]
+Request writing **NdefMessage** (constructed by `bytes` array you passed) into the tag.
 
-__Arguments__
-- `ndef` - `object` - this object should be obtained from nfc tag object with this form: `tag.ndefMessage[0]`. (NFC tag object can be obtained by `getLaunchTagEvent` or `registerTagEvent`)
-
-__Examples__
-```js
-let {uri} = NdefParser.parseUri(sampleTag.ndefMessage[0]);
-console.log('parseUri: ' + uri);
-```
-
-### parseText(ndef)
-Try to parse RTD_TEXT from a NdefMessage, return parsed string or null if the operation fail. Currently only support utf8.
+> This method returns a promise:
+> * if resolved, it means you successfully write NdefMessage to the tag.
+> * if rejected, it means either the request is cancelled, the write operation fail or the operation is not supported in current tech handle.
 
 __Arguments__
-- `ndef` - `object` - this object should be obtained from nfc tag object with this form: `tag.ndefMessage[0]`. (NFC tag object can be obtained by `getLaunchTagEvent` or `registerTagEvent`)
+- `bytes` - `array` - the full NdefMessage, which is an array of bytes
 
-__Examples__
-```js
-let text = NdefParser.parseText(sampleTag.ndefMessage[0]);
-console.log('parsedText: ' + text);
-```
+### getNdefMessage() [Android only]
+Read current NdefMessage inside the tag.
 
-## Mifare Classic API [Android only]
+> This method returns a promise:
+> * if resolved, the resolved value will be a tag object, which should contain a `ndefMessage` property.
+> * if rejected, it means either the request is cancelled, the read operation fail or the operation is not supported in current tech handle.
+
+### getCachedNdefMessage() [Android only]
+Read cached NdefMessage inside the tag, no further IO operation occurs.
+
+> This method returns a promise:
+> * if resolved, the resolved value will be a tag object, which should contain a `ndefMessage` property.
+> * if rejected, it means either the request is cancelled or the operation is not supported in current tech handle.
+
+### makeReadOnly() [Android only]
+Make the tag become read-only.
+
+> This method returns a promise:
+> * if resolved, the operation success and tag should become read-only.
+> * if rejected, it means either the request is cancelled, the operation fail or the operation is not supported in current tech handle.
+
+## NfcTech.NfcA / NfcB / NfcF / NfcV / IsoDep API [Android only]
+
+To use the these API, you first need to request the `NfcTech.Ndef` technology (see `requestTechnology`). Once you have the tech request, you can use the following methods:
+
+### transceive(bytes) [Android only]
+Send raw data to a tag and receive the response.
+
+> This method returns a promise:
+> * if resolved, it means you successfully send data to the tag, and the resolved value will the response, which is also an `array of bytes`.
+> * if rejected, it means either the request is cancelled, the operation fail or the operation is not supported in current tech handle.
+
+__Arguments__
+- `bytes` - `array` - the raw data you want to send, which is an array of bytes
+
+## NfcTech.MifareClassic API [Android only]
 
 This module enables you to read encrypted [Mifare Classic](https://en.wikipedia.org/wiki/MIFARE#MIFARE_Classic_family) cards (as long as you have the authentication keys). A concrete example can be found in `example/AndroidMifareClassic.js`
 
@@ -445,7 +474,8 @@ NfcManager.mifareClassicWriteBlock(0, [ 72, 101, 108, 108, 111, 44, 32, 119, 111
 });
 ```
 
-## ByteParser API (simple utility for working with byte[] arrays like in Mifare Classic cards)
+## ByteParser API 
+Simple utility for working with byte[] arrays like in Mifare Classic cards)
 
 ### byteToHexString(bytes)
 Converts a byte array `byte[]` to a hex string.
@@ -533,3 +563,39 @@ v0.2.0
 
 v0.1.0
 - add `isNfcSupported` 
+
+## Deprecated API
+
+<details>
+<summary>
+NdefParser
+</summary>
+
+## NdefParser API (deprecated, please use `Ndef` instead)
+
+### parseUri(ndef)
+Try to parse RTD_URI from a NdefMessage, return an object with an `uri` property.
+
+__Arguments__
+- `ndef` - `object` - this object should be obtained from nfc tag object with this form: `tag.ndefMessage[0]`. (NFC tag object can be obtained by `getLaunchTagEvent` or `registerTagEvent`)
+
+__Examples__
+```js
+let {uri} = NdefParser.parseUri(sampleTag.ndefMessage[0]);
+console.log('parseUri: ' + uri);
+```
+
+### parseText(ndef)
+Try to parse RTD_TEXT from a NdefMessage, return parsed string or null if the operation fail. Currently only support utf8.
+
+__Arguments__
+- `ndef` - `object` - this object should be obtained from nfc tag object with this form: `tag.ndefMessage[0]`. (NFC tag object can be obtained by `getLaunchTagEvent` or `registerTagEvent`)
+
+__Examples__
+```js
+let text = NdefParser.parseText(sampleTag.ndefMessage[0]);
+console.log('parsedText: ' + text);
+```
+
+</details>
+
