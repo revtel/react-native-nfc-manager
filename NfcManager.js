@@ -20,6 +20,10 @@ const Events = {
 const NfcTech = {
   Ndef: 'Ndef',
   NfcA: 'NfcA',
+  NfcB: 'NfcB',
+  NfcF: 'NfcF',
+  NfcV: 'NfcV',
+  IsoDep: 'IsoDep',
   MifareClassic: 'MifareClassic',
 }
 
@@ -501,7 +505,7 @@ class NfcManager {
   }
 
   // -------------------------------------
-  // NfcTech.NfcA API
+  // transceive works for NfcA, NfcB, NfcF, NfcV and IsoDep
   // -------------------------------------
   transceive(bytes) {
     if (Platform.OS === 'ios') {
