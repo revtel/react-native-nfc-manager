@@ -64,7 +64,7 @@ All methods in `NfcManager` return a `Promise` object and are resolved to differ
 * `NfcTech` contains predefined constants for specific NFC technologies, which include `NfcA`, `NfcB`, `NfcF`, `NfcV`, `IsoDep` and `MifareClassic`.
     * These constants should be used with `requestTechnology` (Android Only) to obtain a NFC technology handle, and use it to perform technology specific operations.
 
-Detailed API document is grouped into 6 parts:
+The API documentation is grouped into 6 parts:
 
 * [NfcManager API](##NfcManager-API)
 * [Ndef API](##Ndef-API)
