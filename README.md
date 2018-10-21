@@ -515,6 +515,11 @@ If you want to only have your app support NFC devices then you have to change re
 
 ## Version history (from v0.1.0) 
 
+v1.0.0
+- support Mifare Classic write operation (thanks to @poison)
+- refactor Mifare Classic read operation to distinguish from `sector` and `block` (thanks for @poison)
+- basic support for NfcF, NfcV, IsoDep with `transceive` method
+
 v0.7.0
 - basic support for Mifare Classic (thanks to @poison)
     - see `example/AndroidMifareClassic.js` for a full example.
