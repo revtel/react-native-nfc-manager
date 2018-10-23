@@ -433,7 +433,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 						// Not a mifare card, fail
 						callback.invoke("mifareClassicWriteBlock fail: TYPE_UNKNOWN");
 						return;
-					} else if (blockIndex >= mifareTag.getSectorCount()) {
+					} else if (blockIndex >= mifareTag.getBlockCount()) {
 						// Check if in range
 						String msg = String.format("mifareClassicWriteBlock fail: invalid block %d (max %d)", blockIndex, mifareTag.getBlockCount());
 						callback.invoke(msg);
