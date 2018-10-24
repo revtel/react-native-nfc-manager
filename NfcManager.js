@@ -518,7 +518,7 @@ class NfcManager {
     }
 
     return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareUltralightReadPage(pageOffset, (err, result) => {
+      NativeNfcManager.mifareUltralightReadPages(pageOffset, (err, result) => {
         if (err) {
           reject(err);
         } else {
