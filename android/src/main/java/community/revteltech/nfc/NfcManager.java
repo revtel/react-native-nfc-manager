@@ -35,6 +35,7 @@ import android.nfc.tech.NfcV;
 import android.nfc.tech.IsoDep;
 import android.nfc.tech.NdefFormatable;
 import android.nfc.tech.MifareClassic;
+import android.nfc.tech.MifareUltralight;
 import android.os.Parcelable;
 
 import org.json.JSONObject;
@@ -93,6 +94,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		final Map<String, Object> constants = new HashMap<>();
 
 		constants.put("MIFARE_BLOCK_SIZE", MifareClassic.BLOCK_SIZE);
+		constants.put("MIFARE_ULTRALIGHT_PAGE_SIZE", MifareUltralight.PAGE_SIZE);
+		constants.put("MIFARE_ULTRALIGHT_TYPE", MifareUltralight.TYPE_ULTRALIGHT);
+		constants.put("MIFARE_ULTRALIGHT_TYPE_C", MifareUltralight.TYPE_ULTRALIGHT_C);
+		constants.put("MIFARE_ULTRALIGHT_TYPE_UNKNOWN", MifareUltralight.TYPE_UNKNOWN);
 
 		return constants;
 	}
@@ -461,6 +466,48 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
+	public void mifareUltralightReadPages(int pageOffset, Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				try {
+				    MifareUltralight techHandle = (MifareUltralight)techRequest.getTechHandle();
+				    byte[] resultBytes = techHandle.readPages(pageOffset);
+					WritableArray resultRnArray = bytesToRnArray(resultBytes);
+			    	callback.invoke(null, resultRnArray);
+					return;
+				} catch (TagLostException ex) {
+					callback.invoke("mifareUltralight fail: TAG_LOST");
+				} catch (Exception ex) {
+					callback.invoke("mifareUltralight fail: " + ex.toString());
+				}
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
+	public void mifareUltralightWritePage(int pageOffset, ReadableArray rnArray, Callback callback) {
+		synchronized(this) {
+		    if (techRequest != null) {
+				try {
+					byte[] bytes = rnArrayToBytes(rnArray);
+				    MifareUltralight techHandle = (MifareUltralight)techRequest.getTechHandle();
+				    techHandle.writePage(pageOffset, bytes);
+			    	callback.invoke();
+					return;
+				} catch (TagLostException ex) {
+					callback.invoke("mifareUltralight fail: TAG_LOST");
+				} catch (Exception ex) {
+					callback.invoke("mifareUltralight fail: " + ex.toString());
+				}
+		    } else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
+
+	@ReactMethod
 	public void makeReadOnly(Callback callback) {
 		synchronized(this) {
 		    if (techRequest != null) {
@@ -515,6 +562,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 						return;
 					} else if (tech.equals("IsoDep")) {
 						IsoDep techHandle = (IsoDep)baseTechHandle;
+				    	byte[] resultBytes = techHandle.transceive(bytes);
+						WritableArray resultRnArray = bytesToRnArray(resultBytes);
+				    	callback.invoke(null, resultRnArray);
+						return;
+					} else if (tech.equals("MifareUltralight")) {
+						MifareUltralight techHandle = (MifareUltralight)baseTechHandle;
 				    	byte[] resultBytes = techHandle.transceive(bytes);
 						WritableArray resultRnArray = bytesToRnArray(resultBytes);
 				    	callback.invoke(null, resultRnArray);
