@@ -61,16 +61,17 @@ All methods in `NfcManager` return a `Promise` object and are resolved to differ
 
 * `Ndef` is an utility module to encode and decode some well-known NDEF format.
 * `ByteParser` is an utility module to encode and decode byte[] arrays (used in Mifare Classic technology).
-* `NfcTech` contains predefined constants for specific NFC technologies, which include `NfcA`, `NfcB`, `NfcF`, `NfcV`, `IsoDep` and `MifareClassic`.
+* `NfcTech` contains predefined constants for specific NFC technologies, which include `NfcA`, `NfcB`, `NfcF`, `NfcV`, `IsoDep`, `MifareClassic` and `MifareUltralight`.
     * These constants should be used with `requestTechnology` (Android Only) to obtain a NFC technology handle, and use it to perform technology specific operations.
 
 The API documentation is grouped into 6 parts:
 
 * [NfcManager API](##NfcManager-API)
 * [Ndef API](##Ndef-API)
-* [NfcTech.Ndef API](##NfcTech.NfcA-/-NfcB-/-NfcF-/-NfcV-/-IsoDep-API-[Android-only])
-* [NfcTech.NfcA/B/F/V/IsoDep API](##NfcTech.NfcA-/-NfcB-/-NfcF-/-NfcV-/-IsoDep-API-[Android-only])
+* [NfcTech.Ndef API](##NfcTech.Ndef-[Android-only])
+* [Generic NfcTech API](##Generic-NfcTech-API-[Android-only])
 * [NfcTech.MifareClassic API](##NfcTech.MifareClassic-API-[Android-only])
+* [NfcTech.MifareUltralight API](##NfcTech.MifareUltralight-API-[Android-only])
 * [ByteParser API](##ByteParser-API)
 
 ## NfcManager API
@@ -318,12 +319,12 @@ Make the tag become read-only.
 > * if resolved, the operation success and tag should become read-only.
 > * if rejected, it means either the request is cancelled, the operation fail or the operation is not supported in current tech handle.
 
-## NfcTech.NfcA / NfcB / NfcF / NfcV / IsoDep API [Android only]
+## Generic NfcTech API [Android only]
 
 To use the these API, you first need to request the `NfcTech.Ndef` technology (see `requestTechnology`). Once you have the tech request, you can use the following methods:
 
 ### transceive(bytes) [Android only]
-Send raw data to a tag and receive the response.
+Send raw data to a tag and receive the response. This API is compatible with following NfcTech: NfcA, NfcB, NfcF, NfcV, IsoDep and MifareUltralight.
 
 > This method returns a promise:
 > * if resolved, it means you successfully send data to the tag, and the resolved value will the response, which is also an `array of bytes`.
@@ -474,6 +475,31 @@ NfcManager.mifareClassicWriteBlock(0, [ 72, 101, 108, 108, 111, 44, 32, 119, 111
 });
 ```
 
+## NfcTech.MifareUltralight API [Android only]
+
+To use the NfcTech.MifareUltralight API, you first need to request the `NfcTech.MifareUltralight` technology (see `requestTechnology`). Once you have the tech request, you can use the following methods:
+
+### mifareUltralightReadPages(pageOffset) [Android only]
+Read 4 pages (16 bytes).
+
+> This method returns a promise:
+> * if resolved, the resolved value will be the 16 bytes page data.
+> * if rejected, it means either the request is cancelled, the write operation fail or the operation is not supported in current tech handle.
+
+__Arguments__
+- `pageOffset` - `number` - index of first page to read, starting from 0 
+
+### mifareUltralightWritePage(pageOffset, bytes) [Android only]
+Write 1 pages (4 bytes).
+
+> This method returns a promise:
+> * if resolved, it means the write operation is completed.
+> * if rejected, it means either the request is cancelled, the write operation fail or the operation is not supported in current tech handle.
+
+__Arguments__
+- `pageOffset` - `number` - index of first page to read, starting from 0 
+- `bytes` - `array` - 4 bytes to write 
+
 ## ByteParser API 
 Simple utility for working with byte[] arrays like in Mifare Classic cards)
 
@@ -514,6 +540,9 @@ If you want to only have your app support NFC devices then you have to change re
 
 
 ## Version history (from v0.1.0) 
+
+v1.1.0
+- support Mifare Ultralight 
 
 v1.0.0
 - support Mifare Classic write operation (thanks to @poison)
