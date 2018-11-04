@@ -687,9 +687,9 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
     
    	@ReactMethod
-	public void isSupported(Callback callback){
+	public void isSupported(String tech, Callback callback){
 		Log.d(LOG_TAG, "isSupported");
-        Activity currentActivity = getCurrentActivity();
+		Activity currentActivity = getCurrentActivity();
 		if (currentActivity == null) {
 			callback.invoke("fail to get current activity");
 			return;
