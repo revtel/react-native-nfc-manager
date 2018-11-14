@@ -6,8 +6,13 @@
 int isSupported() {
     bool result = NO;
     if (@available(iOS 11.0, *)) {
-        if (NFCNDEFReaderSession.readingAvailable) {
-            result = YES;
+        @try {
+            if (NFCNDEFReaderSession.readingAvailable) {
+                result = YES;
+            }
+        }
+        @catch (NSException *exception) {
+            RCTLogError(@"Exception thrown during NfcManager.isSupported: %@", exception);
         }
     }
     return result;
