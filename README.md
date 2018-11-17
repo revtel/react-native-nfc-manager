@@ -101,9 +101,21 @@ NfcManager.start({
 ### stop()
 Terminates the module. This will remove the onSessionClosedIOS listener that is attached in the `start` function.
 
-### isSupported() 
-Chck if the NFC is supported by hardware.
-Returned `Promise` resolved to a boolean value to indicate whether NFC is supported.
+### isSupported(tech = '')
+Check if NFC (and specified NFC technology) is supported by the hardware.
+When you specify a technology, some extra checks are performed to see if the technology is supported or not.
+Returnes `Promise` resolved to a boolean value to indicate whether NFC (and specified NFC technology) is supported.
+
+__Arguments__
+- `tech` - `string` - optional parameter, use a constant of the NfcTech class, defaults to ''
+
+__Examples__
+```js
+NfcManager.isSupported(NfcTech.MifareClassic)
+    .then(() => console.log('Mifare classic is supported'))
+    .catch(err => console.warn(err))
+```
+
 
 ### isEnabled() [Android only]
 Check if the NFC is enabled.
