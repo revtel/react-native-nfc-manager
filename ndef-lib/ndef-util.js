@@ -2,38 +2,34 @@
 // Copyright 2013 Don Coleman
 //
 
-// This is from phonegap-nfc.js and is a combination of helpers in nfc and util
-// https://github.com/chariotsolutions/phonegap-nfc/blob/master/www/phonegap-nfc.js
-function _utf8ArrayToStr(array) {
-    let out, i, len, c;
-    let char2, char3;
+// Thanks to
+// https://weblog.rogueamoeba.com/2017/02/27/javascript-correctly-converting-a-byte-array-to-a-utf-8-string/
+function _utf8ArrayToStr(data) {
+    const extraByteMap = [1, 1, 1, 1, 2, 2, 3, 0];
+    var count = data.length;
+    var str = "";
 
-    out = "";
-    len = array.length;
-    i = 0;
-    while(i < len) {
-        c = array[i++];
-        switch(c >> 4) {
-            case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: // 0xxxxxxx
-                out += String.fromCharCode(c);
-                break;
-            case 12: case 13: // 110x xxxx   10xx xxxx
-                char2 = array[i++];
-                out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
-                break;
-            case 14: // 1110 xxxx  10xx xxxx  10xx xxxx
-                char2 = array[i++];
-                char3 = array[i++];
-                out += String.fromCharCode(
-                    ((c & 0x0F) << 12) |
-                    ((char2 & 0x3F) << 6) |
-                    ((char3 & 0x3F) << 0)
-                );
-                break;
+    for (var index = 0; index < count;) {
+        var ch = data[index++];
+        if (ch & 0x80) {
+            var extra = extraByteMap[(ch >> 3) & 0x07];
+            if (!(ch & 0x40) || !extra || ((index + extra) > count))
+                return null;
+
+            ch = ch & (0x3F >> extra);
+            for (; extra > 0; extra -= 1) {
+                var chx = data[index++];
+                if ((chx & 0xC0) != 0x80)
+                    return null;
+
+                ch = (ch << 6) | (chx & 0x3F);
+            }
         }
+
+        str += String.fromCharCode(ch);
     }
 
-    return out;
+    return str;
 }
 
 // https://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
