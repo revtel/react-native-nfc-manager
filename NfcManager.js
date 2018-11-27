@@ -70,9 +70,9 @@ class NfcManager {
     return Promise.resolve();
   }
 
-  isSupported(){
+  isSupported(tech = ''){
     return new Promise((resolve, reject) => {
-      NativeNfcManager.isSupported((err,result) => {
+      NativeNfcManager.isSupported(tech, (err,result) => {
         if (err) {
           reject(err);
         } else {

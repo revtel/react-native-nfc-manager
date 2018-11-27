@@ -41,6 +41,7 @@ import android.os.Parcelable;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import java.io.File;
 import java.util.*;
 import java.nio.charset.Charset;
 
@@ -48,6 +49,7 @@ import static android.app.Activity.RESULT_OK;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
 
+import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 
 class NfcManager extends ReactContextBaseJavaModule implements ActivityEventListener, LifecycleEventListener {
@@ -687,16 +689,30 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
     
    	@ReactMethod
-	public void isSupported(Callback callback){
+	public void isSupported(String tech, Callback callback){
 		Log.d(LOG_TAG, "isSupported");
-        Activity currentActivity = getCurrentActivity();
+		Activity currentActivity = getCurrentActivity();
 		if (currentActivity == null) {
 			callback.invoke("fail to get current activity");
 			return;
 		}
 
-		boolean result = currentActivity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
-		callback.invoke(null, result);
+		if (!currentActivity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC)) {
+			callback.invoke(null, false);
+			return;
+		}
+
+		// If we ask for MifareClassic support, so some extra checks, since not all chips and devices are
+		// compatible with MifareClassic
+		// TODO: Check if it's the same case with MifareUltralight
+		if (tech.equals("MifareClassic")) {
+			if (!MifareUtil.isDeviceSupported(currentActivity)) {
+				callback.invoke(null, false);
+				return;
+			}
+		}
+
+		callback.invoke(null, true);
 	}
 
 	@ReactMethod

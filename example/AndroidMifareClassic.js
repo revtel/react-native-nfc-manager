@@ -32,7 +32,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    NfcManager.isSupported().then(supported => {
+    NfcManager.isSupported(NfcTech.MifareClassic).then(supported => {
       this.setState({ supported });
       if (supported) {
         this._startNfc();
@@ -69,7 +69,7 @@ class App extends Component {
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
         >
-          <Text>{`Is NFC supported ? ${supported}`}</Text>
+          <Text>{`Is MifareClassic supported ? ${supported}`}</Text>
           <Text>{`Is NFC enabled (Android only)? ${enabled}`}</Text>
 
           {!isDetecting && (
