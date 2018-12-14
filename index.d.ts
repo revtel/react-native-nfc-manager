@@ -75,6 +75,32 @@ declare module 'react-native-nfc-manager' {
 		function parseUri(ndef: NdefRecord): ParseUriResult;
 		function parseText(ndef: NdefRecord): string | null;
 	}
+
+	type ISOLangCode = "en" | string;
+	type URI = string;
+
+	export const Ndef: {
+		text: {
+			encodePayload: (text: string, lang?: ISOLangCode, encoding?: any) => NdefRecord;
+			decodePayload: (data: byte[]) => string;
+		};
+		uri: {
+			encodePayload: (uri: URI) => NdefRecord;
+			decodePayload: (data: byte[]) => string;
+		};
+		util: {
+			stringToBytes: (string: string) => any[];
+			bytesToString: (bytes: any) => string;
+			bytesToHexString: (bytes: any) => string;
+			toHex: (i: any) => any;
+			toPrintable: (i: any) => string;
+		};
+		stringify(data: number[], separator: string);
+		encodeMessage(records: NdefRecord[]);
+		decodeMessage(bytes: any[] | Buffer): NdefRecord[];
+		textRecord(text: string, lang?: ISOLangCode, encoding?: any): NdefRecord;
+		uriRecord(uri: URI, id?: any): NdefRecord;
+	}
 }
 
 export default nfcManager;
