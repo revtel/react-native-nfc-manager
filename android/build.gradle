@@ -19,7 +19,7 @@ android {
 
 	defaultConfig {
 		minSdkVersion safeExtGet('minSdkVersion', 16)
-    //noinspection OldTargetApi
+    	//noinspection OldTargetApi
 		targetSdkVersion safeExtGet('targetSdkVersion', 27)
 	}
 	lintOptions {
@@ -37,5 +37,5 @@ repositories {
 
 
 dependencies {
-    implementation 'com.facebook.react:react-native:+'
+    compile 'com.facebook.react:react-native:+'
 }
