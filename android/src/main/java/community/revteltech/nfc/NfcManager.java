@@ -196,7 +196,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 		    if (techRequest != null) {
 				try {
 				    Ndef ndef = (Ndef)techRequest.getTechHandle();
-				    WritableMap parsed = ndef2React(ndef, new NdefMessage[] { ndef.getNdefMessage() });
+				    WritableMap parsed = ndef2React(null, new NdefMessage[] { ndef.getNdefMessage() });
 				    callback.invoke(null, parsed);
 				} catch (Exception ex) {
 					Log.d(LOG_TAG, "getNdefMessage fail");
@@ -1001,7 +1001,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     NdefMessage message = (NdefMessage) messages[0];
                     json.put("ndefMessage", Util.messageToJSON(message));
                     // guessing type, would prefer a more definitive way to determine type
-                    json.put("type", "NDEF Push Protocol");
+                    json.put("type", "NDEF");
                 }
 
                 if (messages.length > 1) {
