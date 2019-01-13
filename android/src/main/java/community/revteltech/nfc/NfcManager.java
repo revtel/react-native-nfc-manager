@@ -1039,7 +1039,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	    			callback.invoke();
 	    		}
 	    	} catch (Exception ex) {
-	    		callback.invoke(ex.getMessage());
+	    		callback.invoke("writeNdef fail: " + ex.getMessage());
 	    	}
 		} else {
 	    	try {
@@ -1058,7 +1058,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	    			callback.invoke();
 	    		}
 	    	} catch (Exception ex) {
-	    		callback.invoke(ex.getMessage());
+	    		callback.invoke("writeNdef fail: " + ex.getMessage());
 	    	}
 		}
 	}
