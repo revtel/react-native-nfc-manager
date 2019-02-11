@@ -775,7 +775,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private void unregisterTagEvent(Callback callback) {
         Log.d(LOG_TAG, "registerTag");
 		isForegroundEnabled = false;
-		isReaderModeEnabled = false;
 		intentFilters.clear();
 		if (isResumed) {
 			enableDisableForegroundDispatch(false);
@@ -841,6 +840,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 						}, readerModeFlags, null);
 					} else {
 						nfcAdapter.disableReaderMode(currentActivity);
+						isReaderModeEnabled = false;
 					}
 				} else {
 					if (enable) {
