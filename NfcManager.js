@@ -11,6 +11,12 @@ import Ndef from './ndef-lib'
 const NativeNfcManager = NativeModules.NfcManager;
 const NfcManagerEmitter = new NativeEventEmitter(NativeNfcManager);
 
+const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
+  invalidateAfterFirstRead: false,
+  isReaderModeEnabled: false,
+  readerModeFlags: 0,
+};
+
 const Events = {
   DiscoverTag: 'NfcManagerDiscoverTag',
   SessionClosed: 'NfcManagerSessionClosed',
@@ -27,6 +33,16 @@ const NfcTech = {
   MifareClassic: 'MifareClassic',
   MifareUltralight: 'MifareUltralight',
 }
+
+const NfcAdapter = {
+  FLAG_READER_NFC_A: 0x1,
+  FLAG_READER_NFC_B: 0x2,
+  FLAG_READER_NFC_F: 0x4,
+  FLAG_READER_NFC_V: 0x8,
+  FLAG_READER_NFC_BARCODE: 0x10,
+  FLAG_READER_SKIP_NDEF_CHECK: 0x80,
+  FLAG_READER_NO_PLATFORM_SOUNDS: 0x100,
+};
 
 const LOG = 'NfcManagerJs';
 
@@ -122,19 +138,38 @@ class NfcManager {
     })
   }
 
-  registerTagEvent(listener, alertMessage = '', invalidateAfterFirstRead = false) {
+  registerTagEvent(listener, alertMessage = '', options = {}) {
+    // Support legacy `invalidateAfterFirstRead` boolean
+    if (options === true || options === false) {
+      options = {
+        invalidateAfterFirstRead: options,
+      };
+    }
+
+    options = {
+      ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
+      ...options,
+    };
+
     if (!this._subscription) {
       return new Promise((resolve, reject) => {
-        NativeNfcManager.registerTagEvent(alertMessage, invalidateAfterFirstRead, (err, result) => {
-          if (err) {
-            reject(err);
-          } else {
-            this._clientTagDiscoveryListener = listener;
-            this._subscription = NfcManagerEmitter.addListener(Events.DiscoverTag, this._handleDiscoverTag);
-            resolve(result);
-          }
-        })
-      })
+        NativeNfcManager.registerTagEvent(
+          alertMessage,
+          options,
+          (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              this._clientTagDiscoveryListener = listener;
+              this._subscription = NfcManagerEmitter.addListener(
+                Events.DiscoverTag,
+                this._handleDiscoverTag,
+              );
+              resolve(result);
+            }
+          },
+        );
+      });
     }
     return Promise.resolve();
   }
@@ -574,5 +609,6 @@ export {
   ByteParser,
   NdefParser,
   NfcTech,
+  NfcAdapter,
   Ndef,
 }
