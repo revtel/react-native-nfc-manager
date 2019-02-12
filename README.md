@@ -134,13 +134,23 @@ Start to listen to *ANY* NFC tags.
 __Arguments__
 - `listener` - `function` - the callback when discovering NFC tags
 - `alertMessage` - `string` - (iOS) the message to display on iOS when the NFCScanning pops up
-- `invalidateAfterFirstRead` - `boolean` - (iOS) when set to true this will not have you prompt to click done after NFC Scan.
+- `options` - `object` - Object containing (iOS)invalidateAfterFirstRead, (Android)isReaderModeEnabled, (Android)readerModeFlags. Use `NfcAdapter` flags. **Reader mode can only be used in Android 19 or later**.
 
-__Examples__
+**Examples**
+
 ```js
-NfcManager.registerTagEvent(tag => {
+NfcManager.registerTagEvent(
+  tag => {
     console.log('Tag Discovered', tag);
-}, 'Hold your device over the tag', true)
+  },
+  'Hold your device over the tag',
+  {
+    invalidateAfterFirstRead: true,
+    isReaderModeEnabled: true,
+    readerModeFlags:
+      NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+  },
+);
 ```
 
 ### unregisterTagEvent()

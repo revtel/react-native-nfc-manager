@@ -5,25 +5,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Base64;
 import android.util.Log;
 import android.provider.Settings;
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import android.app.PendingIntent;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
-import android.net.Uri;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.TagLostException;
 import android.nfc.tech.TagTechnology;
@@ -41,16 +35,7 @@ import android.os.Parcelable;
 import org.json.JSONObject;
 import org.json.JSONException;
 
-import java.io.File;
 import java.util.*;
-import java.nio.charset.Charset;
-
-import static android.app.Activity.RESULT_OK;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
-
-import android.content.pm.FeatureInfo;
-import android.content.pm.PackageManager;
 
 class NfcManager extends ReactContextBaseJavaModule implements ActivityEventListener, LifecycleEventListener {
 	private static final String LOG_TAG = "ReactNativeNfcManager";
@@ -62,6 +47,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	private Boolean isResumed = false;
 	private WriteNdefRequest writeNdefRequest = null;
 	private TagTechnologyRequest techRequest = null;
+
+	// Use NFC reader mode instead of listening to a dispatch
+	private Boolean isReaderModeEnabled = false;
+	private int readerModeFlags = 0;
 
 	class WriteNdefRequest {
 		NdefMessage message;
@@ -753,8 +742,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
-    private void registerTagEvent(String alertMessage, Boolean invalidateAfterFirstRead, Callback callback) {
-        Log.d(LOG_TAG, "registerTag");
+    private void registerTagEvent(String alertMessage, ReadableMap options, Callback callback) {
+		this.isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
+		this.readerModeFlags = options.getInt("readerModeFlags");
+
+		Log.d(LOG_TAG, "registerTag");
 		isForegroundEnabled = true;
 
 		// capture all mime-based dispatch NDEF
@@ -818,10 +810,43 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
         if (nfcAdapter != null && currentActivity != null && !currentActivity.isFinishing()) {
             try {
-				if (enable) {
-                    nfcAdapter.enableForegroundDispatch(currentActivity, getPendingIntent(), getIntentFilters(), getTechLists());
+            	if (isReaderModeEnabled) {
+            		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+						throw new RuntimeException("minSdkVersion must be Honeycomb (19) or later.");
+					}
+
+					if (enable) {
+						nfcAdapter.enableReaderMode(currentActivity, new NfcAdapter.ReaderCallback() {
+							@Override
+							public void onTagDiscovered(Tag tag) {
+								WritableMap nfcTag = null;
+								for (String tagTech : tag.getTechList()) {
+									Log.d(LOG_TAG, tagTech);
+									if (tagTech.equals(NdefFormatable.class.getName())) {
+										// fireNdefFormatableEvent(tag);
+										nfcTag = tag2React(tag);
+									} else if (tagTech.equals(Ndef.class.getName())) { //
+										Ndef ndef = Ndef.get(tag);
+										nfcTag = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+									} else {
+										nfcTag = tag2React(tag);
+									}
+								}
+
+								if (nfcTag != null) {
+									sendEvent("NfcManagerDiscoverTag", nfcTag);
+								}
+							}
+						}, readerModeFlags, null);
+					} else {
+						nfcAdapter.disableReaderMode(currentActivity);
+					}
 				} else {
-					nfcAdapter.disableForegroundDispatch(currentActivity);
+					if (enable) {
+						nfcAdapter.enableForegroundDispatch(currentActivity, getPendingIntent(), getIntentFilters(), getTechLists());
+					} else {
+						nfcAdapter.disableForegroundDispatch(currentActivity);
+					}
 				}
             } catch (IllegalStateException | NullPointerException e) {
                 Log.w(LOG_TAG, "Illegal State Exception starting NFC. Assuming application is terminating.");

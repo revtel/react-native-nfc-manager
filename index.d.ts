@@ -28,6 +28,12 @@ declare module 'react-native-nfc-manager' {
 		id: number[];
 	}
 
+	interface RegisterTagEventOpts {
+    invalidateAfterFirstRead: boolean;
+    isReaderModeEnabled: boolean;
+    readerModeFlags: number;
+  }
+
 	interface NdefWriteOpts {
 		format?: boolean
 		formatReadOnly?: boolean
@@ -52,16 +58,16 @@ declare module 'react-native-nfc-manager' {
 		/** [ANDROID ONLY] */
 		getLaunchTagEvent(): Promise<TagEvent | null>;
 
-		/**
-		 * Start to listen to ANY NFC Tags
-		 * @param listener The callback function when a tag is found.
-		 * @param alertMessage [iOS ONLY] Message displayed when NFC Scanning popup appears.
-		 * @param invalidateAfterFirstRead [iOS ONLY] When set to true, will auto-dismiss the NFC Scanning popup after scanning.
-		 */
-		registerTagEvent(
-			listener: (tag: TagEvent) => void,
-			alertMessage?: string,
-			invalidateAfterFirstRead?: boolean
+		 /**
+     * Start to listen to ANY NFC Tags
+     * @param listener The callback function when a tag is found.
+     * @param alertMessage [iOS ONLY] Message displayed when NFC Scanning popup appears.
+     * @param invalidateAfterFirstRead [iOS ONLY] When set to true, will auto-dismiss the NFC Scanning popup after scanning.
+     */
+    registerTagEvent(
+      listener: (tag: TagEvent) => void,
+      alertMessage?: string,
+      options?: RegisterTagEventOpts,
 		): Promise<any>;
 
 		unregisterTagEvent(): Promise<any>;

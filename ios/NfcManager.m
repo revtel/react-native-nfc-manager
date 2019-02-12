@@ -129,10 +129,11 @@ RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage invalidateAfterFirstRead:(BOOL)invalidateAfterFirstRead callback:(nonnull RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage options:(NSDictionary)options callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 11.0, *)) {
         if (session == nil) {
+            BOOL invalidateAfterFirstRead = [[options objectForKey:@"invalidateAfterFirstRead"] boolValue];
             session = [[NFCNDEFReaderSession alloc] initWithDelegate:self queue:dispatch_get_main_queue() invalidateAfterFirstRead:invalidateAfterFirstRead];
             session.alertMessage = alertMessage;
             [session beginSession];
