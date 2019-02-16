@@ -816,21 +816,18 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 					}
 
 					if (enable) {
+						Log.i(LOG_TAG, "enableReaderMode");
 						nfcAdapter.enableReaderMode(currentActivity, new NfcAdapter.ReaderCallback() {
 							@Override
 							public void onTagDiscovered(Tag tag) {
+								Log.d(LOG_TAG, "readerMode onTagDiscovered");
 								WritableMap nfcTag = null;
-								for (String tagTech : tag.getTechList()) {
-									Log.d(LOG_TAG, tagTech);
-									if (tagTech.equals(NdefFormatable.class.getName())) {
-										// fireNdefFormatableEvent(tag);
-										nfcTag = tag2React(tag);
-									} else if (tagTech.equals(Ndef.class.getName())) { //
-										Ndef ndef = Ndef.get(tag);
-										nfcTag = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
-									} else {
-										nfcTag = tag2React(tag);
-									}
+								// if the tag contains NDEF, we want to report the content
+								if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+									Ndef ndef = Ndef.get(tag);
+									nfcTag = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+								} else {
+									nfcTag = tag2React(tag);
 								}
 
 								if (nfcTag != null) {
@@ -839,6 +836,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 							}
 						}, readerModeFlags, null);
 					} else {
+						Log.i(LOG_TAG, "disableReaderMode");
 						nfcAdapter.disableReaderMode(currentActivity);
 					}
 				} else {
@@ -979,15 +977,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 			Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
 			parsed = ndef2React(ndef, messages);
 		} else if (action.equals(NfcAdapter.ACTION_TECH_DISCOVERED)) {
-			for (String tagTech : tag.getTechList()) {
-				Log.d(LOG_TAG, tagTech);
-				if (tagTech.equals(NdefFormatable.class.getName())) {
-					// fireNdefFormatableEvent(tag);
-					parsed = tag2React(tag);
-				} else if (tagTech.equals(Ndef.class.getName())) { //
-					Ndef ndef = Ndef.get(tag);
-					parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
-				}
+			// if the tag contains NDEF, we want to report the content
+		    if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+				Ndef ndef = Ndef.get(tag);
+				parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+			} else {
+				parsed = tag2React(tag);
 			}
 		} else if (action.equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
 			parsed = tag2React(tag);
