@@ -563,6 +563,9 @@ If you want to only have your app support NFC devices then you have to change re
 
 ## Version history (from v0.1.0) 
 
+v1.2.0
+- support Android `readerMode` feature (limit the NFC controller to reader mode only)
+
 v1.1.0
 - support Mifare Ultralight 
 
