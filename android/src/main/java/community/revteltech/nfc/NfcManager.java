@@ -517,6 +517,51 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 	}
 
 	@ReactMethod
+    public void setTimeout(int timeout, Callback callback) {
+	    synchronized (this) {
+	        if (techRequest != null) {
+                try {
+                    String tech = techRequest.getTechType();
+                    TagTechnology baseTechHandle = techRequest.getTechHandle();
+                    // TagTechnology is the base class for each tech (ex, NfcA, NfcB, IsoDep ...)
+                    // but it doesn't provide transceive in its interface, so we need to explicitly cast it
+                    if (tech.equals("NfcA")) {
+                        NfcA techHandle = (NfcA) baseTechHandle;
+                        techHandle.setTimeout(timeout);
+                        callback.invoke();
+                        return;
+                    } else if (tech.equals("NfcF")) {
+                        NfcF techHandle = (NfcF) baseTechHandle;
+                        techHandle.setTimeout(timeout);
+                        callback.invoke();
+                        return;
+                    } else if (tech.equals("IsoDep")) {
+                        IsoDep techHandle = (IsoDep) baseTechHandle;
+                        techHandle.setTimeout(timeout);
+                        callback.invoke();
+                        return;
+                    } else if (tech.equals("MifareClassic")) {
+                        MifareClassic techHandle = (MifareClassic) baseTechHandle;
+                        techHandle.setTimeout(timeout);
+                        callback.invoke();
+                        return;
+                    } else if (tech.equals("MifareUltralight")) {
+                        MifareUltralight techHandle = (MifareUltralight) baseTechHandle;
+                        techHandle.setTimeout(timeout);
+                        callback.invoke();
+                        return;
+                    }
+				} catch (Exception ex) {
+					Log.d(LOG_TAG, "setTimeout fail");
+				}
+				callback.invoke("setTimeout not supported");
+            } else {
+                callback.invoke("no tech request available");
+            }
+        }
+    }
+
+	@ReactMethod
 	public void transceive(ReadableArray rnArray, Callback callback) {
 		synchronized(this) {
 		    if (techRequest != null) {
@@ -574,6 +619,59 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 			}
 		}
 	}
+
+    @ReactMethod
+    public void getMaxTransceiveLength(Callback callback) {
+        synchronized(this) {
+            if (techRequest != null) {
+                try {
+                    String tech = techRequest.getTechType();
+
+                    TagTechnology baseTechHandle = techRequest.getTechHandle();
+                    // TagTechnology is the base class for each tech (ex, NfcA, NfcB, IsoDep ...)
+                    // but it doesn't provide transceive in its interface, so we need to explicitly cast it
+                    if (tech.equals("NfcA")) {
+                        NfcA techHandle = (NfcA)baseTechHandle;
+                        int max = techHandle.getMaxTransceiveLength();
+                        callback.invoke(null, max);
+                        return;
+                    } else if (tech.equals("NfcB")) {
+                        NfcB techHandle = (NfcB)baseTechHandle;
+                        int max = techHandle.getMaxTransceiveLength();
+                        callback.invoke(null, max);
+                        return;
+                    } else if (tech.equals("NfcF")) {
+                        NfcF techHandle = (NfcF)baseTechHandle;
+                        int max = techHandle.getMaxTransceiveLength();
+                        callback.invoke(null, max);
+                        return;
+                    } else if (tech.equals("NfcV")) {
+                        NfcV techHandle = (NfcV)baseTechHandle;
+                        int max = techHandle.getMaxTransceiveLength();
+                        callback.invoke(null, max);
+                        return;
+                    } else if (tech.equals("IsoDep")) {
+                        IsoDep techHandle = (IsoDep)baseTechHandle;
+                        int max = techHandle.getMaxTransceiveLength();
+                        callback.invoke(null, max);
+                        return;
+                    } else if (tech.equals("MifareUltralight")) {
+                        MifareUltralight techHandle = (MifareUltralight)baseTechHandle;
+                        int max = techHandle.getMaxTransceiveLength();
+                        callback.invoke(null, max);
+                        return;
+                    }
+                    Log.d(LOG_TAG, "getMaxTransceiveLength not supported");
+                    return;
+                } catch (Exception ex) {
+                    Log.d(LOG_TAG, "getMaxTransceiveLength fail");
+                }
+                return;
+            } else {
+                callback.invoke("no tech request available");
+            }
+        }
+    }
 
 	@ReactMethod
 	public void cancelNdefWrite(Callback callback) {

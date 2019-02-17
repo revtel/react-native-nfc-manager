@@ -343,7 +343,7 @@ Make the tag become read-only.
 
 ## Generic NfcTech API [Android only]
 
-To use the these API, you first need to request the `NfcTech.Ndef` technology (see `requestTechnology`). Once you have the tech request, you can use the following methods:
+To use the these API, you first need to request specific NFC technology (see `requestTechnology`). Once you have the tech request, you can use the following methods:
 
 ### transceive(bytes) [Android only]
 Send raw data to a tag and receive the response. This API is compatible with following NfcTech: NfcA, NfcB, NfcF, NfcV, IsoDep and MifareUltralight.
@@ -354,6 +354,24 @@ Send raw data to a tag and receive the response. This API is compatible with fol
 
 __Arguments__
 - `bytes` - `array` - the raw data you want to send, which is an array of bytes
+
+### getMaxTransceiveLength() [Android only]
+Return the maximum number of bytes that can be sent. This API is compatible with following NfcTech: NfcA, NfcB, NfcF, NfcV, IsoDep and MifareUltralight.
+
+> This method returns a promise:
+> * if resolved, the resolved value will be the maximum number of bytes that can be sent to transceive.
+> * if rejected, it means either the request is cancelled, the operation fail or the operation is not supported in current tech handle.
+
+### setTimeout(timeout) [Android only]
+Set the transceive timeout in milliseconds. This API is compatible with following NfcTech: NfcA, NfcF, IsoDep, MifareClassic and MifareUltralight.
+
+> This method returns a promise:
+> * if resolved, it means the setTimeout operation is success.
+> * if rejected, it means either the request is cancelled, the operation fail or the operation is not supported in current tech handle.
+
+__Arguments__
+- `timeout` - `int` - the transceive timeout in milliseconds
+
 
 ## NfcTech.MifareClassic API [Android only]
 

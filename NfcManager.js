@@ -584,6 +584,25 @@ class NfcManager {
   }
 
   // -------------------------------------
+  // setTimeout works for NfcA, NfcF, IsoDep, MifareClassic, MifareUltralight
+  // -------------------------------------
+  setTimeout(timeout) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.setTimeout(timeout, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  // -------------------------------------
   // transceive works for NfcA, NfcB, NfcF, NfcV, IsoDep and MifareUltralight
   // -------------------------------------
   transceive(bytes) {
@@ -593,6 +612,22 @@ class NfcManager {
 
     return new Promise((resolve, reject) => {
       NativeNfcManager.transceive(bytes, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  getMaxTransceiveLength() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.getMaxTransceiveLength((err, result) => {
         if (err) {
           reject(err);
         } else {
