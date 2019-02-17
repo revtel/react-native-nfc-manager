@@ -551,10 +551,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         callback.invoke();
                         return;
                     }
+                    Log.d(LOG_TAG, "setTimeout not supported");
 				} catch (Exception ex) {
 					Log.d(LOG_TAG, "setTimeout fail");
 				}
-				callback.invoke("setTimeout not supported");
+				callback.invoke("setTimeout fail");
             } else {
                 callback.invoke("no tech request available");
             }
@@ -602,6 +603,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 						WritableArray resultRnArray = bytesToRnArray(resultBytes);
 				    	callback.invoke(null, resultRnArray);
 						return;
+					} else if (tech.equals("MifareClassic")) {
+						MifareClassic techHandle = (MifareClassic) baseTechHandle;
+				    	byte[] resultBytes = techHandle.transceive(bytes);
+						WritableArray resultRnArray = bytesToRnArray(resultBytes);
+				    	callback.invoke(null, resultRnArray);
+						return;
 					} else if (tech.equals("MifareUltralight")) {
 						MifareUltralight techHandle = (MifareUltralight)baseTechHandle;
 				    	byte[] resultBytes = techHandle.transceive(bytes);
@@ -609,6 +616,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 				    	callback.invoke(null, resultRnArray);
 						return;
 					}
+                    Log.d(LOG_TAG, "transceive not supported");
 				} catch (Exception ex) {
 					Log.d(LOG_TAG, "transceive fail");
 				}
@@ -662,11 +670,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     }
                     Log.d(LOG_TAG, "getMaxTransceiveLength not supported");
-                    return;
                 } catch (Exception ex) {
                     Log.d(LOG_TAG, "getMaxTransceiveLength fail");
                 }
-                return;
+                callback.invoke("getMaxTransceiveLength fail");
             } else {
                 callback.invoke("no tech request available");
             }
