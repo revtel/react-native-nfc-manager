@@ -129,7 +129,7 @@ RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage options:(NSDictionary)options callback:(nonnull RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage options:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 11.0, *)) {
         if (session == nil) {
