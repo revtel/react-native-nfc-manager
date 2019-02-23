@@ -478,6 +478,35 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
+        public void mifareUltralightReadMultiplePages(int pageOffset, Callback callback) {
+            synchronized (this) {
+                if (techRequest != null) {
+                    try {
+                        MifareUltralight techHandle = (MifareUltralight) techRequest.getTechHandle();
+                        WritableArray array = Arguments.createArray();
+                        for (int i = 0; i < 232; i++) {
+                            byte[] resultBytes = techHandle.readPages(i);
+                            WritableArray resultRnArray = bytesToRnArray(resultBytes);
+                            array.pushArray(resultRnArray);
+                            i = i + 3;
+                            if (i == 231) {
+                                callback.invoke(null, array);
+                                break;
+                            }
+                        }
+                        return;
+                    } catch (TagLostException ex) {
+                        callback.invoke("mifareUltralight fail: TAG_LOST");
+                } catch (Exception ex) {
+                    callback.invoke("mifareUltralight fail: " + ex.toString());
+                }
+            } else {
+                callback.invoke("no tech request available");
+            }
+        }
+    }
+    
+    @ReactMethod
     public void mifareUltralightWritePage(int pageOffset, ReadableArray rnArray, Callback callback) {
         synchronized(this) {
             if (techRequest != null) {
