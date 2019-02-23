@@ -478,6 +478,35 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
+        public void mifareUltralightReadMultiplePages(int pageOffset, Callback callback) {
+            synchronized (this) {
+                if (techRequest != null) {
+                    try {
+                        MifareUltralight techHandle = (MifareUltralight) techRequest.getTechHandle();
+                        WritableArray array = Arguments.createArray();
+                        for (int i = 0; i < 232; i++) {
+                            byte[] resultBytes = techHandle.readPages(i);
+                            WritableArray resultRnArray = bytesToRnArray(resultBytes);
+                            array.pushArray(resultRnArray);
+                            i = i + 3;
+                            if (i == 231) {
+                                callback.invoke(null, array);
+                                break;
+                            }
+                        }
+                        return;
+                    } catch (TagLostException ex) {
+                        callback.invoke("mifareUltralight fail: TAG_LOST");
+                } catch (Exception ex) {
+                    callback.invoke("mifareUltralight fail: " + ex.toString());
+                }
+            } else {
+                callback.invoke("no tech request available");
+            }
+        }
+    }
+    
+    @ReactMethod
     public void mifareUltralightWritePage(int pageOffset, ReadableArray rnArray, Callback callback) {
         synchronized(this) {
             if (techRequest != null) {
@@ -497,6 +526,46 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
         }
     }
+
+    @ReactMethod
+	public void mifareUltralightWriteMultiplePage(String dataObject, Callback callback) {
+		synchronized (this) {
+			if (techRequest != null) {
+				try {
+					JSONObject jsonObject = new JSONObject(dataObject);
+					String keying = "";
+
+					Iterator<String> keys = jsonObject.keys();
+
+					while (keys.hasNext()) {
+						String key = keys.next();
+						JSONArray rnArray = (JSONArray) jsonObject.get(key);
+
+						try {
+							int pageOffset = Integer.parseInt(key);
+							byte[] bytes = jsonArrayToBytes(rnArray);
+
+							keying = keying + "|| key = " + pageOffset + ", arrayData = " + bytes.toString();
+
+							MifareUltralight techHandle = (MifareUltralight) techRequest.getTechHandle();
+							techHandle.writePage(pageOffset, bytes);
+							// callback.invoke("mifareUltralight success");
+						} catch (TagLostException ex) {
+							callback.invoke("mifareUltralight fail: TAG_LOST");
+						} catch (Exception ex) {
+							callback.invoke("mifareUltralight fail: " + ex.toString());
+						}
+					}
+					callback.invoke();
+				} catch (JSONException ex) {
+					Log.d(LOG_TAG, "fireNdefEvent fail: " + ex);
+					callback.invoke("fireNdefEvent fail: " + ex);
+				}
+			} else {
+				callback.invoke("no tech request available");
+			}
+		}
+	}
 
     @ReactMethod
     public void makeReadOnly(Callback callback) {

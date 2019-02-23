@@ -563,6 +563,22 @@ class NfcManager {
     })
   }
 
+  mifareUltralightReadMultiplePages(pageOffset) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareUltralightReadMultiplePages(pageOffset, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
   mifareUltralightWritePage(pageOffset, data) {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
@@ -574,6 +590,21 @@ class NfcManager {
 
     return new Promise((resolve, reject) => {
       NativeNfcManager.mifareUltralightWritePage(pageOffset, data, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  mifareUltralightWriteMultiplePage(dataObject) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.mifareUltralightWriteMultiplePage(JSON.stringify(dataObject), (err, result) => {
         if (err) {
           reject(err);
         } else {
