@@ -50,6 +50,7 @@ class NfcManager {
   constructor() {
     this._clientTagDiscoveryListener = null;
     this._clientSessionClosedListener = null;
+    this._session = null;
     this._subscription = null;
   }
 
