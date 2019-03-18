@@ -50,6 +50,7 @@ class NfcManager {
   constructor() {
     this._clientTagDiscoveryListener = null;
     this._clientSessionClosedListener = null;
+    this._session = null;
     this._subscription = null;
   }
 
@@ -81,8 +82,10 @@ class NfcManager {
   }
 
   stop() {
-    this._session.remove();
-    this._session = null;
+    if (this._session) {
+      this._session.remove();
+      this._session = null;
+    }
     return Promise.resolve();
   }
 
