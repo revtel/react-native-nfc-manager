@@ -85,6 +85,16 @@ declare module 'react-native-nfc-manager' {
 	type ISOLangCode = "en" | string;
 	type URI = string;
 
+	export enum NfcAdapter {
+		FLAG_READER_NFC_A= 0x1,
+		FLAG_READER_NFC_B= 0x2,
+		FLAG_READER_NFC_F= 0x4,
+		FLAG_READER_NFC_V= 0x8,
+		FLAG_READER_NFC_BARCODE= 0x10,
+		FLAG_READER_SKIP_NDEF_CHECK= 0x80,
+		FLAG_READER_NO_PLATFORM_SOUNDS= 0x100,
+	}
+
 	export const Ndef: {
 		TNF_EMPTY: 0x0,
 		TNF_WELL_KNOWN: 0x01,
