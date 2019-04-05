@@ -29,9 +29,9 @@ declare module 'react-native-nfc-manager' {
 	}
 
 	interface RegisterTagEventOpts {
-    invalidateAfterFirstRead: boolean;
-    isReaderModeEnabled: boolean;
-    readerModeFlags: number;
+    invalidateAfterFirstRead?: boolean;
+    isReaderModeEnabled?: boolean;
+    readerModeFlags?: number;
   }
 
 	interface NdefWriteOpts {
