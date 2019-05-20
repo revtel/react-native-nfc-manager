@@ -36,6 +36,7 @@
     "testEnvironment": "node"
   },
   "devDependencies": {
+    "@types/node": "^12.0.2",
     "babel-core": "^6.26.0",
     "babel-jest": "^22.4.3",
     "babel-preset-env": "^1.6.1",
@@ -44,5 +45,8 @@
   },
   "scripts": {
     "test": "jest"
+  },
+  "dependencies": {
+    "dev": "^0.1.3"
   }
 }
