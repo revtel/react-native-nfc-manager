@@ -115,11 +115,11 @@ declare module 'react-native-nfc-manager' {
 		
 		text: {
 			encodePayload: (text: string, lang?: ISOLangCode, encoding?: any) => NdefRecord;
-			decodePayload: (data: byte[]) => string;
+			decodePayload: (data: Uint8Array) => string;
 		};
 		uri: {
 			encodePayload: (uri: URI) => NdefRecord;
-			decodePayload: (data: byte[]) => string;
+			decodePayload: (data: Uint8Array) => string;
 		};
 		util: {
 			stringToBytes: (string: string) => any[];
@@ -130,7 +130,7 @@ declare module 'react-native-nfc-manager' {
 		};
 		isType(record: NdefRecord, tnf: number, type: string): boolean;
 		stringify(data: number[], separator: string): string;
-		encodeMessage(records: NdefRecord[]): byte[];
+		encodeMessage(records: NdefRecord[]): Uint8Array;
 		decodeMessage(bytes: any[] | Buffer): NdefRecord[];
 		textRecord(text: string, lang?: ISOLangCode, encoding?: any): NdefRecord;
 		uriRecord(uri: URI, id?: any): NdefRecord;
