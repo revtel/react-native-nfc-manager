@@ -38,5 +38,4 @@ repositories {
 
 dependencies {
 	implementation 'com.facebook.react:react-native:+'
-
 }
