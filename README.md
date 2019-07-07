@@ -8,6 +8,32 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
+## React Native Version Compatibility
+
+| `react-native-nfc-manager` version        | Required React Native Version                                                     |
+| ----------------------------------------- | --------------------------------------------------------------------------------- |
+| `2.x.x`                                   | `>= 0.60`                                                                         |
+| `1.x.x`                                   | `< 0.60`                                                                          |
+
+## React Native 0.60 Installation
+
+1. `npm install --save react-native-nfc-manager`
+2. `react-native link react-native-nfc-manager` 
+3. add a file named `react-native.config.js` into your project's root dir, with content like this:
+```javascript
+module.exports = {
+  dependencies: {
+    'react-native-nfc-manager': {
+      platforms: {
+        android: null,
+        ios: null,
+      },
+    },
+  },
+};
+```
+This is used to instruct the RN to avoid `autolink` this lib. We will try to leverage this feature soon.
+
 ## Supported Platforms
 - Android (API 10+)
 - iOS (iOS11 with iPhone 7/7+, 8/8+, 10)
