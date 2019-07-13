@@ -12,27 +12,12 @@ Contributions are welcome!
 
 | `react-native-nfc-manager` version        | Required React Native Version                                                     |
 | ----------------------------------------- | --------------------------------------------------------------------------------- |
-| `2.x.x`                                   | `>= 0.60`                                                                         |
+| `2.x.x` (currently 2.0.0.beta.0)                                   | `>= 0.60`                                                                         |
 | `1.x.x`                                   | `< 0.60`                                                                          |
 
-## React Native 0.60 Installation
-
-1. `npm install --save react-native-nfc-manager`
-2. `react-native link react-native-nfc-manager` 
-3. add a file named `react-native.config.js` into your project's root dir, with content like this:
-```javascript
-module.exports = {
-  dependencies: {
-    'react-native-nfc-manager': {
-      platforms: {
-        android: null,
-        ios: null,
-      },
-    },
-  },
-};
-```
-This is used to instruct the RN to avoid `autolink` this lib. We will try to leverage this feature soon.
+**IMPORTANT** For RN 0.60 users, this module will leverage [autolink](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#autolinking), which means:
+1. for both iOS/android, you don't need to perform `react-native link` like before.
+2. for iOS, you should do `cd ios && pod install && cd ..`
 
 ## Supported Platforms
 - Android (API 10+)
@@ -49,7 +34,7 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 npm i --save react-native-nfc-manager
 ```
 
-### Link Native Library with `react-native link`
+### Link Native Library with `react-native link` (RN version < 0.60)
 
 ```shell
 react-native link react-native-nfc-manager
