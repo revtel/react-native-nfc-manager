@@ -12,7 +12,7 @@ Contributions are welcome!
 
 | `react-native-nfc-manager` version        | Required React Native Version                                                     |
 | ----------------------------------------- | --------------------------------------------------------------------------------- |
-| `2.x.x` (currently 2.0.0.beta.0)                                   | `>= 0.60`                                                                         |
+| `2.x.x` (currently in beta)                                   | `>= 0.60`                                                                         |
 | `1.x.x`                                   | `< 0.60`                                                                          |
 
 **IMPORTANT** For RN 0.60 users, this module will leverage [autolink](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#autolinking), which means:
@@ -30,7 +30,14 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 * https://github.com/hansemannn/iOS11-NFC-Example 
 
 ## Install
+
 ```shell
+# RN >= 0.60
+npm i --save react-native-nfc-manager@beta
+```
+
+```shell
+# RN < 0.60
 npm i --save react-native-nfc-manager
 ```
 
