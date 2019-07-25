@@ -288,6 +288,23 @@ class NfcManager {
     })
   }
 
+  requestTechnologies(techs) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.requestTechnologies(techs, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+
   cancelTechnologyRequest() {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');

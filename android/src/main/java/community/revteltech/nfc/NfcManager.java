@@ -129,6 +129,23 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
+    public void requestTechnologies(ReadableArray techs, Callback callback) {
+        synchronized(this) {
+            if (!isForegroundEnabled) {
+                callback.invoke("you should requestTagEvent first");
+                return;
+            }
+
+            if (hasPendingRequest()) {
+                callback.invoke("You can only issue one request at a time");
+            } else {
+                techRequest = new TagTechnologyRequest(techs.toArrayList(), callback);
+            }
+        }
+    }
+
+
+    @ReactMethod
     public void closeTechnology(Callback callback) {
         synchronized(this) {
             if (techRequest != null) {
