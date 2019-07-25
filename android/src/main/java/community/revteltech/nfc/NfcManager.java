@@ -166,7 +166,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         synchronized(this) {
             if (techRequest != null) {
                 try {
-                    Ndef ndef = (Ndef)techRequest.getTechHandle();
+                    Ndef ndef = Ndef.get(techRequest.getTechHandle().getTag());
                     WritableMap parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
@@ -184,7 +184,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         synchronized(this) {
             if (techRequest != null) {
                 try {
-                    Ndef ndef = (Ndef)techRequest.getTechHandle();
+                    Ndef ndef = Ndef.get(techRequest.getTechHandle().getTag());
                     WritableMap parsed = ndef2React(null, new NdefMessage[] { ndef.getNdefMessage() });
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
