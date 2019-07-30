@@ -31,6 +31,7 @@ import android.nfc.tech.NdefFormatable;
 import android.nfc.tech.MifareClassic;
 import android.nfc.tech.MifareUltralight;
 import android.os.Parcelable;
+import android.os.Bundle;
 
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -579,6 +580,34 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         }
     }
 
+
+    @ReactMethod
+    public void connect(ReadableArray techs, Callback callback){
+        synchronized(this) {
+          try {
+            techRequest = new TagTechnologyRequest(techs.toArrayList(), callback);
+            techRequest.connect(this.tag);
+            callback.invoke(null, null);
+            return;
+          } catch (Exception ex) {
+              callback.invoke(ex.toString());
+          }
+        }
+    }
+
+    @ReactMethod
+    public void close(Callback callback){
+        synchronized(this) {
+          try {
+            techRequest.close();
+            callback.invoke(null, null);
+            return;
+          } catch (Exception ex) {
+            callback.invoke(ex.toString());
+          }
+        }
+    }
+
     @ReactMethod
     public void transceive(ReadableArray rnArray, Callback callback) {
         synchronized(this) {
@@ -929,7 +958,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         Log.i(LOG_TAG, "enableForegroundDispatch, enable = " + enable);
         NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
         Activity currentActivity = getCurrentActivity();
-
+        final NfcManager manager = this;
         if (nfcAdapter != null && currentActivity != null && !currentActivity.isFinishing()) {
             try {
                 if (isReaderModeEnabled) {
@@ -939,9 +968,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
                     if (enable) {
                         Log.i(LOG_TAG, "enableReaderMode");
+                        Bundle readerModeExtras = new Bundle();
+                        readerModeExtras.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 10000);
                         nfcAdapter.enableReaderMode(currentActivity, new NfcAdapter.ReaderCallback() {
                             @Override
                             public void onTagDiscovered(Tag tag) {
+                                manager.tag = tag;
                                 Log.d(LOG_TAG, "readerMode onTagDiscovered");
                                 WritableMap nfcTag = null;
                                 // if the tag contains NDEF, we want to report the content
@@ -956,7 +988,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                                     sendEvent("NfcManagerDiscoverTag", nfcTag);
                                 }
                             }
-                        }, readerModeFlags, null);
+                        }, readerModeFlags, readerModeExtras);
                     } else {
                         Log.i(LOG_TAG, "disableReaderMode");
                         nfcAdapter.disableReaderMode(currentActivity);

@@ -622,6 +622,36 @@ class NfcManager {
     })
   }
 
+  connect(techs) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.connect(techs, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  close() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.close((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
   // -------------------------------------
   // transceive works for NfcA, NfcB, NfcF, NfcV, IsoDep and MifareUltralight
   // -------------------------------------
