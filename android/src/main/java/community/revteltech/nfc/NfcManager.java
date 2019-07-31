@@ -48,7 +48,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private Boolean isResumed = false;
     private WriteNdefRequest writeNdefRequest = null;
     private TagTechnologyRequest techRequest = null;
-
+    private Tag tag = null;
     // Use NFC reader mode instead of listening to a dispatch
     private Boolean isReaderModeEnabled = false;
     private int readerModeFlags = 0;
