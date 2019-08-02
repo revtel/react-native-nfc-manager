@@ -288,6 +288,23 @@ class NfcManager {
     })
   }
 
+  requestTechnologies(techs) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.requestTechnologies(techs, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+
   cancelTechnologyRequest() {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
@@ -596,6 +613,36 @@ class NfcManager {
 
     return new Promise((resolve, reject) => {
       NativeNfcManager.setTimeout(timeout, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  connect(techs) {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.connect(techs, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  close() {
+    if (Platform.OS === 'ios') {
+      return Promise.reject('not implemented');
+    }
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.close((err, result) => {
         if (err) {
           reject(err);
         } else {
