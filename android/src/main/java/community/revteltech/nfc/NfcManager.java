@@ -119,23 +119,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    public void requestTechnology(String tech, Callback callback) {
-        synchronized(this) {
-            if (!isForegroundEnabled) {
-                callback.invoke("you should requestTagEvent first");
-                return;
-            }
-
-            if (hasPendingRequest()) {
-                callback.invoke("You can only issue one request at a time");
-            } else {
-                techRequest = new TagTechnologyRequest(tech, callback);
-            }
-        }
-    }
-
-    @ReactMethod
-    public void requestTechnologies(ReadableArray techs, Callback callback) {
+    public void requestTechnology(ReadableArray techs, Callback callback) {
         synchronized(this) {
             if (!isForegroundEnabled) {
                 callback.invoke("you should requestTagEvent first");
@@ -149,7 +133,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
         }
     }
-
 
     @ReactMethod
     public void closeTechnology(Callback callback) {
@@ -584,7 +567,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
         }
     }
-
 
     @ReactMethod
     public void connect(ReadableArray techs, Callback callback){
@@ -1119,7 +1101,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 if (!techRequest.isConnected()) {
                     boolean result = techRequest.connect(tag);
                     if (result) {
-                        techRequest.getPendingCallback().invoke();
+                        techRequest.getPendingCallback().invoke(null, techRequest.getTechType());
                     } else {
                         techRequest.getPendingCallback().invoke("fail to connect tag");
                         techRequest = null;

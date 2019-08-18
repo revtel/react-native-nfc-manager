@@ -332,23 +332,11 @@ class NfcManager {
   // -------------------------------------
   requestTechnology(tech) {
     return new Promise((resolve, reject) => {
+      if (typeof tech === 'string') {
+        tech = [tech];
+      }
+
       NativeNfcManager.requestTechnology(tech, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  requestTechnologies(techs) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.requestTechnologies(techs, (err, result) => {
         if (err) {
           reject(err);
         } else {
