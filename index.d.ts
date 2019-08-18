@@ -75,6 +75,16 @@ declare module 'react-native-nfc-manager' {
 		cancelNdefWrite(): Promise<any>;
 		requestNdefWrite(bytes: number[], opts?: NdefWriteOpts): Promise<any>;
 		onStateChanged(listener: (event: EventStateChange) => void): Promise<EmitterSubscription>;
+		
+		mifareClassicSectorToBlock: (sector: number) => ArrayLike<number>
+		mifareClassicReadBlock: (block: ArrayLike<number>) => ArrayLike<number>
+		mifareClassicWriteBlock: (block: ArrayLike<number>, simpliArr: any[]) => void
+		cancelTechnologyRequest: () => Promise<EmitterSubscription>
+		closeTechnology: () => void
+		requestTechnology: (data: any) => void
+		getTag: () => void
+		mifareClassicGetSectorCount: () => number
+		mifareClassicAuthenticateA: (sector: number, keys: number[]) => vooid
 	}
 	const nfcManager: NfcManager;
 	export namespace NdefParser {
