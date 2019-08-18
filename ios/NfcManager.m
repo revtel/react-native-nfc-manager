@@ -38,7 +38,7 @@ NSString* getErrorMessage(NSError *error) {
 
 @implementation NfcManager {
     NSDictionary *nfcTechTypes;
-    NSString *techRequestType;
+    NSArray *techRequestTypes;
     RCTResponseSenderBlock techRequestCallback;
 }
 
@@ -180,28 +180,29 @@ RCT_EXPORT_MODULE()
                            body:@{}];
         
         if (techRequestCallback != nil) {
-            id<NFCTag> tagFound = nil;
-            for (id<NFCTag> tag in tags) {
-                NSString * tagType = [self getRNTechName:tag];
-                if ([tagType isEqualToString:techRequestType]) {
-                    tagFound = tag;
-                    break;
+            BOOL found = false;
+            for (NSString* requestType in techRequestTypes) {
+                for (id<NFCTag> tag in tags) {
+                    NSString * tagType = [self getRNTechName:tag];
+                    if ([tagType isEqualToString:requestType]) {
+                        [sessionEx connectToTag:tag
+                              completionHandler:^(NSError *error) {
+                            if (error != nil) {
+                                self->techRequestCallback(@[getErrorMessage(error), [NSNull null]]);
+                                return;
+                            }
+                            
+                            self->techRequestCallback(@[[NSNull null], requestType]);
+                        }];
+                        found = true;
+                        break;
+                    }
                 }
             }
             
-            if (tagFound == nil) {
+            if (!found) {
                 techRequestCallback(@[@"No tech matches", [NSNull null]]);
-                return;
             }
-            
-            [sessionEx connectToTag:tagFound completionHandler:^(NSError *error) {
-                if (error != nil) {
-                    self->techRequestCallback(@[getErrorMessage(error), [NSNull null]]);
-                    return;
-                }
-                
-                self->techRequestCallback(@[[NSNull null], self->techRequestType]);
-            }];
         }
     }
 }
@@ -210,7 +211,7 @@ RCT_EXPORT_MODULE()
 {
     NSLog(@"NFCTag didInvalidateWithError");
     sessionEx = nil;
-    techRequestType = nil;
+    techRequestTypes = nil;
     techRequestCallback = nil;
     [self sendEventWithName:@"NfcManagerSessionClosed"
                        body:@{}];
@@ -250,7 +251,7 @@ RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(requestTechnology: (NSString *)tech callback:(nonnull RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(requestTechnology: (NSArray *)techs callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (sessionEx == nil) {
         callback(@[@"you need to call registerTagEvent first", [NSNull null]]);
@@ -258,7 +259,7 @@ RCT_EXPORT_METHOD(requestTechnology: (NSString *)tech callback:(nonnull RCTRespo
     }
     
     if (techRequestCallback == nil) {
-        techRequestType = tech;
+        techRequestTypes = techs;
         techRequestCallback = callback;
     } else {
         callback(@[@"duplicate tech request, please call cancelTechnologyRequest to cancel previous one", [NSNull null]]);
@@ -267,7 +268,7 @@ RCT_EXPORT_METHOD(requestTechnology: (NSString *)tech callback:(nonnull RCTRespo
 
 RCT_EXPORT_METHOD(cancelTechnologyRequest:(nonnull RCTResponseSenderBlock)callback)
 {
-    techRequestType = nil;
+    techRequestTypes = nil;
     techRequestCallback = nil;
     callback(@[]);
 }
@@ -295,7 +296,7 @@ RCT_EXPORT_METHOD(unregisterTagEvent: (nonnull RCTResponseSenderBlock)callback)
         if (session != nil) {
             [session invalidateSession];
             session = nil;
-            techRequestType = nil;
+            techRequestTypes = nil;
             techRequestCallback = nil;
             callback(@[]);
         } else {
@@ -328,7 +329,7 @@ RCT_EXPORT_METHOD(unregisterTagEventEx: (nonnull RCTResponseSenderBlock)callback
         if (sessionEx != nil) {
             [sessionEx invalidateSession];
             sessionEx = nil;
-            techRequestType = nil;
+            techRequestTypes = nil;
             techRequestCallback = nil;
             callback(@[]);
         } else {
