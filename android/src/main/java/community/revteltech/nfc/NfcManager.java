@@ -103,7 +103,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         synchronized(this) {
             if (techRequest != null) {
                 techRequest.close();
-                techRequest.getPendingCallback().invoke("cancelled");
+                try {
+                    techRequest.getPendingCallback().invoke("cancelled");
+                } catch (RuntimeException ex) {
+                    // the pending callback might already been invoked when there is an ongoing
+                    // connected tag, bypass this case explicitly
+                }
                 techRequest = null;
                 callback.invoke();
             } else {
