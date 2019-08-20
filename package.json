@@ -1,6 +1,6 @@
 {
   "name": "react-native-nfc-manager",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A NFC module for react native.",
   "main": "NfcManager",
   "repository": {
@@ -19,6 +19,7 @@
   "files": [
     "ByteParser.js",
     "NfcManager.js",
+    "NativeNfcManager.js",
     "NdefParser.js",
     "ndef-lib",
     "index.d.ts",
