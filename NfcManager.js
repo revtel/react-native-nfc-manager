@@ -191,8 +191,8 @@ class NfcManager {
     return Promise.resolve();
   }
 
-  registerTagEventEx(listener, alertMessage = '', options = {}) {
-    if (Platform.OS === 'android') {
+  registerTagEventExIOS(listener, alertMessage = '', options = {}) {
+    if (Platform.OS !== 'ios') {
       return Promise.reject('not implemented');
     }
 
@@ -231,8 +231,8 @@ class NfcManager {
     return Promise.resolve();
   }
 
-  unregisterTagEventEx() {
-    if (Platform.OS === 'android') {
+  unregisterTagEventExIOS() {
+    if (Platform.OS !== 'ios') {
       return Promise.reject('not implemented');
     }
 
@@ -719,6 +719,58 @@ class NfcManager {
       })
     })
   }
+
+  // -------------------------------------
+  // iOS specific 
+  // -------------------------------------
+  sendMifareCommandIOS(bytes) {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.sendMifareCommand(bytes, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    })
+  }
+
+  readNdefIOS() {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.readNDEF((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    })
+  }
+
+  writeNdefIOS(bytes) {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.writeNDEF(bytes, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    })
+  }
+
 }
 
 export default new NfcManager();

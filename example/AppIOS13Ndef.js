@@ -11,7 +11,13 @@ import {
 } from 'react-native';
 import NfcManager, {Ndef} from '../NfcManager';
 
-class AppIOS13 extends React.Component {
+function buildUrlPayload(valueToWrite) {
+    return Ndef.encodeMessage([
+        Ndef.uriRecord(valueToWrite),
+    ]);
+}
+
+class AppIOS13Ndef extends React.Component {
   componentDidMount() {
     NfcManager.start();
   }
@@ -26,9 +32,9 @@ class AppIOS13 extends React.Component {
         <Text>NFC Demo on iOS13</Text>
         <TouchableOpacity 
           style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
-          onPress={this._testMifare}
+          onPress={this._testNdef}
         >
-          <Text>Test Mifare</Text>
+          <Text>Test Ndef</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -43,18 +49,19 @@ class AppIOS13 extends React.Component {
 
   _cleanUp = () => {
     NfcManager.cancelTechnologyRequest().catch(() => 0);
-    NfcManager.unregisterTagEventExIOS().catch(() => 0);    
+    NfcManager.unregisterTagEvent().catch(() => 0);    
   }
 
-  _testMifare = async () => {
+  _testNdef = async () => {
     try {
-      await NfcManager.registerTagEventExIOS()
-      let resp = await NfcManager.requestTechnology('mifare');
+      await NfcManager.registerTagEvent()
+      let resp = await NfcManager.requestTechnology('ndef');
       console.warn(resp);
-      let tag = await NfcManager.getTag();
-      console.warn(tag);
-      // resp = await NfcManager.sendMifareCommandIOS([0x30, 0x00, 0xa2, 0xb6]);
-      // console.warn(resp);
+      let ndef = await NfcManager.readNdefIOS();
+      console.warn(ndef);
+      let bytes = buildUrlPayload('https://www.revteltech.com');
+      await NfcManager.writeNdefIOS(bytes);
+      console.warn('successfully write ndef');
       this._cleanUp();
     } catch (ex) {
       console.warn('ex', ex);
@@ -63,4 +70,4 @@ class AppIOS13 extends React.Component {
   }
 }
 
-export default AppIOS13;
+export default AppIOS13Ndef;
