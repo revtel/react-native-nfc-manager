@@ -137,6 +137,21 @@ class NfcManager {
     })
   }
 
+  setAlertMessage(alertMessage = '') {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.setAlertMessage(
+        alertMessage,
+        (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      )
+    })
+  }
+  
   registerTagEvent(listener, alertMessage = '', options = {}) {
     // Support legacy `invalidateAfterFirstRead` boolean
     if (options === true || options === false) {

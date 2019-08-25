@@ -327,6 +327,20 @@ RCT_EXPORT_METHOD(cancelTechnologyRequest:(nonnull RCTResponseSenderBlock)callba
     callback(@[]);
 }
 
+RCT_EXPORT_METHOD(setAlertMessage: (NSString *)alertMessage callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 11.0, *)) {
+        if (session != nil) {
+          session.alertMessage = alertMessage;
+            callback(@[]);
+        } else {
+            callback(@[@"Not even registered", [NSNull null]]);
+        }
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
 RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage options:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 11.0, *)) {
