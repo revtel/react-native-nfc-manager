@@ -910,7 +910,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    private void unregisterTagEvent(Callback callback) {
+    private void unregisterTagEvent(String alertMessage, Callback callback) {
         Log.d(LOG_TAG, "registerTag");
         isForegroundEnabled = false;
         intentFilters.clear();

@@ -327,20 +327,6 @@ RCT_EXPORT_METHOD(cancelTechnologyRequest:(nonnull RCTResponseSenderBlock)callba
     callback(@[]);
 }
 
-RCT_EXPORT_METHOD(setAlertMessage: (NSString *)alertMessage callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 11.0, *)) {
-        if (session != nil) {
-          session.alertMessage = alertMessage;
-            callback(@[]);
-        } else {
-            callback(@[@"Not even registered", [NSNull null]]);
-        }
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
 RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage options:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 11.0, *)) {
@@ -358,10 +344,12 @@ RCT_EXPORT_METHOD(registerTagEvent: (NSString *)alertMessage options:(NSDictiona
     }
 }
 
-RCT_EXPORT_METHOD(unregisterTagEvent: (nonnull RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(unregisterTagEvent: (NSString *)alertMessage callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 11.0, *)) {
         if (session != nil) {
+            session.alertMessage = alertMessage;
+
             [session invalidateSession];
             session = nil;
             techRequestTypes = nil;
@@ -391,10 +379,12 @@ RCT_EXPORT_METHOD(registerTagEventEx: (NSString *)alertMessage options:(NSDictio
     }
 }
 
-RCT_EXPORT_METHOD(unregisterTagEventEx: (nonnull RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(unregisterTagEventEx: (NSString *)alertMessage callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
         if (sessionEx != nil) {
+            sessionEx.alertMessage = alertMessage;
+
             [sessionEx invalidateSession];
             sessionEx = nil;
             techRequestTypes = nil;
