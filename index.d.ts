@@ -84,7 +84,7 @@ declare module 'react-native-nfc-manager' {
 		requestTechnology: (data: any) => void
 		getTag: () => void
 		mifareClassicGetSectorCount: () => number
-		mifareClassicAuthenticateA: (sector: number, keys: number[]) => vooid
+		mifareClassicAuthenticateA: (sector: number, keys: number[]) => void
 	}
 	const nfcManager: NfcManager;
 	export namespace NdefParser {
