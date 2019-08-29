@@ -173,19 +173,22 @@ class NfcManager {
     return Promise.resolve();
   }
 
-  unregisterTagEvent() {
+  unregisterTagEvent(alertMessage = '') {
     if (this._subscription) {
       this._clientTagDiscoveryListener = null;
       this._subscription.remove();
       this._subscription = null;
       return new Promise((resolve, reject) => {
-        NativeNfcManager.unregisterTagEvent((err, result) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(result)
+        NativeNfcManager.unregisterTagEvent(
+          alertMessage,
+          (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result)
+            }
           }
-        })
+        )
       })
     }
     return Promise.resolve();
@@ -231,7 +234,7 @@ class NfcManager {
     return Promise.resolve();
   }
 
-  unregisterTagEventExIOS() {
+  unregisterTagEventExIOS(alertMessage = '') {
     if (Platform.OS !== 'ios') {
       return Promise.reject('not implemented');
     }
@@ -241,13 +244,16 @@ class NfcManager {
       this._subscription.remove();
       this._subscription = null;
       return new Promise((resolve, reject) => {
-        NativeNfcManager.unregisterTagEventEx((err, result) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(result)
+        NativeNfcManager.unregisterTagEventEx(
+          alertMessage,
+          (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result)
+            }
           }
-        })
+        )
       })
     }
     return Promise.resolve();
