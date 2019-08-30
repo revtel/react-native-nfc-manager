@@ -9,18 +9,29 @@ import {
     TextInput,
     ScrollView,
 } from 'react-native';
-import NfcManager, {Ndef} from 'react-native-nfc-manager';
-
+import NfcManager, {Ndef, ByteParser, NfcTech} from 'react-native-nfc-manager';
 const RtdType = {
     URL: 0,
     TEXT: 1,
+    WIFI: 2
 };
+
 
 function buildUrlPayload(valueToWrite) {
     return Ndef.encodeMessage([
         Ndef.uriRecord(valueToWrite),
     ]);
 }
+
+function buildWifiPayload(arrToWrite) {
+    return arrToWrite
+}
+
+// function buildWifiPayload(valueToWrite) {
+//     return Ndef.encodeMessage([
+//         Ndef.wifi(valueToWrite),
+//     ]);
+// }
 
 function buildTextPayload(valueToWrite) {
     return Ndef.encodeMessage([
@@ -35,8 +46,9 @@ class App extends Component {
             supported: true,
             enabled: false,
             isWriting: false,
-            urlToWrite: 'https://www.google.com',
-            rtdType: RtdType.URL,
+            ssid: '',
+            password: '',
+            rtdType: RtdType.WIFI,
             parsedText: null,
             tag: {},
         }
@@ -59,7 +71,7 @@ class App extends Component {
     }
 
     render() {
-        let { supported, enabled, tag, isWriting, urlToWrite, parsedText, rtdType } = this.state;
+        let { supported, enabled, tag, isWriting, ssid, password, parsedText, rtdType } = this.state;
         return (
             <ScrollView style={{flex: 1}}>
                 { Platform.OS === 'ios' && <View style={{ height: 60 }} /> }
@@ -107,9 +119,18 @@ class App extends Component {
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <TextInput
+                                    placeholder="ssid"
                                     style={{width: 200}}
-                                    value={urlToWrite}
-                                    onChangeText={urlToWrite => this.setState({ urlToWrite })}
+                                    value={ssid}
+                                    onChangeText={ssid => this.setState({ ssid })}
+                                />
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <TextInput
+                                    placeholder="password"
+                                    style={{width: 200}}
+                                    value={password}
+                                    onChangeText={password => this.setState({ password })}
                                 />
                             </View>
 
@@ -130,6 +151,17 @@ class App extends Component {
                                 onPress={isWriting ? this._cancelAndroidBeam : this._requestAndroidBeam}>
                                 <Text style={{color: 'blue'}}>{`${isWriting ? 'Cancel ' : ''}Android Beam`}</Text>
                             </TouchableOpacity>
+
+                            <TouchableOpacity 
+                                style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
+                                onPress={isWriting ? ()=>{}:this.lock}>
+                                <Text style={{color: 'blue'}}>Lock</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
+                                onPress={isWriting ? ()=>{}:this.unlock}>
+                                <Text style={{color: 'blue'}}>Unlock</Text>
+                            </TouchableOpacity>
                         </View>
                     }
 
@@ -138,6 +170,49 @@ class App extends Component {
                 </View>
             </ScrollView>
         )
+    }
+
+    lock = async ()=>{
+        let {isWriting} = this.state;
+        if (isWriting) {
+            return;
+        }
+        let password = Ndef.util.stringToBytes("rsad1")
+        console.log(password)
+        NfcManager.requestTechnology(NfcTech.MifareUltralight)
+            .then((z)=>{
+                NfcManager.transceive(password)
+                .then((res) => {
+                    console.log(Ndef.decodeMessage(res))
+                    NfcManager.closeTechnology()
+                    .then(res=>{
+                        console.log(res)
+                    })
+                })
+                .catch(err => console.warn(err))
+                .then(() => this.setState({isWriting: false}));
+            })
+    }
+    unlock = async ()=>{
+        let {isWriting} = this.state;
+        if (isWriting) {
+            return;
+        }
+        let password = Ndef.util.stringToBytes("rsad0")
+        console.log(password)
+        NfcManager.requestTechnology(NfcTech.MifareUltralight)
+            .then((z)=>{
+                NfcManager.transceive(password)
+                .then((res) => {
+                    console.log(Ndef.decodeMessage(res))
+                    NfcManager.closeTechnology()
+                    .then(res=>{
+                        console.log(res)
+                    })
+                })
+                .catch(err => console.warn(err))
+                .then(() => this.setState({isWriting: false}));
+            })
     }
 
     _requestFormat = () => {
@@ -154,22 +229,15 @@ class App extends Component {
     }
 
     _requestNdefWrite = () => {
-        let {isWriting, urlToWrite, rtdType} = this.state;
+        let {ssid, password, isWriting} = this.state;
         if (isWriting) {
             return;
         }
-
-        let bytes;
-
-        if (rtdType === RtdType.URL) {
-            bytes = buildUrlPayload(urlToWrite);
-        } else if (rtdType === RtdType.TEXT) {
-            bytes = buildTextPayload(urlToWrite);
-        }
-
+        let array = [ssid, password, "WPA-2 Personal"];
         this.setState({isWriting: true});
-        NfcManager.requestNdefWrite(bytes)
-            .then(() => console.log('write completed'))
+        NfcManager.requestNdefWifiWrite(array)
+            .then(() => console.log("write complete")
+        )
             .catch(err => console.warn(err))
             .then(() => this.setState({isWriting: false}));
     }
@@ -182,7 +250,7 @@ class App extends Component {
     }
 
     _requestAndroidBeam = () => {
-        let {isWriting, urlToWrite, rtdType} = this.state;
+        let {isWriting, ssid, rtdType} = this.state;
         if (isWriting) {
             return;
         }
@@ -190,9 +258,9 @@ class App extends Component {
         let bytes;
 
         if (rtdType === RtdType.URL) {
-            bytes = buildUrlPayload(urlToWrite);
+            bytes = buildUrlPayload(ssid);
         } else if (rtdType === RtdType.TEXT) {
-            bytes = buildTextPayload(urlToWrite);
+            bytes = buildTextPayload(ssid);
         }
 
         this.setState({isWriting: true});

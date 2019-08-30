@@ -8,25 +8,6 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
-## iOS 13 development is ongoing!
-
-Ndef writing, get UID, send mifare command, and APDU exchange... Lots features come into iOS13!
-
-If you're interested in helping this, please check the `v2` branch. 
-
-Currently this work will be published in npm beta channel.
-
-## React Native Version Compatibility
-
-| `react-native-nfc-manager` version        | Required React Native Version                                                     |
-| ----------------------------------------- | --------------------------------------------------------------------------------- |
-| `2.x.x` (currently in beta)                                   | `>= 0.60`                                                                         |
-| `1.x.x`                                   | `< 0.60`                                                                          |
-
-**IMPORTANT** For RN 0.60 users, this module will leverage [autolink](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#autolinking), which means:
-1. for both iOS/android, you don't need to perform `react-native link` like before.
-2. for iOS, you should do `cd ios && pod install && cd ..`
-
 ## Supported Platforms
 - Android (API 10+)
 - iOS (iOS11 with iPhone 7/7+, 8/8+, 10)
@@ -38,18 +19,11 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 * https://github.com/hansemannn/iOS11-NFC-Example 
 
 ## Install
-
 ```shell
-# RN >= 0.60
-npm i --save react-native-nfc-manager@beta
-```
-
-```shell
-# RN < 0.60
 npm i --save react-native-nfc-manager
 ```
 
-### Link Native Library with `react-native link` (RN version < 0.60)
+### Link Native Library with `react-native link`
 
 ```shell
 react-native link react-native-nfc-manager
