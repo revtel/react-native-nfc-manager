@@ -53,17 +53,18 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private WriteNdefRequest writeNdefRequest = null;
     private TagTechnologyRequest techRequest = null;
 
-    //new 
+    // new
     public static final short CREDENTIAL_FIELD_ID = 0x100e;
     public static final short SSID_FIELD_ID = 0x1045;
     public static final short AUTH_TYPE_FIELD_ID = 0x1003;
+    private static final short AUTH_TYPE_OPEN = 0;
     public static final short AUTH_TYPE_WPA2_PSK = 0x0020;
     public static final short NETWORK_KEY_FIELD_ID = 0x1027;
     public static final int MAX_SSID_SIZE_BYTES = 32;
     public static final int MAX_MAC_ADDRESS_SIZE_BYTES = 6;
     public static final int MAX_NETWORK_KEY_SIZE_BYTES = 64;
     private static final String NFC_TOKEN_MIME_TYPE = "application/vnd.wfa.wsc";
-    //new end
+    // new end
 
     // Use NFC reader mode instead of listening to a dispatch
     private Boolean isReaderModeEnabled = false;
@@ -116,7 +117,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void cancelTechnologyRequest(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 techRequest.close();
                 techRequest.getPendingCallback().invoke("cancelled");
@@ -131,7 +132,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void requestTechnology(String tech, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (!isForegroundEnabled) {
                 callback.invoke("you should requestTagEvent first");
                 return;
@@ -147,7 +148,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void closeTechnology(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 techRequest.close();
                 techRequest = null;
@@ -161,7 +162,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void getTag(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     TagTechnology tagTech = techRequest.getTechHandle();
@@ -180,10 +181,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void getCachedNdefMessage(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
-                    Ndef ndef = (Ndef)techRequest.getTechHandle();
+                    Ndef ndef = (Ndef) techRequest.getTechHandle();
                     WritableMap parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
@@ -198,10 +199,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void getNdefMessage(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
-                    Ndef ndef = (Ndef)techRequest.getTechHandle();
+                    Ndef ndef = (Ndef) techRequest.getTechHandle();
                     WritableMap parsed = ndef2React(null, new NdefMessage[] { ndef.getNdefMessage() });
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
@@ -216,10 +217,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void writeNdefMessage(ReadableArray rnArray, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
-                    Ndef ndef = (Ndef)techRequest.getTechHandle();
+                    Ndef ndef = (Ndef) techRequest.getTechHandle();
                     byte[] bytes = rnArrayToBytes(rnArray);
                     ndef.writeNdefMessage(new NdefMessage(bytes));
                     callback.invoke();
@@ -243,12 +244,15 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     return;
                 } else if (sector >= mifareTag.getSectorCount()) {
                     // Check if in range
-                    String msg = String.format("mifareClassicAuthenticate fail: invalid sector %d (max %d)", sector, mifareTag.getSectorCount());
+                    String msg = String.format("mifareClassicAuthenticate fail: invalid sector %d (max %d)", sector,
+                            mifareTag.getSectorCount());
                     callback.invoke(msg);
                     return;
                 } else if (key.size() != 6) {
                     // Invalid key length
-                    String msg = String.format("mifareClassicAuthenticate fail: invalid key (needs length 6 but has %d characters)", key.size());
+                    String msg = String.format(
+                            "mifareClassicAuthenticate fail: invalid key (needs length 6 but has %d characters)",
+                            key.size());
                     callback.invoke(msg);
                     return;
                 }
@@ -278,21 +282,21 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void mifareClassicAuthenticateA(int sector, ReadableArray key, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             mifareClassicAuthenticate('A', sector, key, callback);
         }
     }
 
     @ReactMethod
     public void mifareClassicAuthenticateB(int sector, ReadableArray key, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             mifareClassicAuthenticate('B', sector, key, callback);
         }
     }
 
     @ReactMethod
     public void mifareClassicGetBlockCountInSector(int sectorIndex, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
@@ -302,7 +306,9 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     } else if (sectorIndex >= mifareTag.getSectorCount()) {
                         // Check if in range
-                        String msg = String.format("mifareClassicGetBlockCountInSector fail: invalid sector %d (max %d)", sectorIndex, mifareTag.getSectorCount());
+                        String msg = String.format(
+                                "mifareClassicGetBlockCountInSector fail: invalid sector %d (max %d)", sectorIndex,
+                                mifareTag.getSectorCount());
                         callback.invoke(msg);
                         return;
                     }
@@ -319,7 +325,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void mifareClassicGetSectorCount(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
@@ -341,7 +347,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void mifareClassicSectorToBlock(int sectorIndex, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
@@ -351,7 +357,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     } else if (sectorIndex >= mifareTag.getSectorCount()) {
                         // Check if in range
-                        String msg = String.format("mifareClassicSectorToBlock fail: invalid sector %d (max %d)", sectorIndex, mifareTag.getSectorCount());
+                        String msg = String.format("mifareClassicSectorToBlock fail: invalid sector %d (max %d)",
+                                sectorIndex, mifareTag.getSectorCount());
                         callback.invoke(msg);
                         return;
                     }
@@ -368,7 +375,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void mifareClassicReadBlock(int blockIndex, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
@@ -378,7 +385,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     } else if (blockIndex >= mifareTag.getBlockCount()) {
                         // Check if in range
-                        String msg = String.format("mifareClassicReadBlock fail: invalid block %d (max %d)", blockIndex, mifareTag.getBlockCount());
+                        String msg = String.format("mifareClassicReadBlock fail: invalid block %d (max %d)", blockIndex,
+                                mifareTag.getBlockCount());
                         callback.invoke(msg);
                         return;
                     }
@@ -401,7 +409,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void mifareClassicReadSector(int sectorIndex, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
@@ -411,7 +419,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     } else if (sectorIndex >= mifareTag.getSectorCount()) {
                         // Check if in range
-                        String msg = String.format("mifareClassicReadSector fail: invalid sector %d (max %d)", sectorIndex, mifareTag.getSectorCount());
+                        String msg = String.format("mifareClassicReadSector fail: invalid sector %d (max %d)",
+                                sectorIndex, mifareTag.getSectorCount());
                         callback.invoke(msg);
                         return;
                     }
@@ -420,7 +429,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     int blocks = mifareTag.getBlockCountInSector(sectorIndex);
                     byte[] buffer = new byte[MifareClassic.BLOCK_SIZE];
                     for (int i = 0; i < blocks; i++) {
-                        buffer = mifareTag.readBlock(mifareTag.sectorToBlock(sectorIndex)+i);
+                        buffer = mifareTag.readBlock(mifareTag.sectorToBlock(sectorIndex) + i);
                         appendBytesToRnArray(result, buffer);
                     }
 
@@ -438,7 +447,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void mifareClassicWriteBlock(int blockIndex, ReadableArray block, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
@@ -448,12 +457,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     } else if (blockIndex >= mifareTag.getBlockCount()) {
                         // Check if in range
-                        String msg = String.format("mifareClassicWriteBlock fail: invalid block %d (max %d)", blockIndex, mifareTag.getBlockCount());
+                        String msg = String.format("mifareClassicWriteBlock fail: invalid block %d (max %d)",
+                                blockIndex, mifareTag.getBlockCount());
                         callback.invoke(msg);
                         return;
                     } else if (block.size() != MifareClassic.BLOCK_SIZE) {
                         // Wrong block count
-                        String msg = String.format("mifareClassicWriteBlock fail: invalid block size %d (should be %d)", block.size(), MifareClassic.BLOCK_SIZE);
+                        String msg = String.format("mifareClassicWriteBlock fail: invalid block size %d (should be %d)",
+                                block.size(), MifareClassic.BLOCK_SIZE);
                         callback.invoke(msg);
                         return;
                     }
@@ -475,10 +486,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void mifareUltralightReadPages(int pageOffset, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
-                    MifareUltralight techHandle = (MifareUltralight)techRequest.getTechHandle();
+                    MifareUltralight techHandle = (MifareUltralight) techRequest.getTechHandle();
                     byte[] resultBytes = techHandle.readPages(pageOffset);
                     WritableArray resultRnArray = bytesToRnArray(resultBytes);
                     callback.invoke(null, resultRnArray);
@@ -496,11 +507,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void mifareUltralightWritePage(int pageOffset, ReadableArray rnArray, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     byte[] bytes = rnArrayToBytes(rnArray);
-                    MifareUltralight techHandle = (MifareUltralight)techRequest.getTechHandle();
+                    MifareUltralight techHandle = (MifareUltralight) techRequest.getTechHandle();
                     techHandle.writePage(pageOffset, bytes);
                     callback.invoke();
                     return;
@@ -517,10 +528,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void makeReadOnly(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
-                    Ndef ndef = (Ndef)techRequest.getTechHandle();
+                    Ndef ndef = (Ndef) techRequest.getTechHandle();
                     boolean result = ndef.makeReadOnly();
                     callback.invoke(null, result);
                 } catch (Exception ex) {
@@ -541,7 +552,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     String tech = techRequest.getTechType();
                     TagTechnology baseTechHandle = techRequest.getTechHandle();
                     // TagTechnology is the base class for each tech (ex, NfcA, NfcB, IsoDep ...)
-                    // but it doesn't provide transceive in its interface, so we need to explicitly cast it
+                    // but it doesn't provide transceive in its interface, so we need to explicitly
+                    // cast it
                     if (tech.equals("NfcA")) {
                         NfcA techHandle = (NfcA) baseTechHandle;
                         techHandle.setTimeout(timeout);
@@ -582,44 +594,43 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     @ReactMethod
     public void transceive(ReadableArray rnArray, Callback callback) {
         String error = "hi";
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
-                    byte bytes[]={
-                        (byte) 0x30
-                    };    
+                    byte bytes[] = { (byte) 0x30 };
                     String tech = techRequest.getTechType();
                     // byte[] bytes = rnArrayToBytes(rnArray);
 
                     TagTechnology baseTechHandle = techRequest.getTechHandle();
                     // TagTechnology is the base class for each tech (ex, NfcA, NfcB, IsoDep ...)
-                    // but it doesn't provide transceive in its interface, so we need to explicitly cast it
+                    // but it doesn't provide transceive in its interface, so we need to explicitly
+                    // cast it
                     if (tech.equals("NfcA")) {
-                        NfcA techHandle = (NfcA)baseTechHandle;
+                        NfcA techHandle = (NfcA) baseTechHandle;
                         byte[] resultBytes = techHandle.transceive(bytes);
                         WritableArray resultRnArray = bytesToRnArray(resultBytes);
                         callback.invoke(null, resultRnArray);
                         return;
                     } else if (tech.equals("NfcB")) {
-                        NfcB techHandle = (NfcB)baseTechHandle;
+                        NfcB techHandle = (NfcB) baseTechHandle;
                         byte[] resultBytes = techHandle.transceive(bytes);
                         WritableArray resultRnArray = bytesToRnArray(resultBytes);
                         callback.invoke(null, resultRnArray);
                         return;
                     } else if (tech.equals("NfcF")) {
-                        NfcF techHandle = (NfcF)baseTechHandle;
+                        NfcF techHandle = (NfcF) baseTechHandle;
                         byte[] resultBytes = techHandle.transceive(bytes);
                         WritableArray resultRnArray = bytesToRnArray(resultBytes);
                         callback.invoke(null, resultRnArray);
                         return;
                     } else if (tech.equals("NfcV")) {
-                        NfcV techHandle = (NfcV)baseTechHandle;
+                        NfcV techHandle = (NfcV) baseTechHandle;
                         byte[] resultBytes = techHandle.transceive(bytes);
                         WritableArray resultRnArray = bytesToRnArray(resultBytes);
                         callback.invoke(null, resultRnArray);
                         return;
                     } else if (tech.equals("IsoDep")) {
-                        IsoDep techHandle = (IsoDep)baseTechHandle;
+                        IsoDep techHandle = (IsoDep) baseTechHandle;
                         byte[] resultBytes = techHandle.transceive(bytes);
                         WritableArray resultRnArray = bytesToRnArray(resultBytes);
                         callback.invoke(null, resultRnArray);
@@ -634,75 +645,73 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         byte[] pass = rnArrayToBytes(rnArray);
                         // String tech = techRequest.getTechType();
                         // TagTechnology baseTechHandle = techRequest.getTechHandle();
-                        MifareUltralight techHandle = (MifareUltralight)baseTechHandle;
-                        if(pass[4]==0x31){//lock
-                            byte[] resultBytes = techHandle.transceive(new byte[] {
-                                (byte) 0xA2, // WRITE
-                                (byte) 0x85,   // page address
-                                pass[0], pass[1], pass[2], pass[3]
+                        MifareUltralight techHandle = (MifareUltralight) baseTechHandle;
+                        if (pass[4] == 0x31) {// lock
+                            byte[] resultBytes = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                    (byte) 0x85, // page address
+                                    pass[0], pass[1], pass[2], pass[3] });
+                            byte pack[] = { (byte) 0x01, (byte) 0x00 };
+                            byte[] response = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                    (byte) 0x86, // page address
+                                    pack[0], pack[1], // bytes 0-1 are PACK value
+                                    (byte) 0, (byte) 0 // other bytes are RFU and must be written as 0
                             });
-                            byte pack[]={(byte) 0x01, (byte) 0x00};
-                            byte[] response = techHandle.transceive(new byte[] {
-                                (byte) 0xA2, // WRITE
-                                (byte) 0x86,   // page address
-                                pack[0], pack[1],   // bytes 0-1 are PACK value
-                                (byte) 0, (byte) 0  // other bytes are RFU and must be written as 0
+                            response = techHandle.transceive(new byte[] { (byte) 0x30, // READ
+                                    (byte) 0x83 // page address
                             });
-                            response = techHandle.transceive(new byte[] {
-                                (byte) 0x30, // READ
-                                (byte) 0x83    // page address
-                            });
-                            if ((response != null) && (response.length >= 16)) {  // read always returns 4 pages
-                                boolean prot = false;  // false = PWD_AUTH for write only, true = PWD_AUTH for read and write
-                                response = techHandle.transceive(new byte[] {
-                                    (byte) 0xA2, // WRITE
-                                    (byte) 0x83,   // page address
-                                    response[0], // keep old value for byte 0
-                                    response[1], // keep old value for byte 1
-                                    response[2], // keep old value for byte 2
-                                    (byte) 0x00 //to make the nfc write-password protected
+                            if ((response != null) && (response.length >= 16)) { // read always returns 4 pages
+                                boolean prot = false; // false = PWD_AUTH for write only, true = PWD_AUTH for read and
+                                                      // write
+                                response = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                        (byte) 0x83, // page address
+                                        response[0], // keep old value for byte 0
+                                        response[1], // keep old value for byte 1
+                                        response[2], // keep old value for byte 2
+                                        (byte) 0x00 // to make the nfc write-password protected
                                 });
                             }
                             WritableArray resultRnArray = bytesToRnArray(response);
                             callback.invoke(null, resultRnArray);
                             return;
-                        }
-                        else{
-                            byte[] response = techHandle.transceive(new byte[] {
-                                (byte) 0x1B, // PWD_AUTH
-                                pass[0], pass[1], pass[2], pass[3]
-                            });
+                        } else if (pass[4] == 0x33) {// 0x33 means checking if the tag is locked or not locked
+                            byte[] response = techHandle.transceive(new byte[] { (byte) 0x30, // PWD_AUTH
+                                    (byte) 0x83 });
+                            if ((response != null) && (response.length >= 16)) {
+                                byte[] pack = Arrays.copyOf(response, 2);
+                                WritableArray resultRnArray = bytesToRnArray(response);
+                                callback.invoke(null, resultRnArray);
+                                return;
+                            }
+                        } else {
+                            byte[] response = techHandle.transceive(new byte[] { (byte) 0x1B, // PWD_AUTH
+                                    pass[0], pass[1], pass[2], pass[3] });
                             if ((response != null) && (response.length >= 2)) {
                                 byte[] pack = Arrays.copyOf(response, 2);
-                                byte[] resultBytes = techHandle.transceive(new byte[] {
-                                    (byte) 0xA2, // WRITE
-                                    (byte) 0x85,   // page address
-                                    (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff
+                                byte[] resultBytes = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                        (byte) 0x85, // page address
+                                        (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff });
+                                response = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                        (byte) 0x86, // page address
+                                        pack[0], pack[1], // bytes 0-1 are PACK value
+                                        (byte) 0, (byte) 0 // other bytes are RFU and must be written as 0
                                 });
-                                response = techHandle.transceive(new byte[] {
-                                    (byte) 0xA2, // WRITE
-                                    (byte) 0x86,   // page address
-                                    pack[0], pack[1],   // bytes 0-1 are PACK value
-                                    (byte) 0, (byte) 0  // other bytes are RFU and must be written as 0
+                                response = techHandle.transceive(new byte[] { (byte) 0x30, // READ
+                                        (byte) 0x83 // page address
                                 });
-                                response = techHandle.transceive(new byte[] {
-                                    (byte) 0x30, // READ
-                                    (byte) 0x83    // page address
-                                });
-                                if ((response != null) && (response.length >= 16)) {  // read always returns 4 pages
-                                    boolean prot = false;  // false = PWD_AUTH for write only, true = PWD_AUTH for read and write
-                                    response = techHandle.transceive(new byte[] {
-                                        (byte) 0xA2, // WRITE
-                                        (byte) 0x83,   // page address
-                                        response[0], // keep old value for byte 0
-                                        response[1], // keep old value for byte 1
-                                        response[2], // keep old value for byte 2
-                                        (byte) 0xff // to remove passowrd
+                                if ((response != null) && (response.length >= 16)) { // read always returns 4 pages
+                                    boolean prot = false; // false = PWD_AUTH for write only, true = PWD_AUTH for read
+                                                          // and write
+                                    response = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                            (byte) 0x83, // page address
+                                            response[0], // keep old value for byte 0
+                                            response[1], // keep old value for byte 1
+                                            response[2], // keep old value for byte 2
+                                            (byte) 0xff // to remove passowrd
                                     });
                                 }
                                 WritableArray resultRnArray = bytesToRnArray(response);
                                 callback.invoke(null, resultRnArray);
-                                return; 
+                                return;
                             }
                         }
                     }
@@ -717,56 +726,49 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
         }
     }
+
     @ReactMethod
-    public void lockMifareUltralightToReadOnly(ReadableArray key, Callback callback){
+    public void lockMifareUltralightToReadOnly(ReadableArray key, Callback callback) {
         String error = "hi";
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     byte[] pass = rnArrayToBytes(key);
                     String tech = techRequest.getTechType();
                     TagTechnology baseTechHandle = techRequest.getTechHandle();
-                    MifareUltralight techHandle = (MifareUltralight)baseTechHandle;
-                    byte[] response = techHandle.transceive(new byte[]{
-                        (byte) 0x30,
-                        (byte) 0x83
-                    });
+                    MifareUltralight techHandle = (MifareUltralight) baseTechHandle;
+                    byte[] response = techHandle.transceive(new byte[] { (byte) 0x30, (byte) 0x83 });
                     byte auth0 = response[3];
-                    if(auth0==(byte) 0xff){
-                        //this tag is not locked  before
-                        byte[] resultBytes = techHandle.transceive(new byte[] {
-                            (byte) 0xA2, // WRITE
-                            (byte) 0x85,   // page address
-                            pass[0], pass[1], pass[2], pass[3]
+                    if (auth0 == (byte) 0xff) {
+                        // this tag is not locked before
+                        byte[] resultBytes = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                (byte) 0x85, // page address
+                                pass[0], pass[1], pass[2], pass[3] });
+                        byte pack[] = { (byte) 0x01, (byte) 0x00 };
+                        response = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                (byte) 0x86, // page address
+                                pack[0], pack[1], // bytes 0-1 are PACK value
+                                (byte) 0, (byte) 0 // other bytes are RFU and must be written as 0
                         });
-                        byte pack[]={(byte) 0x01, (byte) 0x00};
-                        response = techHandle.transceive(new byte[] {
-                            (byte) 0xA2, // WRITE
-                            (byte) 0x86,   // page address
-                            pack[0], pack[1],   // bytes 0-1 are PACK value
-                            (byte) 0, (byte) 0  // other bytes are RFU and must be written as 0
+                        response = techHandle.transceive(new byte[] { (byte) 0x30, // READ
+                                (byte) 0x83 // page address
                         });
-                        response = techHandle.transceive(new byte[] {
-                            (byte) 0x30, // READ
-                            (byte) 0x83    // page address
-                        });
-                        if ((response != null) && (response.length >= 16)) {  // read always returns 4 pages
-                            boolean prot = false;  // false = PWD_AUTH for write only, true = PWD_AUTH for read and write
-                            response = techHandle.transceive(new byte[] {
-                                (byte) 0xA2, // WRITE
-                                (byte) 0x83,   // page address
-                                response[0], // keep old value for byte 0
-                                response[1], // keep old value for byte 1
-                                response[2], // keep old value for byte 2
-                                (byte) 0x00 //to make the nfc write-password protected
+                        if ((response != null) && (response.length >= 16)) { // read always returns 4 pages
+                            boolean prot = false; // false = PWD_AUTH for write only, true = PWD_AUTH for read and write
+                            response = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                    (byte) 0x83, // page address
+                                    response[0], // keep old value for byte 0
+                                    response[1], // keep old value for byte 1
+                                    response[2], // keep old value for byte 2
+                                    (byte) 0x00 // to make the nfc write-password protected
                             });
                         }
                         WritableArray resultRnArray = bytesToRnArray(response);
                         callback.invoke(null, resultRnArray);
                         return;
-                    }
-                    else{
-                        //this tag is  locked, therefore needs unlocking first to write password and enable locking
+                    } else {
+                        // this tag is locked, therefore needs unlocking first to write password and
+                        // enable locking
                         callback.invoke(error);
                         return;
                     }
@@ -779,67 +781,62 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
         }
     }
+
     @ReactMethod
-    public void unlockMifareUltralight(ReadableArray key, Callback callback){
+    public void unlockMifareUltralight(ReadableArray key, Callback callback) {
         String error = "hi";
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     byte[] pass = rnArrayToBytes(key);
                     String tech = techRequest.getTechType();
                     TagTechnology baseTechHandle = techRequest.getTechHandle();
-                    MifareUltralight techHandle = (MifareUltralight)baseTechHandle;
-                    byte[] response = techHandle.transceive(new byte[] {
-                        (byte) 0x1B, // PWD_AUTH
-                        pass[0], pass[1], pass[2], pass[3]
-                    });
+                    MifareUltralight techHandle = (MifareUltralight) baseTechHandle;
+                    byte[] response = techHandle.transceive(new byte[] { (byte) 0x1B, // PWD_AUTH
+                            pass[0], pass[1], pass[2], pass[3] });
                     if ((response != null) && (response.length >= 2)) {
                         byte[] pack = Arrays.copyOf(response, 2);
-                        byte[] resultBytes = techHandle.transceive(new byte[] {
-                            (byte) 0xA2, // WRITE
-                            (byte) 0x85,   // page address
-                            (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff
+                        byte[] resultBytes = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                (byte) 0x85, // page address
+                                (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff });
+                        response = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                (byte) 0x86, // page address
+                                pack[0], pack[1], // bytes 0-1 are PACK value
+                                (byte) 0, (byte) 0 // other bytes are RFU and must be written as 0
                         });
-                        response = techHandle.transceive(new byte[] {
-                            (byte) 0xA2, // WRITE
-                            (byte) 0x86,   // page address
-                            pack[0], pack[1],   // bytes 0-1 are PACK value
-                            (byte) 0, (byte) 0  // other bytes are RFU and must be written as 0
+                        response = techHandle.transceive(new byte[] { (byte) 0x30, // READ
+                                (byte) 0x83 // page address
                         });
-                        response = techHandle.transceive(new byte[] {
-                            (byte) 0x30, // READ
-                            (byte) 0x83    // page address
-                        });
-                        if ((response != null) && (response.length >= 16)) {  // read always returns 4 pages
-                            boolean prot = false;  // false = PWD_AUTH for write only, true = PWD_AUTH for read and write
-                            response = techHandle.transceive(new byte[] {
-                                (byte) 0xA2, // WRITE
-                                (byte) 0x83,   // page address
-                                response[0], // keep old value for byte 0
-                                response[1], // keep old value for byte 1
-                                response[2], // keep old value for byte 2
-                                (byte) 0xff // to remove passowrd
+                        if ((response != null) && (response.length >= 16)) { // read always returns 4 pages
+                            boolean prot = false; // false = PWD_AUTH for write only, true = PWD_AUTH for read and write
+                            response = techHandle.transceive(new byte[] { (byte) 0xA2, // WRITE
+                                    (byte) 0x83, // page address
+                                    response[0], // keep old value for byte 0
+                                    response[1], // keep old value for byte 1
+                                    response[2], // keep old value for byte 2
+                                    (byte) 0xff // to remove passowrd
                             });
                         }
                         WritableArray resultRnArray = bytesToRnArray(response);
                         callback.invoke(null, resultRnArray);
-                        return; 
+                        return;
                     }
                     // byte[] response = techHandle.transceive(new byte[]{
-                    //     (byte) 0x30,
-                    //     (byte) 0x83
+                    // (byte) 0x30,
+                    // (byte) 0x83
                     // });
                     // byte auth0 = response[3];
                     // if(auth0==(byte) 0xff){
-                    //     //this tag is not locked  before
-                    //     callback.invoke(true);
-                    //     return;
+                    // //this tag is not locked before
+                    // callback.invoke(true);
+                    // return;
                     // }
                     // else{
-                    //     //this tag is  locked, therefore needs unlocking first to remove password and enable locking
-                        
-                    //     callback.invoke(false);
-                    //     return;
+                    // //this tag is locked, therefore needs unlocking first to remove password and
+                    // enable locking
+
+                    // callback.invoke(false);
+                    // return;
                     // }
                 } catch (Exception ex) {
                     Log.d(LOG_TAG, "transceive fail");
@@ -851,43 +848,45 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
         }
     }
+
     @ReactMethod
     public void getMaxTransceiveLength(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 try {
                     String tech = techRequest.getTechType();
 
                     TagTechnology baseTechHandle = techRequest.getTechHandle();
                     // TagTechnology is the base class for each tech (ex, NfcA, NfcB, IsoDep ...)
-                    // but it doesn't provide transceive in its interface, so we need to explicitly cast it
+                    // but it doesn't provide transceive in its interface, so we need to explicitly
+                    // cast it
                     if (tech.equals("NfcA")) {
-                        NfcA techHandle = (NfcA)baseTechHandle;
+                        NfcA techHandle = (NfcA) baseTechHandle;
                         int max = techHandle.getMaxTransceiveLength();
                         callback.invoke(null, max);
                         return;
                     } else if (tech.equals("NfcB")) {
-                        NfcB techHandle = (NfcB)baseTechHandle;
+                        NfcB techHandle = (NfcB) baseTechHandle;
                         int max = techHandle.getMaxTransceiveLength();
                         callback.invoke(null, max);
                         return;
                     } else if (tech.equals("NfcF")) {
-                        NfcF techHandle = (NfcF)baseTechHandle;
+                        NfcF techHandle = (NfcF) baseTechHandle;
                         int max = techHandle.getMaxTransceiveLength();
                         callback.invoke(null, max);
                         return;
                     } else if (tech.equals("NfcV")) {
-                        NfcV techHandle = (NfcV)baseTechHandle;
+                        NfcV techHandle = (NfcV) baseTechHandle;
                         int max = techHandle.getMaxTransceiveLength();
                         callback.invoke(null, max);
                         return;
                     } else if (tech.equals("IsoDep")) {
-                        IsoDep techHandle = (IsoDep)baseTechHandle;
+                        IsoDep techHandle = (IsoDep) baseTechHandle;
                         int max = techHandle.getMaxTransceiveLength();
                         callback.invoke(null, max);
                         return;
                     } else if (tech.equals("MifareUltralight")) {
-                        MifareUltralight techHandle = (MifareUltralight)baseTechHandle;
+                        MifareUltralight techHandle = (MifareUltralight) baseTechHandle;
                         int max = techHandle.getMaxTransceiveLength();
                         callback.invoke(null, max);
                         return;
@@ -905,7 +904,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void cancelNdefWrite(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (writeNdefRequest != null) {
                 writeNdefRequest.callback.invoke("cancelled");
                 writeNdefRequest = null;
@@ -915,9 +914,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
         }
     }
+
     @ReactMethod
     public void requestNdefWrite(ReadableArray rnArray, ReadableMap options, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (!isForegroundEnabled) {
                 callback.invoke("you should requestTagEvent first");
                 return;
@@ -934,7 +934,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
                     /// the only case we allow ndef message to be null is when formatting, see:
                     /// https://developer.android.com/reference/android/nfc/tech/NdefFormatable.html#format(android.nfc.NdefMessage)
-                    ///	this API allows the `firstMessage` to be null
+                    /// this API allows the `firstMessage` to be null
                     if (format && rnArray == null) {
                         msgToWrite = null;
                     } else {
@@ -942,22 +942,19 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         msgToWrite = new NdefMessage(bytes);
                     }
 
-                    writeNdefRequest = new WriteNdefRequest(
-                            msgToWrite,
-                            callback, // defer the callback
-                            format,
-                            formatReadOnly
-                    );
+                    writeNdefRequest = new WriteNdefRequest(msgToWrite, callback, // defer the callback
+                            format, formatReadOnly);
                 } catch (FormatException e) {
                     callback.invoke("Incorrect ndef format");
                 }
             }
         }
     }
+
     @ReactMethod
     public void requestNdefWifiWrite(ReadableArray rnArray, ReadableMap options, Callback callback) {
         // System.out.print(rnArray);
-        synchronized(this) {
+        synchronized (this) {
             if (!isForegroundEnabled) {
                 callback.invoke("you should requestTagEvent first");
                 return;
@@ -969,46 +966,40 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 boolean format = options.getBoolean("format");
                 boolean formatReadOnly = options.getBoolean("formatReadOnly");
 
-                //try {
-                    NdefMessage msgToWrite;
+                // try {
+                NdefMessage msgToWrite;
 
-                    /// the only case we allow ndef message to be null is when formatting, see:
-                    /// https://developer.android.com/reference/android/nfc/tech/NdefFormatable.html#format(android.nfc.NdefMessage)
-                    ///	this API allows the `firstMessage` to be null
-                    if (format && rnArray == null) {
-                        msgToWrite = null;
-                    } else {
-                        // String[] arr = new String(2);
-                        // arr[0] = "123";
-                        // arr[1] = "123";
-                        String[] arr = {rnArray.getString(0),rnArray.getString(1)};
-                        byte[] payload = generateNdefPayload(arr);
-                        //byte[] bytes = rnArrayToBytes(rnArray);
-                        //msgToWrite = new NdefMessage(bytes);
-                        NdefRecord mimeRecord = new NdefRecord(
-                        NdefRecord.TNF_MIME_MEDIA,
-                        NFC_TOKEN_MIME_TYPE.getBytes(Charset.forName("US-ASCII")),
-                        new byte[0],
-                        payload);
-                    
-                        msgToWrite = new NdefMessage(new NdefRecord[] {mimeRecord});
-                    }
+                /// the only case we allow ndef message to be null is when formatting, see:
+                /// https://developer.android.com/reference/android/nfc/tech/NdefFormatable.html#format(android.nfc.NdefMessage)
+                /// this API allows the `firstMessage` to be null
+                if (format && rnArray == null) {
+                    msgToWrite = null;
+                } else {
+                    // String[] arr = new String(2);
+                    // arr[0] = "123";
+                    // arr[1] = "123";
+                    String[] arr = { rnArray.getString(0), rnArray.getString(1), rnArray.getString(2) };
+                    byte[] payload = generateNdefPayload(arr);
+                    // byte[] bytes = rnArrayToBytes(rnArray);
+                    // msgToWrite = new NdefMessage(bytes);
+                    NdefRecord mimeRecord = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
+                            NFC_TOKEN_MIME_TYPE.getBytes(Charset.forName("US-ASCII")), new byte[0], payload);
 
-                    writeNdefRequest = new WriteNdefRequest(
-                            msgToWrite,
-                            callback, // defer the callback
-                            format,
-                            formatReadOnly
-                    );
-                //} catch (FormatException e) {
-                //    callback.invoke("Incorrect ndef format");
-                //}
+                    msgToWrite = new NdefMessage(new NdefRecord[] { mimeRecord });
+                }
+
+                writeNdefRequest = new WriteNdefRequest(msgToWrite, callback, // defer the callback
+                        format, formatReadOnly);
+                // } catch (FormatException e) {
+                // callback.invoke("Incorrect ndef format");
+                // }
             }
         }
     }
+
     @ReactMethod
     public void setNdefPushMessage(ReadableArray rnArray, Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest == null && writeNdefRequest == null) {
                 try {
                     Activity currentActivity = getCurrentActivity();
@@ -1056,7 +1047,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    public void isSupported(String tech, Callback callback){
+    public void isSupported(String tech, Callback callback) {
         Log.d(LOG_TAG, "isSupported");
         Activity currentActivity = getCurrentActivity();
         if (currentActivity == null) {
@@ -1069,7 +1060,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             return;
         }
 
-        // If we ask for MifareClassic support, so some extra checks, since not all chips and devices are
+        // If we ask for MifareClassic support, so some extra checks, since not all
+        // chips and devices are
         // compatible with MifareClassic
         // TODO: Check if it's the same case with MifareUltralight
         if (tech.equals("MifareClassic")) {
@@ -1138,7 +1130,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
         // capture all rest NDEF, such as uri-based
         intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED));
-        techLists.add(new String[]{Ndef.class.getName()});
+        techLists.add(new String[] { Ndef.class.getName() });
 
         // for those without NDEF, get them as tags
         intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED));
@@ -1219,7 +1211,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     }
                 } else {
                     if (enable) {
-                        nfcAdapter.enableForegroundDispatch(currentActivity, getPendingIntent(), getIntentFilters(), getTechLists());
+                        nfcAdapter.enableForegroundDispatch(currentActivity, getPendingIntent(), getIntentFilters(),
+                                getTechLists());
                     } else {
                         nfcAdapter.disableForegroundDispatch(currentActivity);
                     }
@@ -1245,15 +1238,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         return techLists.toArray(new String[0][0]);
     }
 
-    private void sendEvent(String eventName,
-                           @Nullable WritableMap params) {
-        getReactApplicationContext()
-                .getJSModule(RCTNativeAppEventEmitter.class)
-                .emit(eventName, params);
+    private void sendEvent(String eventName, @Nullable WritableMap params) {
+        getReactApplicationContext().getJSModule(RCTNativeAppEventEmitter.class).emit(eventName, params);
     }
 
-    private void sendEventWithJson(String eventName,
-                                   JSONObject json) {
+    private void sendEventWithJson(String eventName, JSONObject json) {
         try {
             WritableMap map = JsonConvert.jsonToReact(json);
             sendEvent(eventName, map);
@@ -1261,12 +1250,17 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             Log.d(LOG_TAG, "fireNdefEvent fail: " + ex);
         }
     }
+
     private static byte[] generateNdefPayload(String[] arr) {
         String ssid = arr[0]; // wifi ssid
         short ssidSize = (short) ssid.getBytes().length;
 
         short authType;
-        authType = AUTH_TYPE_WPA2_PSK;
+        if (arr[2].equals("WPA")) {
+            authType = AUTH_TYPE_WPA2_PSK;
+        } else {
+            authType = AUTH_TYPE_OPEN;
+        }
 
         String networkKey = arr[1]; // wifi password
         short networkKeySize = (short) networkKey.getBytes().length;
@@ -1292,11 +1286,9 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         buffer.putShort((short) 2);
         buffer.putShort(authType);
 
-
         buffer.putShort(NETWORK_KEY_FIELD_ID);
         buffer.putShort(networkKeySize);
         buffer.put(networkKey.getBytes());
-
 
         return buffer.array();
     }
@@ -1308,22 +1300,21 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             final String action = intent.getAction();
 
             if (action.equals(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(NfcAdapter.EXTRA_ADAPTER_STATE,
-                        NfcAdapter.STATE_OFF);
+                final int state = intent.getIntExtra(NfcAdapter.EXTRA_ADAPTER_STATE, NfcAdapter.STATE_OFF);
                 String stateStr = "unknown";
                 switch (state) {
-                    case NfcAdapter.STATE_OFF:
-                        stateStr = "off";
-                        break;
-                    case NfcAdapter.STATE_TURNING_OFF:
-                        stateStr = "turning_off";
-                        break;
-                    case NfcAdapter.STATE_ON:
-                        stateStr = "on";
-                        break;
-                    case NfcAdapter.STATE_TURNING_ON:
-                        stateStr = "turning_on";
-                        break;
+                case NfcAdapter.STATE_OFF:
+                    stateStr = "off";
+                    break;
+                case NfcAdapter.STATE_TURNING_OFF:
+                    stateStr = "turning_off";
+                    break;
+                case NfcAdapter.STATE_ON:
+                    stateStr = "on";
+                    break;
+                case NfcAdapter.STATE_TURNING_ON:
+                    stateStr = "turning_on";
+                    break;
                 }
 
                 try {
@@ -1361,14 +1352,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
         WritableMap parsed = null;
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        // Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
+        // Parcelable[] messages =
+        // intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
 
-        synchronized(this) {
+        synchronized (this) {
             if (writeNdefRequest != null) {
-                writeNdef(
-                        tag,
-                        writeNdefRequest
-                );
+                writeNdef(tag, writeNdefRequest);
                 writeNdefRequest = null;
 
                 // explicitly return null, to avoid extra detection
@@ -1479,7 +1468,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 callback.invoke("writeNdef really fail: " + ex);
             }
         } else {
-            try {               
+            try {
                 Log.d(LOG_TAG, "ready to writeNdef");
                 Ndef ndef = Ndef.get(tag);
                 if (ndef == null) {
@@ -1503,16 +1492,16 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private static byte[] rnArrayToBytes(ReadableArray rArray) {
         byte[] bytes = new byte[rArray.size()];
         for (int i = 0; i < rArray.size(); i++) {
-            bytes[i] = (byte)(rArray.getInt(i) & 0xff);
+            bytes[i] = (byte) (rArray.getInt(i) & 0xff);
         }
         return bytes;
     }
     // private static byte[] rnArrayToStringArray(ReadableArray rArray) {
-    //     String[] arr = new String[rArray.size()];
-    //     for (int i = 0; i < rArray.size(); i++) {
-    //         arr[i] = (rArray.getString(i));
-    //     }
-    //     return arr;
+    // String[] arr = new String[rArray.size()];
+    // for (int i = 0; i < rArray.size(); i++) {
+    // arr[i] = (rArray.getString(i));
+    // }
+    // return arr;
     // }
 
     private static WritableArray bytesToRnArray(byte[] bytes) {
@@ -1526,4 +1515,3 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         return value;
     }
 }
-
