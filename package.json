@@ -1,31 +1,29 @@
 {
   "_args": [
     [
-      "react-native-nfc-manager@1.2.2",
+      "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
       "/Users/mac/rsadProjects/wifiporter"
     ]
   ],
-  "_from": "react-native-nfc-manager@1.2.2",
-  "_id": "react-native-nfc-manager@1.2.2",
+  "_from": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
+  "_id": "react-native-nfc-manager@git+https://github.com/deenMuhammad/react-native-nfc-manager.git#8c120bed97e6fcfcebb2e11bac37924469b742d8",
   "_inBundle": false,
-  "_integrity": "sha512-mOJD2YDpPaG+JzsjB03c+xDsRHr2Vm5CFRr9rtMRt+c/9jdvn/c2+VXCFA5/PJ1GEXdY/vFFOP96Qv5kAau8Mw==",
+  "_integrity": "",
   "_location": "/react-native-nfc-manager",
   "_phantomChildren": {},
   "_requested": {
-    "type": "version",
-    "registry": true,
-    "raw": "react-native-nfc-manager@1.2.2",
-    "name": "react-native-nfc-manager",
-    "escapedName": "react-native-nfc-manager",
-    "rawSpec": "1.2.2",
-    "saveSpec": null,
-    "fetchSpec": "1.2.2"
+    "type": "git",
+    "raw": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
+    "rawSpec": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
+    "saveSpec": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
+    "fetchSpec": "https://github.com/deenMuhammad/react-native-nfc-manager.git",
+    "gitCommittish": null
   },
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/react-native-nfc-manager/-/react-native-nfc-manager-1.2.2.tgz",
-  "_spec": "1.2.2",
+  "_resolved": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git#8c120bed97e6fcfcebb2e11bac37924469b742d8",
+  "_spec": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
   "_where": "/Users/mac/rsadProjects/wifiporter",
   "author": {
     "name": "Richie",
