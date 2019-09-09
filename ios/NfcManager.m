@@ -35,7 +35,7 @@ NSString* getErrorMessage(NSError *error) {
     NSError *underlyingError = [userInfo objectForKey:NSUnderlyingErrorKey];
     NSString* result = [underlyingError localizedDescription];
     if (result == nil) {
-        return @"known error";
+        return @"unknown error";
     }
     return result;
 }
