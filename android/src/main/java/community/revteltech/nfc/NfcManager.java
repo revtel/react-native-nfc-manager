@@ -880,7 +880,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    private void registerTagEvent(String alertMessage, ReadableMap options, Callback callback) {
+    private void registerTagEvent(ReadableMap options, Callback callback) {
         this.isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
         this.readerModeFlags = options.getInt("readerModeFlags");
 
@@ -910,7 +910,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    private void unregisterTagEvent(String alertMessage, Callback callback) {
+    private void unregisterTagEvent(Callback callback) {
         Log.d(LOG_TAG, "registerTag");
         isForegroundEnabled = false;
         intentFilters.clear();
@@ -918,6 +918,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             enableDisableForegroundDispatch(false);
         }
         callback.invoke();
+    }
+
+    @ReactMethod
+    private void hasTagEventRegistration(Callback callback) {
+        Log.d(LOG_TAG, "isSessionAvailable");
+        callback.invoke(null, isForegroundEnabled);
     }
 
     @Override

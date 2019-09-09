@@ -8,12 +8,13 @@ import Ndef from './ndef-lib'
 import {NativeNfcManager, NfcManagerEmitter} from './NativeNfcManager'
 
 const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
+  alertMessage: 'Please tap NFC tags',
   invalidateAfterFirstRead: false,
   isReaderModeEnabled: false,
   readerModeFlags: 0,
 };
 
-const Events = {
+const NfcEvents = {
   DiscoverTag: 'NfcManagerDiscoverTag',
   SessionClosed: 'NfcManagerSessionClosed',
   StateChanged: 'NfcManagerStateChanged',
@@ -40,49 +41,45 @@ const NfcAdapter = {
   FLAG_READER_NO_PLATFORM_SOUNDS: 0x100,
 };
 
-const LOG = 'NfcManagerJs';
-
 class NfcManager {
   constructor() {
+    this.cleanUpTagRegistration = false;
+    this._subscribeNativeEvents();
+
+    // legacy stuff
     this._clientTagDiscoveryListener = null;
     this._clientSessionClosedListener = null;
-    this._session = null;
     this._subscription = null;
   }
 
-  // Constants, by the lack of ES7 we do it with getters
+  // -------------------------------------
+  // public 
+  // -------------------------------------
+  setEventListener = (name, callback) => {
+    const allNfcEvents = Object.keys(NfcEvents).map(k => NfcEvents[k]);
+    if (allNfcEvents.indexOf(name) === -1) {
+      throw new Error('no such event');
+    }
+
+    this._clientListeners[name] = callback;
+  }
+
   get MIFARE_BLOCK_SIZE() { return NativeNfcManager.MIFARE_BLOCK_SIZE };
 	get MIFARE_ULTRALIGHT_PAGE_SIZE() { return NativeNfcManager.MIFARE_ULTRALIGHT_PAGE_SIZE };
 	get MIFARE_ULTRALIGHT_TYPE() { return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE };
 	get MIFARE_ULTRALIGHT_TYPE_C() { return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE_C };
 	get MIFARE_ULTRALIGHT_TYPE_UNKNOWN() { return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE_UNKNOWN };
 
-  start({ onSessionClosedIOS } = {}) {
+  start() {
     return new Promise((resolve, reject) => {
-      NativeNfcManager.start((err, result) => {
+      NativeNfcManager.start((err) => {
         if (err) {
           reject(err);
         } else {
-          if (Platform.OS === 'ios') {
-            this._clientSessionClosedListener = onSessionClosedIOS;
-            this._session = NfcManagerEmitter.addListener(Events.SessionClosed, this._handleSessionClosed);
-          } else {
-            this._session = {
-              remove: () => { },
-            };
-          }
           resolve();
         }
       });
     })
-  }
-
-  stop() {
-    if (this._session) {
-      this._session.remove();
-      this._session = null;
-    }
-    return Promise.resolve();
   }
 
   isSupported(tech = ''){
@@ -97,6 +94,118 @@ class NfcManager {
     })
   }
 
+  registerTagEvent(options = {}) {
+    const optionsWithDefault = {
+      ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
+      ...options,
+    };
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.registerTagEvent(optionsWithDefault, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  unregisterTagEvent() {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.unregisterTagEvent((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result)
+        }
+      })
+    })
+  }
+
+  // -------------------------------------
+  // private
+  // -------------------------------------
+  _subscribeNativeEvents = () => {
+    this._subscriptions = {}
+    this._clientListeners = {};
+    this._subscriptions[NfcEvents.DiscoverTag] = NfcManagerEmitter.addListener(
+      NfcEvents.DiscoverTag, this._onDiscoverTag
+    );
+
+    if (Platform.OS === 'ios') {
+      this._subscriptions[NfcEvents.SessionClosed] = NfcManagerEmitter.addListener(
+        NfcEvents.SessionClosed, this._onSessionClosedIOS
+      );
+    }
+
+    if (Platform.OS === 'android') {
+      this._subscriptions[NfcEvents.StateChanged] = NfcManagerEmitter.addListener(
+        NfcEvents.StateChanged, this._onStateChangedAndroid
+      );
+    }
+  }
+
+  _onDiscoverTag = tag => {
+    const callback = this._clientListeners[NfcEvents.DiscoverTag];
+    if (callback) {
+      callback(tag);
+    }
+  }
+
+  _onSessionClosedIOS = () => {
+    const callback = this._clientListeners[NfcEvents.SessionClosed];
+    if (callback) {
+      callback();
+    }
+  }
+
+  _onStateChangedAndroid = state => {
+    const callback = this._clientListeners[NfcEvents.StateChanged];
+    if (callback) {
+      callback(state);
+    }
+  }
+
+  _requestTechnology(tech) {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.requestTechnology(tech, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  _cancelTechnologyRequest() {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.cancelTechnologyRequest((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  _getTag() {
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.getTag((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      })
+    })
+  }
+
+  // -------------------------------------
+  // public only for Android
+  // -------------------------------------
   isEnabled() {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
@@ -137,151 +246,6 @@ class NfcManager {
     })
   }
 
-  registerTagEvent(listener, alertMessage = '', options = {}) {
-    // Support legacy `invalidateAfterFirstRead` boolean
-    if (options === true || options === false) {
-      options = {
-        invalidateAfterFirstRead: options,
-      };
-    }
-
-    options = {
-      ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
-      ...options,
-    };
-
-    if (!this._subscription) {
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.registerTagEvent(
-          alertMessage,
-          options,
-          (err, result) => {
-            if (err) {
-              reject(err);
-            } else {
-              this._clientTagDiscoveryListener = listener;
-              this._subscription = NfcManagerEmitter.addListener(
-                Events.DiscoverTag,
-                this._handleDiscoverTag,
-              );
-              resolve(result);
-            }
-          },
-        );
-      });
-    }
-    return Promise.resolve();
-  }
-
-  unregisterTagEvent(alertMessage = '') {
-    if (this._subscription) {
-      this._clientTagDiscoveryListener = null;
-      this._subscription.remove();
-      this._subscription = null;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.unregisterTagEvent(
-          alertMessage,
-          (err, result) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result)
-            }
-          }
-        )
-      })
-    }
-    return Promise.resolve();
-  }
-
-  registerTagEventExIOS(listener, alertMessage = '', options = {}) {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    // Support legacy `invalidateAfterFirstRead` boolean
-    if (options === true || options === false) {
-      options = {
-        invalidateAfterFirstRead: options,
-      };
-    }
-
-    options = {
-      ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
-      ...options,
-    };
-
-    if (!this._subscription) {
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.registerTagEventEx(
-          alertMessage,
-          options,
-          (err, result) => {
-            if (err) {
-              reject(err);
-            } else {
-              this._clientTagDiscoveryListener = listener;
-              this._subscription = NfcManagerEmitter.addListener(
-                Events.DiscoverTag,
-                this._handleDiscoverTag,
-              );
-              resolve(result);
-            }
-          },
-        );
-      });
-    }
-    return Promise.resolve();
-  }
-
-  unregisterTagEventExIOS(alertMessage = '') {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    if (this._subscription) {
-      this._clientTagDiscoveryListener = null;
-      this._subscription.remove();
-      this._subscription = null;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.unregisterTagEventEx(
-          alertMessage,
-          (err, result) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result)
-            }
-          }
-        )
-      })
-    }
-    return Promise.resolve();
-  }
-
-  _handleDiscoverTag = tag => {
-    if (this._clientTagDiscoveryListener) {
-      this._clientTagDiscoveryListener(tag);
-    }
-  }
-
-  _handleSessionClosed = () => {
-    if (this._subscription) {
-        this._subscription.remove();
-        this._subscription = null;
-    }
-    this._clientTagDiscoveryListener = null;
-    this._clientSessionClosedListener && this._clientSessionClosedListener();
-  }
-
-  onStateChanged(listener) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return Promise.resolve(NfcManagerEmitter.addListener(Events.StateChanged, listener));
-  }
-
   setNdefPushMessage(bytes) {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
@@ -299,7 +263,118 @@ class NfcManager {
   }
 
   // -------------------------------------
-  // Ndef Writing request API  
+  // public only for iOS
+  // -------------------------------------
+  setAlertMessageIOS(alertMessage) {
+    if (Platform.OS !== 'ios') {
+      // it's a no-op for android
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.setAlertMessage(alertMessage, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      })
+    })
+  }
+
+  // -------------------------------------
+  // Android private
+  // -------------------------------------
+  _hasTagEventRegistrationAndroid() {
+    if (Platform.OS !== 'android') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.hasTagEventRegistration((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  // -------------------------------------
+  // iOS private
+  // -------------------------------------
+  _isSessionAvailableIOS() {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.isSessionAvailable((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  _isSessionExAvailableIOS() {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.isSessionExAvailable((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  _registerTagEventExIOS(options = {}) {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    const optionsWithDefault = {
+      ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
+      ...options,
+    };
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.registerTagEventEx(optionsWithDefault, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  _unregisterTagEventExIOS() {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.unregisterTagEventEx((err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result)
+        }
+      })
+    })
+  }
+
+  // -------------------------------------
+  // deprecated APIs 
   // -------------------------------------
   requestNdefWrite(bytes, {format=false, formatReadOnly=false}={}) {
     if (Platform.OS === 'ios') {
@@ -336,70 +411,85 @@ class NfcManager {
   // -------------------------------------
   // Nfc Tech request API  
   // -------------------------------------
-  requestTechnology(tech) {
-    return new Promise((resolve, reject) => {
+  requestTechnology = async (tech, options={}) => {
+    try {
       if (typeof tech === 'string') {
         tech = [tech];
       }
 
-      NativeNfcManager.requestTechnology(tech, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
+      let hasNdefTech = tech.indexOf(NfcTech.Ndef) !== -1;
+      let sessionAvailable = false;
 
-  cancelTechnologyRequest() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.cancelTechnologyRequest((err, result) => {
-        if (err) {
-          reject(err);
+      // check if required session is available
+      if (Platform.OS === 'ios') {
+        if (hasNdefTech) {
+          sessionAvailable = await this._isSessionAvailableIOS();
         } else {
-          resolve(result);
+          sessionAvailable = await this._isSessionExAvailableIOS();
         }
-      })
-    })
-  }
+      } else {
+        sessionAvailable = await this._hasTagEventRegistrationAndroid();
+      }
 
-  closeTechnology() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
+      // make sure we do register for tag event 
+      if (!sessionAvailable) {
+        if (Platform.OS === 'ios') {
+          if (hasNdefTech) {
+            await this.registerTagEvent(options);
+          } else {
+            await this._registerTagEventExIOS(options);
+          }
+        } else {
+          await this.registerTagEvent(options);
+        }
+
+        // the tag registration is 
+        this.cleanUpTagRegistration = true;
+      }
+
+      return await this._requestTechnology(tech);
+    } catch (ex) {
+      throw ex;
     }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.closeTechnology((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
   }
 
-  getTag() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.getTag((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
+  cancelTechnologyRequest = async () => {
+    await this._cancelTechnologyRequest();
+
+    if (this.cleanUpTagRegistration) {
+      this.cleanUpTagRegistration = false;
+
+      if (Platform.OS === 'ios') {
+        let sessionAvailable = false;
+
+        // because we don't know which tech currently requested
+        // so we try both, and perform early return when hitting any
+        sessionAvailable = await this._isSessionExAvailableIOS();
+        if (sessionAvailable) {
+          await this._unregisterTagEventExIOS();
+          return;
         }
-      })
-    })
+
+        sessionAvailable = await this._isSessionAvailableIOS();
+        if (sessionAvailable) {
+          await this.unregisterTagEvent();
+          return;
+        }
+      } else {
+        await this.unregisterTagEvent();
+        return;
+      }
+    }
+  }
+
+  getTag = async () => {
+    return this._getTag();
   }
 
   // -------------------------------------
   // NfcTech.Ndef API
   // -------------------------------------
   writeNdefMessage(bytes) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
     return new Promise((resolve, reject) => {
       NativeNfcManager.writeNdefMessage(bytes, (err, result) => {
         if (err) {
@@ -412,10 +502,6 @@ class NfcManager {
   }
 
   getNdefMessage() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
     return new Promise((resolve, reject) => {
       NativeNfcManager.getNdefMessage((err, result) => {
         if (err) {
@@ -427,7 +513,7 @@ class NfcManager {
     })
   }
 
-  getCachedNdefMessage() {
+  getCachedNdefMessageAndroid() {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
     }
@@ -443,7 +529,7 @@ class NfcManager {
     })
   }
 
-  makeReadOnly() {
+  makeReadOnlyAndroid() {
     if (Platform.OS === 'ios') {
       return Promise.reject('not implemented');
     }
@@ -458,7 +544,6 @@ class NfcManager {
       })
     })
   }
-
 
   // -------------------------------------
   // NfcTech.MifareClassic API
@@ -744,39 +829,6 @@ class NfcManager {
       });
     })
   }
-
-  readNdefIOS() {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.readNDEF((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    })
-  }
-
-  writeNdefIOS(bytes) {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.writeNDEF(bytes, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    })
-  }
-
 }
 
 export default new NfcManager();
@@ -785,6 +837,7 @@ export {
   ByteParser,
   NdefParser,
   NfcTech,
+  NfcEvents,
   NfcAdapter,
   Ndef,
 }
