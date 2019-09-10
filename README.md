@@ -16,12 +16,11 @@ If you're interested in helping this, please check the `v2` branch.
 
 Currently this work will be published in npm beta channel.
 
-## React Native Version Compatibility
+## [IMPORTANT!!] React Native Version Compatibility
 
-| `react-native-nfc-manager` version        | Required React Native Version                                                     |
-| ----------------------------------------- | --------------------------------------------------------------------------------- |
-| `2.x.x` (currently in beta)                                   | `>= 0.60`                                                                         |
-| `1.x.x`                                   | `< 0.60`                                                                          |
+* `XCode 11 beta + RN60`: all `2.0.0-beta.X` version should be fine
+* `XCode 10 + RN60`: please use `2.0.0-beta.1`
+* `XCode 10 + RN59 and below`: please use `1.2.2`
 
 **IMPORTANT** For RN 0.60 users, this module will leverage [autolink](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md#autolinking), which means:
 1. for both iOS/android, you don't need to perform `react-native link` like before.
