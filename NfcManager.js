@@ -191,68 +191,6 @@ class NfcManager {
     return Promise.resolve();
   }
 
-  registerTagEventEx(listener, alertMessage = '', options = {}) {
-    if (Platform.OS === 'android') {
-      return Promise.reject('not implemented');
-    }
-
-    // Support legacy `invalidateAfterFirstRead` boolean
-    if (options === true || options === false) {
-      options = {
-        invalidateAfterFirstRead: options,
-      };
-    }
-
-    options = {
-      ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
-      ...options,
-    };
-
-    if (!this._subscription) {
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.registerTagEventEx(
-          alertMessage,
-          options,
-          (err, result) => {
-            if (err) {
-              reject(err);
-            } else {
-              this._clientTagDiscoveryListener = listener;
-              this._subscription = NfcManagerEmitter.addListener(
-                Events.DiscoverTag,
-                this._handleDiscoverTag,
-              );
-              resolve(result);
-            }
-          },
-        );
-      });
-    }
-    return Promise.resolve();
-  }
-
-  unregisterTagEventEx() {
-    if (Platform.OS === 'android') {
-      return Promise.reject('not implemented');
-    }
-
-    if (this._subscription) {
-      this._clientTagDiscoveryListener = null;
-      this._subscription.remove();
-      this._subscription = null;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.unregisterTagEventEx((err, result) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(result)
-          }
-        })
-      })
-    }
-    return Promise.resolve();
-  }
-
   _handleDiscoverTag = tag => {
     if (this._clientTagDiscoveryListener) {
       this._clientTagDiscoveryListener(tag);
@@ -333,22 +271,6 @@ class NfcManager {
   requestTechnology(tech) {
     return new Promise((resolve, reject) => {
       NativeNfcManager.requestTechnology(tech, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  requestTechnologies(techs) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.requestTechnologies(techs, (err, result) => {
         if (err) {
           reject(err);
         } else {
@@ -464,7 +386,6 @@ class NfcManager {
       })
     })
   }
-
 
   // -------------------------------------
   // NfcTech.MifareClassic API
