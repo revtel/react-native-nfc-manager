@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import android.provider.Settings;
 import com.facebook.react.bridge.*;
@@ -119,23 +119,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    public void requestTechnology(String tech, Callback callback) {
-        synchronized(this) {
-            if (!isForegroundEnabled) {
-                callback.invoke("you should requestTagEvent first");
-                return;
-            }
-
-            if (hasPendingRequest()) {
-                callback.invoke("You can only issue one request at a time");
-            } else {
-                techRequest = new TagTechnologyRequest(tech, callback);
-            }
-        }
-    }
-
-    @ReactMethod
-    public void requestTechnologies(ReadableArray techs, Callback callback) {
+    public void requestTechnology(ReadableArray techs, Callback callback) {
         synchronized(this) {
             if (!isForegroundEnabled) {
                 callback.invoke("you should requestTagEvent first");
@@ -149,7 +133,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
         }
     }
-
 
     @ReactMethod
     public void closeTechnology(Callback callback) {
@@ -585,7 +568,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         }
     }
 
-
     @ReactMethod
     public void connect(ReadableArray techs, Callback callback){
         synchronized(this) {
@@ -898,7 +880,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    private void registerTagEvent(String alertMessage, ReadableMap options, Callback callback) {
+    private void registerTagEvent(ReadableMap options, Callback callback) {
         this.isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
         this.readerModeFlags = options.getInt("readerModeFlags");
 
@@ -936,6 +918,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             enableDisableForegroundDispatch(false);
         }
         callback.invoke();
+    }
+
+    @ReactMethod
+    private void hasTagEventRegistration(Callback callback) {
+        Log.d(LOG_TAG, "isSessionAvailable");
+        callback.invoke(null, isForegroundEnabled);
     }
 
     @Override
@@ -1119,7 +1107,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 if (!techRequest.isConnected()) {
                     boolean result = techRequest.connect(tag);
                     if (result) {
-                        techRequest.getPendingCallback().invoke();
+                        techRequest.getPendingCallback().invoke(null, techRequest.getTechType());
                     } else {
                         techRequest.getPendingCallback().invoke("fail to connect tag");
                         techRequest = null;

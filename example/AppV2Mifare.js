@@ -1,17 +1,13 @@
 import React from 'react';
-import {
-    View,
-    Text,
-    Button,
-    Platform,
-    TouchableOpacity,
-    Linking,
-    TextInput,
-    ScrollView,
+import { 
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
 } from 'react-native';
-import NfcManager, {Ndef} from '../NfcManager';
+import NfcManager, {NfcTech} from '../NfcManager';
 
-class AppIOS13 extends React.Component {
+class AppV2Mifare extends React.Component {
   componentDidMount() {
     NfcManager.start();
   }
@@ -23,12 +19,12 @@ class AppIOS13 extends React.Component {
   render() {
     return (
       <View style={{padding: 20}}>
-        <Text>NFC Demo on iOS13</Text>
+        <Text>NFC Demo</Text>
         <TouchableOpacity 
           style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
-          onPress={this._testMifare}
+          onPress={this._test}
         >
-          <Text>Test Mifare</Text>
+          <Text>Test</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -37,28 +33,39 @@ class AppIOS13 extends React.Component {
         >
           <Text>Cancel Test</Text>
         </TouchableOpacity>
-
       </View>
     )
   }
 
   _cleanUp = () => {
     NfcManager.cancelTechnologyRequest().catch(() => 0);
-    NfcManager.unregisterTagEventEx().catch(() => 0);    
   }
 
-  _testMifare = async () => {
+  _test = async () => {
     try {
-      await NfcManager.registerTagEventEx()
-      let resp = await NfcManager.requestTechnology('mifare');
+      let tech = Platform.OS === 'ios' ? NfcTech.MifareIOS : NfcTech.NfcA;
+      let resp = await NfcManager.requestTechnology(tech, {
+        alertMessage: 'Ready to do some custom Mifare cmd!'
+      });
       console.warn(resp);
+
+      // the NFC uid can be found in tag.id
       let tag = await NfcManager.getTag();
       console.warn(tag);
+
+      if (Platform.OS === 'ios') {
+        resp = await NfcManager.sendMifareCommandIOS([0x30, 0x00]);
+      } else {
+        resp = await NfcManager.transceive([0x30, 0x00]);
+      }
+      console.warn(resp);
+
       this._cleanUp();
     } catch (ex) {
+      console.warn('ex', ex);
       this._cleanUp();
     }
   }
 }
 
-export default AppIOS13;
+export default AppV2Mifare;
