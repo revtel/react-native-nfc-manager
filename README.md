@@ -65,21 +65,21 @@ Look into `example` for the features you need.
 
 **v2 examples**
 
-[v2-ios+android-read-ndef](example/AppV2.js)
-[v2-ios+android-write-ndef](example/AppV2Ndef.js)
-[v2-ios+android-get-uid](example/AppV2Mifare.js)
-[v2-ios+android-mifare-custom-command](example/AppV2Mifare.js)
+* [v2-ios+android-read-ndef](example/AppV2.js)
+* [v2-ios+android-write-ndef](example/AppV2Ndef.js)
+* [v2-ios+android-get-uid](example/AppV2Mifare.js)
+* [v2-ios+android-mifare-custom-command](example/AppV2Mifare.js)
 
 **v1 examples**
 
-[v1-ios-read-ndef](example/App.js)
-[v1-android-read-write-ndef](example/App.js)
-[v1-android-mifare-classic](example/AndroidMifareClassic.js)
-[v1-android-read-write-ndef-with-ndef-tech](example/AndroidTechTestNdef.js)
+* [v1-ios-read-ndef](example/App.js)
+* [v1-android-read-write-ndef](example/App.js)
+* [v1-android-mifare-classic](example/AndroidMifareClassic.js)
+* [v1-android-read-write-ndef-with-ndef-tech](example/AndroidTechTestNdef.js)
 
 ## API Document
 
-[v2 doc](APIv2.md)
-[v1 doc](APIv1.md)
+* [v2 doc](APIv2.md)
+* [v1 doc](APIv1.md)
 
 
