@@ -39,13 +39,18 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 ## Install
 
 ```shell
-# RN >= 0.60
+# XCode 11 beta + RN >= 0.60
 npm i --save react-native-nfc-manager@beta
 ```
 
 ```shell
-# RN < 0.60
-npm i --save react-native-nfc-manager
+# XCode 10 + RN >= 0.60
+npm i --save react-native-nfc-manager@2.0.0-beta.1
+```
+
+```shell
+# XCode 10 + RN < 0.60
+npm i --save react-native-nfc-manager@1.2.2
 ```
 
 ### Link Native Library with `react-native link` (RN version < 0.60)
