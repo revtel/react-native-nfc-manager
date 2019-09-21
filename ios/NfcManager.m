@@ -63,8 +63,9 @@ RCT_EXPORT_MODULE()
         nfcTechTypes = @{
             [NSNumber numberWithInt: NFCTagTypeMiFare]: @"mifare",
             [NSNumber numberWithInt: NFCTagTypeFeliCa]: @"felica",
-            [NSNumber numberWithInt: NFCTagTypeISO7816Compatible]: @"iso7816",
             [NSNumber numberWithInt: NFCTagTypeISO15693]: @"iso15693",
+            // compatible with Android
+            [NSNumber numberWithInt: NFCTagTypeISO7816Compatible]: @"IsoDep",
         };
     } else {
         nfcTechTypes = nil;
@@ -156,6 +157,9 @@ RCT_EXPORT_MODULE()
         } else if (tag.type == NFCTagTypeISO7816Compatible) {
             id<NFCISO7816Tag> iso7816Tag = [tag asNFCISO7816Tag];
             [tagInfo setObject:getHexString(iso7816Tag.identifier) forKey:@"id"];
+            [tagInfo setObject:iso7816Tag.initialSelectedAID forKey:@"initialSelectedAID"];
+            [tagInfo setObject:iso7816Tag.historicalBytes forKey:@"historicalBytes"];
+            [tagInfo setObject:iso7816Tag.applicationData forKey:@"applicationData"];
         } else if (tag.type == NFCTagTypeISO15693) {
             id<NFCISO15693Tag> iso15693Tag = [tag asNFCISO15693Tag];
             [tagInfo setObject:getHexString(iso15693Tag.identifier) forKey:@"id"];
@@ -504,6 +508,36 @@ RCT_EXPORT_METHOD(sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTRespo
                     return;
                 } else {
                     callback(@[@"not a mifare tag", [NSNull null]]);
+                }
+            }
+            callback(@[@"Not connected", [NSNull null]]);
+        } else {
+            callback(@[@"Not even registered", [NSNull null]]);
+        }
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
+RCT_EXPORT_METHOD(sendCommandAPDU:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        if (sessionEx != nil) {
+            if (sessionEx.connectedTag) {
+                id<NFCISO7816Tag> iso7816Tag = [sessionEx.connectedTag asNFCISO7816Tag];
+                NSData *data = [self arrayToData:bytes];
+                NFCISO7816APDU *apdu = [[NFCISO7816APDU alloc] initWithData:data];
+                if (iso7816Tag) {
+                    [iso7816Tag sendCommandAPDU:apdu completionHandler:^(NSData* response, uint8_t sw1, uint8_t sw2, NSError* error) {
+                        if (error) {
+                            callback(@[getErrorMessage(error), [NSNull null]]);
+                        } else {
+                            callback(@[[NSNull null], [self dataToArray:response], [NSNumber numberWithInt:sw1], [NSNumber numberWithInt:sw2]]);
+                        }
+                    }];
+                    return;
+                } else {
+                    callback(@[@"not an iso7816 tag", [NSNull null]]);
                 }
             }
             callback(@[@"Not connected", [NSNull null]]);
