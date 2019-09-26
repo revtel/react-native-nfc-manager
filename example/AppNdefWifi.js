@@ -9,24 +9,12 @@ import {
     TextInput,
     ScrollView,
 } from 'react-native';
-import NfcManager, {Ndef} from 'react-native-nfc-manager';
+import NfcManager, {Ndef, NfcTech} from 'react-native-nfc-manager';
 
-const RtdType = {
-    URL: 0,
-    TEXT: 1,
+const SecurityTypes = {
+    NO: 0,
+    WPA: 1,
 };
-
-function buildUrlPayload(valueToWrite) {
-    return Ndef.encodeMessage([
-        Ndef.uriRecord(valueToWrite),
-    ]);
-}
-
-function buildTextPayload(valueToWrite) {
-    return Ndef.encodeMessage([
-        Ndef.textRecord(valueToWrite),
-    ]);
-}
 
 function buildWifiPayload(credentials) {
     return Ndef.encodeMessage([
@@ -41,8 +29,9 @@ class App extends Component {
             supported: true,
             enabled: false,
             isWriting: false,
-            urlToWrite: 'https://www.google.com',
-            rtdType: RtdType.URL,
+            ssid: '',
+            networkKey: '',
+            securityType: SecurityTypes.NO,
             parsedText: null,
             tag: {},
         }
@@ -65,7 +54,7 @@ class App extends Component {
     }
 
     render() {
-        let { supported, enabled, tag, isWriting, urlToWrite, parsedText, rtdType } = this.state;
+        let { supported, enabled, tag, isWriting, ssid, networkKey, parsedText, securityType } = this.state;
         return (
             <ScrollView style={{flex: 1}}>
                 { Platform.OS === 'ios' && <View style={{ height: 60 }} /> }
@@ -92,18 +81,18 @@ class App extends Component {
 
                     {
                         <View style={{padding: 10, marginTop: 20, backgroundColor: '#e0e0e0'}}>
-                            <Text>(android) Write NDEF Test</Text>
+                            <Text>(android & ios) Write NDEF Test</Text>
                             <View style={{flexDirection: 'row', marginTop: 10}}>
-                                <Text style={{marginRight: 15}}>Types:</Text>
+                                <Text style={{marginRight: 15}}>Security Types:</Text>
                                 {
-                                    Object.keys(RtdType).map(
+                                    Object.keys(SecurityTypes).map(
                                         key => (
                                             <TouchableOpacity 
                                                 key={key}
                                                 style={{marginRight: 10}}
-                                                onPress={() => this.setState({rtdType: RtdType[key]})}
+                                                onPress={() => this.setState({securityType: SecurityTypes[key]})}
                                             >
-                                                <Text style={{color: rtdType === RtdType[key] ? 'blue' : '#aaa'}}>
+                                                <Text style={{color: securityType === SecurityTypes[key] ? 'blue' : '#aaa'}}>
                                                     {key}
                                                 </Text>
                                             </TouchableOpacity>
@@ -113,28 +102,25 @@ class App extends Component {
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <TextInput
+                                    placeholder="WIFI ssid"
                                     style={{width: 200}}
-                                    value={urlToWrite}
-                                    onChangeText={urlToWrite => this.setState({ urlToWrite })}
+                                    value={ssid}
+                                    onChangeText={ssid => this.setState({ ssid })}
+                                />
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <TextInput
+                                    placeholder="networkKey"
+                                    style={{width: 200}}
+                                    value={networkKey}
+                                    onChangeText={networkKey => this.setState({ networkKey })}
                                 />
                             </View>
 
                             <TouchableOpacity 
                                 style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
                                 onPress={isWriting ? this._cancelNdefWrite : this._requestNdefWrite}>
-                                <Text style={{color: 'blue'}}>{`(android) ${isWriting ? 'Cancel' : 'Write NDEF'}`}</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity 
-                                style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
-                                onPress={isWriting ? this._cancelNdefWrite : this._requestFormat}>
-                                <Text style={{color: 'blue'}}>{`(android) ${isWriting ? 'Cancel' : 'Format'}`}</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity 
-                                style={{ marginTop: 20, borderWidth: 1, borderColor: 'blue', padding: 10 }} 
-                                onPress={isWriting ? this._cancelAndroidBeam : this._requestAndroidBeam}>
-                                <Text style={{color: 'blue'}}>{`${isWriting ? 'Cancel ' : ''}Android Beam`}</Text>
+                                <Text style={{color: 'blue'}}>{`(android & ios) ${isWriting ? 'Cancel' : 'Write NDEF'}`}</Text>
                             </TouchableOpacity>
                         </View>
                     }
@@ -146,38 +132,35 @@ class App extends Component {
         )
     }
 
-    _requestFormat = () => {
-        let {isWriting} = this.state;
+    _requestNdefWrite = async () => {
+        let {isWriting, ssid, networkKey, securityType} = this.state;
         if (isWriting) {
             return;
         }
 
+        let bytes = buildWifiPayload({
+          ssid: ssid,
+          authType: securityType==1?'WPA':'NO',
+          networkKey: networkKey,
+        })
         this.setState({isWriting: true});
-        NfcManager.requestNdefWrite(null, {format: true})
-            .then(() => console.log('format completed'))
-            .catch(err => console.warn(err))
-            .then(() => this.setState({isWriting: false}));
+        try {
+          let resp = await NfcManager.requestTechnology(NfcTech.Ndef, {
+            alertMessage: 'Ready to write some NFC tags!'
+          });
+          console.warn(resp);
+          await NfcManager.writeNdefMessage(bytes);
+          console.warn('successfully write ndef');
+          await NfcManager.setAlertMessageIOS('I got your tag!');
+          this._cleanUp();
+        } catch (ex) {
+          console.warn('ex', ex);
+          this._cleanUp();
+        }
     }
-
-    _requestNdefWrite = () => {
-        let {isWriting, urlToWrite, rtdType} = this.state;
-        if (isWriting) {
-            return;
-        }
-
-        let bytes;
-
-        if (rtdType === RtdType.URL) {
-            bytes = buildUrlPayload(urlToWrite);
-        } else if (rtdType === RtdType.TEXT) {
-            bytes = buildTextPayload(urlToWrite);
-        }
-
-        this.setState({isWriting: true});
-        NfcManager.requestNdefWrite(bytes)
-            .then(() => console.log('write completed'))
-            .catch(err => console.warn(err))
-            .then(() => this.setState({isWriting: false}));
+    _cleanUp = () => {
+      this.setState({isWriting: false});
+      NfcManager.cancelTechnologyRequest().catch(() => 0);
     }
 
     _cancelNdefWrite = () => {
@@ -186,34 +169,6 @@ class App extends Component {
             .then(() => console.log('write cancelled'))
             .catch(err => console.warn(err))
     }
-
-    _requestAndroidBeam = () => {
-        let {isWriting, urlToWrite, rtdType} = this.state;
-        if (isWriting) {
-            return;
-        }
-
-        let bytes;
-
-        if (rtdType === RtdType.URL) {
-            bytes = buildUrlPayload(urlToWrite);
-        } else if (rtdType === RtdType.TEXT) {
-            bytes = buildTextPayload(urlToWrite);
-        }
-
-        this.setState({isWriting: true});
-        NfcManager.setNdefPushMessage(bytes)
-            .then(() => console.log('beam request completed'))
-            .catch(err => console.warn(err))
-    }
-
-    _cancelAndroidBeam = () => {
-        this.setState({isWriting: false});
-        NfcManager.setNdefPushMessage(null)
-            .then(() => console.log('beam cancelled'))
-            .catch(err => console.warn(err))
-    }
-
     _startNfc() {
         NfcManager.start({
             onSessionClosedIOS: () => {

@@ -5,8 +5,8 @@
 
 var util = require('./ndef-util'),
     textHelper = require('./ndef-text'),
-    uriHelper = require('./ndef-uri');
-    wifiHelper = require('./ndef-wifi')
+    uriHelper = require('./ndef-uri'),
+    wifiHelper = require('./ndef-wifi');
 
 var ndef = {
 
@@ -25,9 +25,11 @@ var ndef = {
     RTD_URI: "U", // [0x55]
     RTD_SMART_POSTER: "Sp", // [0x53, 0x70]
     RTD_ALTERNATIVE_CARRIER: "ac", //[0x61, 0x63]
-    RTD_HANDOVER_CARRIER: "application/vnd.wfa.wsc", // [0x48, 0x63]
+    RTD_HANDOVER_CARRIER: "Hc", // [0x48, 0x63]
     RTD_HANDOVER_REQUEST: "Hr", // [0x48, 0x72]
-    RTD_HANDOVER_SELECT: "Hs", // [0x48, 0x73]
+    RTD_HANDOVER_SELECT: "Hs", // [0x48, 0x73]; 
+
+    NFC_TOKEN_MIME_TYPE = "application/vnd.wfa.wsc" //mimetype for wifi credentials
 
     /**
      * Creates a JSON representation of a NDEF Record.
@@ -108,14 +110,21 @@ var ndef = {
      * @id byte[] (optional)
      */
     uriRecord: function (uri, id) {
-        console.log("record passing :", wifi)
         var payload = uriHelper.encodePayload(uri);
         if (!id) { id = []; }
-        return ndef.record(ndef.TNF_MIME_MEDIA, ndef.RTD_HANDOVER_CARRIER, id, payload);
+        return ndef.record(ndef.TNF_WELL_KNOWN, ndef.RTD_URI, id, payload);
     },
-    wifiRecord: function (wifi, id) {
-        console.log("record passing :", wifi)
-        return wifi;
+
+    /**
+     * Helper that creates a NDEF record containing a wifi credentails.
+     *
+     * @credentails Object
+     * @id byte[] (optional)
+     */
+    wifiRecord: function (credentials, id) {
+        var payload = wifiHelper.encodePayload(credentials);
+        if (!id) { id = []; }
+        return ndef.record(ndef.TNF_MIME_MEDIA, ndef.NFC_TOKEN_MIME_TYPE, id, payload);
     },
 
     /**

@@ -1,48 +1,25 @@
 {
-  "_args": [
-    [
-      "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
-      "/Users/mac/rsadProjects/wifiporter"
-    ]
-  ],
-  "_from": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
-  "_id": "react-native-nfc-manager@git+https://github.com/deenMuhammad/react-native-nfc-manager.git#8c120bed97e6fcfcebb2e11bac37924469b742d8",
-  "_inBundle": false,
-  "_integrity": "",
-  "_location": "/react-native-nfc-manager",
-  "_phantomChildren": {},
-  "_requested": {
+  "name": "react-native-nfc-manager",
+  "version": "2.0.0-beta.4",
+  "description": "A NFC module for react native.",
+  "main": "NfcManager",
+  "repository": {
     "type": "git",
-    "raw": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
-    "rawSpec": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
-    "saveSpec": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
-    "fetchSpec": "https://github.com/deenMuhammad/react-native-nfc-manager.git",
-    "gitCommittish": null
-  },
-  "_requiredBy": [
-    "/"
-  ],
-  "_resolved": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git#8c120bed97e6fcfcebb2e11bac37924469b742d8",
-  "_spec": "git+https://github.com/deenMuhammad/react-native-nfc-manager.git",
-  "_where": "/Users/mac/rsadProjects/wifiporter",
-  "author": {
-    "name": "Richie",
-    "url": "https://github.com/whitedogg13"
+    "url": "https://github.com/whitedogg13/react-native-nfc-manager.git"
   },
   "bugs": {
     "url": "https://github.com/whitedogg13/react-native-nfc-manager/issues"
   },
-  "description": "A NFC module for react native.",
-  "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-jest": "^22.4.3",
-    "babel-preset-env": "^1.6.1",
-    "jest": "^22.4.3",
-    "jest-cli": "^22.4.3"
-  },
+  "keywords": [
+    "react-native",
+    "android",
+    "ios",
+    "nfc"
+  ],
   "files": [
     "ByteParser.js",
     "NfcManager.js",
+    "NativeNfcManager.js",
     "NdefParser.js",
     "ndef-lib",
     "index.d.ts",
@@ -51,25 +28,22 @@
     "react-native-nfc-manager.podspec",
     "example"
   ],
-  "homepage": "https://github.com/whitedogg13/react-native-nfc-manager#readme",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Richie",
+    "url": "https://github.com/whitedogg13"
+  },
   "jest": {
     "testEnvironment": "node"
   },
-  "keywords": [
-    "react-native",
-    "android",
-    "ios",
-    "nfc"
-  ],
-  "license": "Apache-2.0",
-  "main": "NfcManager",
-  "name": "react-native-nfc-manager",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/whitedogg13/react-native-nfc-manager.git"
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-jest": "^22.4.3",
+    "babel-preset-env": "^1.6.1",
+    "jest": "^22.4.3",
+    "jest-cli": "^22.4.3"
   },
   "scripts": {
     "test": "jest"
-  },
-  "version": "1.2.2"
+  }
 }

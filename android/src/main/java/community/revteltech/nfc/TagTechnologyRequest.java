@@ -14,16 +14,18 @@ import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.IsoDep;
 import android.util.Log;
 import com.facebook.react.bridge.*;
+import java.util.ArrayList;
 
 class TagTechnologyRequest {
     static String LOG_TAG = "NfcManager-tech";
     Tag mTag;
     TagTechnology mTech;
-    String mTechType;
+    String mTechType; // the actual connected type
+    ArrayList<Object> mTechTypes; // the desired types
     Callback mJsCallback;
 
-    TagTechnologyRequest(String techType, Callback cb) {
-        mTechType = techType;
+    TagTechnologyRequest(ArrayList<Object> techTypes, Callback cb) {
+        mTechTypes = techTypes;
         mJsCallback = cb;
     }
 
@@ -40,7 +42,7 @@ class TagTechnologyRequest {
     }
 
     boolean isConnected() {
-        return mTag != null;
+        return mTech != null;
     }
 
     boolean connect(Tag tag) {
@@ -49,38 +51,48 @@ class TagTechnologyRequest {
             return false;
         }
 
+        for (int i = 0; i < mTechTypes.size(); i++) {
+            String techType = (String)mTechTypes.get(i);
+
+            if (techType.equals("Ndef")) {
+                mTech = Ndef.get(tag);
+            } else if (techType.equals("NfcA")) {
+                mTech = NfcA.get(tag);
+            } else if (techType.equals("NfcB")) {
+                mTech = NfcB.get(tag);
+            } else if (techType.equals("NfcF")) {
+                mTech = NfcF.get(tag);
+            } else if (techType.equals("NfcV")) {
+                mTech = NfcV.get(tag);
+            } else if (techType.equals("IsoDep")) {
+                mTech = IsoDep.get(tag);
+            } else if (techType.equals("MifareClassic")) {
+                mTech = MifareClassic.get(tag);
+            } else if (techType.equals("MifareUltralight")) {
+                mTech = MifareUltralight.get(tag);
+            }
+
+            if (mTech == null) {
+                continue;
+            }
+
+            try {
+                Log.d(LOG_TAG, "connect to " + techType);
+                mTech.connect();
+                mTechType = techType;
+                mTag = tag;
+                return true;
+            } catch (Exception ex) {
+                Log.d(LOG_TAG, "fail to connect tech");
+            }
+        }
+
+        // not connected, restore to default
         mTech = null;
-        mTag = tag;
-        if (mTechType.equals("Ndef")) {
-            mTech = Ndef.get(tag);
-        } else if (mTechType.equals("NfcA")) {
-            mTech = NfcA.get(tag);
-        } else if (mTechType.equals("NfcB")) {
-            mTech = NfcB.get(tag);
-        } else if (mTechType.equals("NfcF")) {
-            mTech = NfcF.get(tag);
-        } else if (mTechType.equals("NfcV")) {
-            mTech = NfcV.get(tag);
-        } else if (mTechType.equals("IsoDep")) {
-            mTech = IsoDep.get(tag);
-        } else if (mTechType.equals("MifareClassic")) {
-            mTech = MifareClassic.get(tag);
-        } else if (mTechType.equals("MifareUltralight")) {
-            mTech = MifareUltralight.get(tag);
-        }
+        mTechType = null;
+        mTag = null;
 
-        if (mTech == null) {
-            return false;
-        }
-
-        try {
-            Log.d(LOG_TAG, "connect to " + mTechType);
-            mTech.connect();
-            return true;
-        } catch (Exception ex) {
-            Log.d(LOG_TAG, "fail to connect tech");
-            return false;
-        }
+        return false;
     }
 
     void close() {

@@ -74,9 +74,17 @@ declare module 'react-native-nfc-manager' {
 		/* android only */
 		cancelNdefWrite(): Promise<any>;
 		requestNdefWrite(bytes: number[], opts?: NdefWriteOpts): Promise<any>;
-		// requestNdefWifiWrite(array: any[], opts?: NdefWriteOpts): Promise<any>;
-		requestNdefWifiWrite(array: any[], opts?: NdefWriteOpts): Promise<any>;
 		onStateChanged(listener: (event: EventStateChange) => void): Promise<EmitterSubscription>;
+		
+		mifareClassicSectorToBlock: (sector: number) => ArrayLike<number>
+		mifareClassicReadBlock: (block: ArrayLike<number>) => ArrayLike<number>
+		mifareClassicWriteBlock: (block: ArrayLike<number>, simpliArr: any[]) => void
+		cancelTechnologyRequest: () => Promise<EmitterSubscription>
+		closeTechnology: () => void
+		requestTechnology: (data: any) => void
+		getTag: () => void
+		mifareClassicGetSectorCount: () => number
+		mifareClassicAuthenticateA: (sector: number, keys: number[]) => void
 	}
 	const nfcManager: NfcManager;
 	export namespace NdefParser {
@@ -86,7 +94,6 @@ declare module 'react-native-nfc-manager' {
 
 	type ISOLangCode = "en" | string;
 	type URI = string;
-	type WIFI = any[];
 
 	export enum NfcAdapter {
 		FLAG_READER_NFC_A= 0x1,
@@ -118,11 +125,11 @@ declare module 'react-native-nfc-manager' {
 		
 		text: {
 			encodePayload: (text: string, lang?: ISOLangCode, encoding?: any) => NdefRecord;
-			decodePayload: (data: byte[]) => string;
+			decodePayload: (data: Uint8Array) => string;
 		};
 		uri: {
 			encodePayload: (uri: URI) => NdefRecord;
-			decodePayload: (data: byte[]) => string;
+			decodePayload: (data: Uint8Array) => string;
 		};
 		util: {
 			stringToBytes: (string: string) => any[];
@@ -133,11 +140,10 @@ declare module 'react-native-nfc-manager' {
 		};
 		isType(record: NdefRecord, tnf: number, type: string): boolean;
 		stringify(data: number[], separator: string): string;
-		encodeMessage(records: NdefRecord[]): byte[];
+		encodeMessage(records: NdefRecord[]): Uint8Array;
 		decodeMessage(bytes: any[] | Buffer): NdefRecord[];
 		textRecord(text: string, lang?: ISOLangCode, encoding?: any): NdefRecord;
 		uriRecord(uri: URI, id?: any): NdefRecord;
-		wifiRecord(wifi: WIFI, id?: any): any[];
 	}
 }
 

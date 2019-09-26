@@ -10,7 +10,7 @@ function decode(data) {
     var prefix = protocols[data[0]];
     if (!prefix) { // 36 to 255 should be ""
         prefix = "";
-    }
+    }    
     return prefix + util.bytesToString(data.slice(1));      
 } 
 
@@ -34,7 +34,7 @@ function encode(uri) {
     if (!prefix) {
         prefix = "";
     }
-    // console.log(uri);
+    
     encoded = util.stringToBytes(uri.slice(prefix.length));
     protocolCode = protocols.indexOf(prefix);    
     // prepend protocol code
