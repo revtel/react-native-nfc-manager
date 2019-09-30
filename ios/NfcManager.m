@@ -566,6 +566,23 @@ RCT_EXPORT_METHOD(setAlertMessage: (NSString *)alertMessage callback:(nonnull RC
     }
 }
 
+RCT_EXPORT_METHOD(setErrorMessage: (NSString *)errorMessage callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 11.0, *)) {
+        if (session != nil) {
+            [session invalidateSessionWithErrorMessage:errorMessage];
+            callback(@[]);
+        } else if (sessionEx != nil) {
+            sessionEx.alertMessage = errorMessage;
+            callback(@[]);
+        } else {
+            callback(@[@"Not even registered", [NSNull null]]);
+        }
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
 RCT_EXPORT_METHOD(isSessionAvailable:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 11.0, *)) {
