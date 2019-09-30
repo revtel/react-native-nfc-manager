@@ -29,7 +29,7 @@ var ndef = {
     RTD_HANDOVER_REQUEST: "Hr", // [0x48, 0x72]
     RTD_HANDOVER_SELECT: "Hs", // [0x48, 0x73]; 
 
-    NFC_TOKEN_MIME_TYPE = "application/vnd.wfa.wsc" //mimetype for wifi credentials
+    NFC_TOKEN_MIME_TYPE: "application/vnd.wfa.wsc" //mimetype for wifi credentials
 
     /**
      * Creates a JSON representation of a NDEF Record.
@@ -42,7 +42,7 @@ var ndef = {
      * @returns JSON representation of a NDEF record
      *
      * @see Ndef.textRecord, Ndef.uriRecord and Ndef.mimeMediaRecord for examples
-     */
+     */,
     record: function (tnf, type, id, payload) {
 
         // handle null values
