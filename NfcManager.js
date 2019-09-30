@@ -284,6 +284,26 @@ class NfcManager {
   }
 
   // -------------------------------------
+  // public only for iOS
+  // -------------------------------------
+  setErrorMessageIOS(errorMessage) {
+    if (Platform.OS !== 'ios') {
+      // it's a no-op for android
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.setErrorMessage(errorMessage, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      })
+    })
+  }
+
+  // -------------------------------------
   // Android private
   // -------------------------------------
   _hasTagEventRegistrationAndroid() {
