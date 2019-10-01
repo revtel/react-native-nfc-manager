@@ -262,27 +262,6 @@ class NfcManager {
       })
     })
   }
-
-  // -------------------------------------
-  // public only for iOS
-  // -------------------------------------
-  setAlertMessageIOS(alertMessage) {
-    if (Platform.OS !== 'ios') {
-      // it's a no-op for android
-      return;
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.setAlertMessage(alertMessage, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      })
-    })
-  }
-
   // -------------------------------------
   // public only for iOS
   // -------------------------------------
@@ -294,6 +273,25 @@ class NfcManager {
 
     return new Promise((resolve, reject) => {
       NativeNfcManager.setErrorMessage(errorMessage, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      })
+    })
+  }
+  // -------------------------------------
+  // public only for iOS
+  // -------------------------------------
+  setAlertMessageIOS(alertMessage) {
+    if (Platform.OS !== 'ios') {
+      // it's a no-op for android
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.setAlertMessage(alertMessage, (err) => {
         if (err) {
           reject(err);
         } else {
