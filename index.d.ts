@@ -5,19 +5,40 @@ import { EmitterSubscription } from "react-native";
 // Definitions by: April Ayres <april.ayres@papercut.com> and Paul Huynh <paul.huynh@papercut.com>
 
 declare module 'react-native-nfc-manager' {
+  export enum NfcEvents {
+    DiscoverTag = 'NfcManagerDiscoverTag',
+    SessionClosed = 'NfcManagerSessionClosed',
+    StateChanged = 'NfcManagerStateChanged',
+  }
+
+  export enum NfcTech {
+    Ndef = 'Ndef',
+    NfcA = 'NfcA',
+    NfcB = 'NfcB',
+    NfcF = 'NfcF',
+    NfcV = 'NfcV',
+    IsoDep = 'IsoDep',
+    MifareClassic = 'MifareClassic',
+    MifareUltralight = 'MifareUltralight',
+    MifareIOS = 'mifare',
+  }
+
+  /** [ANDROID ONLY] */
+	export enum NfcAdapter {
+		FLAG_READER_NFC_A= 0x1,
+		FLAG_READER_NFC_B= 0x2,
+		FLAG_READER_NFC_F= 0x4,
+		FLAG_READER_NFC_V= 0x8,
+		FLAG_READER_NFC_BARCODE= 0x10,
+		FLAG_READER_SKIP_NDEF_CHECK= 0x80,
+		FLAG_READER_NO_PLATFORM_SOUNDS= 0x100,
+	}
+
 	export interface NdefRecord {
 		id?: number[];
 		tnf: number;
 		type: number[];
 		payload: any[];
-	}
-
-	export interface ParseUriResult {
-		uri: string;
-	}
-
-	export interface StartOptions {
-		onSessionClosedIOS(): void;
 	}
 
 	export interface TagEvent {
@@ -29,6 +50,7 @@ declare module 'react-native-nfc-manager' {
 	}
 
 	interface RegisterTagEventOpts {
+    alertMessage?: string;
     invalidateAfterFirstRead?: boolean;
     isReaderModeEnabled?: boolean;
     readerModeFlags?: number;
@@ -38,72 +60,55 @@ declare module 'react-native-nfc-manager' {
 		format?: boolean
 		formatReadOnly?: boolean
 	}
-	interface EventStateChange {
-		state: string
-	}
+
 	interface NfcManager {
-
-		start(options?: StartOptions): Promise<any>;
-
-		stop(): void;
+    start(): Promise<any>;
 
 		isSupported(): Promise<boolean>;
 
-		/** [ANDROID ONLY] */
-		isEnabled(): Promise<boolean>;
-
-		/** [ANDROID ONLY] */
-		goToNfcSetting(): Promise<any>;
-
-		/** [ANDROID ONLY] */
-		getLaunchTagEvent(): Promise<TagEvent | null>;
-
-		 /**
-     * Start to listen to ANY NFC Tags
-     * @param listener The callback function when a tag is found.
-     * @param alertMessage [iOS ONLY] Message displayed when NFC Scanning popup appears.
-     * @param invalidateAfterFirstRead [iOS ONLY] When set to true, will auto-dismiss the NFC Scanning popup after scanning.
-     */
-    registerTagEvent(
-      listener: (tag: TagEvent) => void,
-      alertMessage?: string,
-      options?: RegisterTagEventOpts,
-		): Promise<any>;
+    registerTagEvent(options?: RegisterTagEventOpts): Promise<any>;
 
 		unregisterTagEvent(): Promise<any>;
-		/* android only */
-		cancelNdefWrite(): Promise<any>;
+
+    setEventListener(name: NfcEvents, callback: function) => void;
+
+    requestTechnology: (tech: NfcTech) => Promise<any>;
+
+		cancelTechnologyRequest: () => Promise<EmitterSubscription>;
+
+    getTag: () => Promise<any>;
+
+		/** [ANDROID ONLY] */
+		isEnabled(): Promise<boolean>;
+		/** [ANDROID ONLY] */
+		goToNfcSetting(): Promise<any>;
+		/** [ANDROID ONLY] */
+		getLaunchTagEvent(): Promise<TagEvent | null>;
+		/** [ANDROID ONLY] */
 		requestNdefWrite(bytes: number[], opts?: NdefWriteOpts): Promise<any>;
-		onStateChanged(listener: (event: EventStateChange) => void): Promise<EmitterSubscription>;
-		
+		/** [ANDROID ONLY] */
+		cancelNdefWrite(): Promise<any>;
+		/** [ANDROID ONLY] */
 		mifareClassicSectorToBlock: (sector: number) => ArrayLike<number>
+		/** [ANDROID ONLY] */
 		mifareClassicReadBlock: (block: ArrayLike<number>) => ArrayLike<number>
+		/** [ANDROID ONLY] */
 		mifareClassicWriteBlock: (block: ArrayLike<number>, simpliArr: any[]) => void
-		cancelTechnologyRequest: () => Promise<EmitterSubscription>
-		closeTechnology: () => void
-		requestTechnology: (data: any) => void
-		getTag: () => void
+		/** [ANDROID ONLY] */
 		mifareClassicGetSectorCount: () => number
+		/** [ANDROID ONLY] */
 		mifareClassicAuthenticateA: (sector: number, keys: number[]) => void
 	}
+
 	const nfcManager: NfcManager;
+
 	export namespace NdefParser {
-		function parseUri(ndef: NdefRecord): ParseUriResult;
+    function parseUri(ndef: NdefRecord): {uri: string};
 		function parseText(ndef: NdefRecord): string | null;
 	}
 
 	type ISOLangCode = "en" | string;
 	type URI = string;
-
-	export enum NfcAdapter {
-		FLAG_READER_NFC_A= 0x1,
-		FLAG_READER_NFC_B= 0x2,
-		FLAG_READER_NFC_F= 0x4,
-		FLAG_READER_NFC_V= 0x8,
-		FLAG_READER_NFC_BARCODE= 0x10,
-		FLAG_READER_SKIP_NDEF_CHECK= 0x80,
-		FLAG_READER_NO_PLATFORM_SOUNDS= 0x100,
-	}
 
 	export const Ndef: {
 		TNF_EMPTY: 0x0,
