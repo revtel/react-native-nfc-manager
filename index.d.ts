@@ -1,5 +1,3 @@
-import { EmitterSubscription } from "react-native";
-
 // Type definitions for react-native-nfc-manager
 // Project: https://github.com/whitedogg13/react-native-nfc-manager
 // Definitions by: April Ayres <april.ayres@papercut.com> and Paul Huynh <paul.huynh@papercut.com>
@@ -9,8 +7,13 @@ declare module 'react-native-nfc-manager' {
     DiscoverTag = 'NfcManagerDiscoverTag',
     SessionClosed = 'NfcManagerSessionClosed',
     StateChanged = 'NfcManagerStateChanged',
-  }
+	}
 
+	type OnDiscoverTag = (evt: TagEvent) => void;
+	type OnSessionClosed = (evt: {}) => void;
+	type OnStateChanged = (evt: {state: string}) => void;
+	type OnNfcEvents = OnDiscoverTag | OnSessionClosed | OnStateChanged;
+	
   export enum NfcTech {
     Ndef = 'Ndef',
     NfcA = 'NfcA',
@@ -43,10 +46,10 @@ declare module 'react-native-nfc-manager' {
 
 	export interface TagEvent {
 		ndefMessage: NdefRecord[];
-		maxSize: number;
-		type: string;
-		techTypes: string[];
-		id: number[];
+		maxSize?: number;
+		type?: string;
+		techTypes?: string[];
+		id?: number[];
 	}
 
 	interface RegisterTagEventOpts {
@@ -62,21 +65,32 @@ declare module 'react-native-nfc-manager' {
 	}
 
 	interface NfcManager {
-    start(): Promise<any>;
+    start(): Promise<void>;
 
 		isSupported(): Promise<boolean>;
 
-    registerTagEvent(options?: RegisterTagEventOpts): Promise<any>;
+    registerTagEvent(options?: RegisterTagEventOpts): Promise<void>;
 
-		unregisterTagEvent(): Promise<any>;
+		unregisterTagEvent(): Promise<void>;
 
-    setEventListener(name: NfcEvents, callback: function) => void;
+    setEventListener(name: NfcEvents, callback: OnNfcEvents): void;
 
-    requestTechnology: (tech: NfcTech) => Promise<any>;
+    requestTechnology: (tech: NfcTech) => Promise<NfcTech>;
 
-		cancelTechnologyRequest: () => Promise<EmitterSubscription>;
+		cancelTechnologyRequest: () => Promise<void>;
 
-    getTag: () => Promise<any>;
+		getTag: () => Promise<any>;
+		
+		writeNdefMessage: (bytes: number[]) => Promise<void>;
+
+		getNdefMessage: (bytes: number[]) => Promise<TagEvent | null>;
+
+		/** [iOS ONLY] */
+		setAlertMessageIOS: (alertMessage: string) => Promise<void>;
+		/** [iOS ONLY] */
+  	sendMifareCommandIOS: (bytes: number[]) => Promise<number[]>;
+		/** [iOS ONLY] */
+  	sendCommandAPDUIOS: (bytes: number[]) => Promise<{response: number[], sw1: number, sw2: number}>;
 
 		/** [ANDROID ONLY] */
 		isEnabled(): Promise<boolean>;
@@ -89,15 +103,23 @@ declare module 'react-native-nfc-manager' {
 		/** [ANDROID ONLY] */
 		cancelNdefWrite(): Promise<any>;
 		/** [ANDROID ONLY] */
-		mifareClassicSectorToBlock: (sector: number) => ArrayLike<number>
+		getCachedNdefMessageAndroid: () => Promise<TagEvent | null>;
 		/** [ANDROID ONLY] */
-		mifareClassicReadBlock: (block: ArrayLike<number>) => ArrayLike<number>
+		makeReadOnlyAndroid: () => Promise<boolean>;
 		/** [ANDROID ONLY] */
-		mifareClassicWriteBlock: (block: ArrayLike<number>, simpliArr: any[]) => void
+		transceive(bytes: number[]): Promise<number[]>;
 		/** [ANDROID ONLY] */
-		mifareClassicGetSectorCount: () => number
+		getMaxTransceiveLength(): Promise<number>;
 		/** [ANDROID ONLY] */
-		mifareClassicAuthenticateA: (sector: number, keys: number[]) => void
+		mifareClassicSectorToBlock: (sector: number) => Promise<ArrayLike<number>>;
+		/** [ANDROID ONLY] */
+		mifareClassicReadBlock: (block: ArrayLike<number>) => Promise<ArrayLike<number>>;
+		/** [ANDROID ONLY] */
+		mifareClassicWriteBlock: (block: ArrayLike<number>, simpliArr: any[]) => Promise<void>;
+		/** [ANDROID ONLY] */
+		mifareClassicGetSectorCount: () => Promise<number>;
+		/** [ANDROID ONLY] */
+		mifareClassicAuthenticateA: (sector: number, keys: number[]) => Promise<void>;
 	}
 
 	const nfcManager: NfcManager;
