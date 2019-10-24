@@ -847,6 +847,21 @@ class NfcManager {
     })
   }
 
+  invalidateSessionWithErrorIOS(errorMessage='Error') {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.invalidateSessionWithError(errorMessage, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    })
+  }
 }
 
 export default new NfcManager();

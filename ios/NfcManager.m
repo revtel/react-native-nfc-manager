@@ -417,6 +417,21 @@ RCT_EXPORT_METHOD(unregisterTagEventEx:(nonnull RCTResponseSenderBlock)callback)
     }
 }
 
+RCT_EXPORT_METHOD(invalidateSessionWithError:(NSString *)errorMessage callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        if (session != nil) {
+            [session invalidateSessionWithErrorMessage: errorMessage];
+            callback(@[]);
+        } else if (sessionEx != nil) {
+            [sessionEx invalidateSessionWithErrorMessage: errorMessage];
+            callback(@[]);
+        } else {
+            callback(@[@"No active session", [NSNull null]]);
+        }
+    }
+}
+
 RCT_EXPORT_METHOD(getTag: (nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
