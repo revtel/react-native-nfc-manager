@@ -453,21 +453,41 @@ RCT_EXPORT_METHOD(getTag: (nonnull RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
+        id<NFCNDEFTag> ndefTag = nil;
+        
         if (session != nil) {
             if (self->connectedNdefTag) {
-                [self->connectedNdefTag readNDEFWithCompletionHandler:^(NFCNDEFMessage *ndefMessage, NSError *error) {
-                    if (error) {
-                        callback(@[getErrorMessage(error), [NSNull null]]);
-                    } else {
-                        callback(@[[NSNull null], [self convertNdefMessage:ndefMessage]]);
-                    }
-                }];
-                return;
+                ndefTag = self->connectedNdefTag;
             }
-            callback(@[@"Not connected", [NSNull null]]);
-        } else {
-            callback(@[@"Not even registered", [NSNull null]]);
+        } else if (sessionEx != nil) {
+            if (sessionEx.connectedTag) {
+                id<NFCTag> tag = sessionEx.connectedTag;
+                if (@available(iOS 13.0, *)) {
+                    if (tag.type == NFCTagTypeMiFare) {
+                        ndefTag = [tag asNFCMiFareTag];
+                    } else if (tag.type == NFCTagTypeISO7816Compatible) {
+                        ndefTag = [tag asNFCISO7816Tag];
+                    } else if (tag.type == NFCTagTypeISO15693) {
+                        ndefTag = [tag asNFCISO15693Tag];
+                    } else if (tag.type == NFCTagTypeFeliCa) {
+                        ndefTag = [tag asNFCFeliCaTag];
+                    }
+                }
+            }
         }
+        
+        if (ndefTag) {
+            [ndefTag readNDEFWithCompletionHandler:^(NFCNDEFMessage *ndefMessage, NSError *error) {
+                if (error) {
+                    callback(@[getErrorMessage(error), [NSNull null]]);
+                } else {
+                    callback(@[[NSNull null], [self convertNdefMessage:ndefMessage]]);
+                }
+            }];
+            return;
+        }
+        
+        callback(@[@"No ndef available", [NSNull null]]);
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
     }
