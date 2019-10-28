@@ -2,29 +2,30 @@
 // Copyright 2013 Don Coleman
 //
 
-// https://gist.github.com/joni/3760795
+// https://weblog.rogueamoeba.com/2017/02/27/javascript-correctly-converting-a-byte-array-to-a-utf-8-string/
 function _utf8ArrayToStr(data) {
-    var str = '',
-        i;
+    const extraByteMap = [1, 1, 1, 1, 2, 2, 3, 0];
+    var count = data.length;
+    var str = "";
 
-    for (i = 0; i < data.length; i++) {
-        var value = data[i];
+    for (var index = 0; index < count;) {
+        var ch = data[index++];
+        if (ch & 0x80) {
+            var extra = extraByteMap[(ch >> 3) & 0x07];
+            if (!(ch & 0x40) || !extra || ((index + extra) > count))
+                return null;
 
-        if (value < 0x80) {
-            str += String.fromCharCode(value);
-        } else if (value > 0xBF && value < 0xE0) {
-            str += String.fromCharCode((value & 0x1F) << 6 | data[i + 1] & 0x3F);
-            i += 1;
-        } else if (value > 0xDF && value < 0xF0) {
-            str += String.fromCharCode((value & 0x0F) << 12 | (data[i + 1] & 0x3F) << 6 | data[i + 2] & 0x3F);
-            i += 2;
-        } else {
-            // surrogate pair
-            var charCode = ((value & 0x07) << 18 | (data[i + 1] & 0x3F) << 12 | (data[i + 2] & 0x3F) << 6 | data[i + 3] & 0x3F) - 0x010000;
+            ch = ch & (0x3F >> extra);
+            for (; extra > 0; extra -= 1) {
+                var chx = data[index++];
+                if ((chx & 0xC0) != 0x80)
+                    return null;
 
-            str += String.fromCharCode(charCode >> 10 | 0xD800, charCode & 0x03FF | 0xDC00);
-            i += 3;
+                ch = (ch << 6) | (chx & 0x3F);
+            }
         }
+
+        str += String.fromCharCode(ch);
     }
 
     return str;
