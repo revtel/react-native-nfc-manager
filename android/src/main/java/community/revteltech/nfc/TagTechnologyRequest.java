@@ -41,6 +41,10 @@ class TagTechnologyRequest {
         return mTech;
     }
 
+    Tag getTagHandle() {
+        return mTag;
+    }
+
     boolean isConnected() {
         return mTech != null;
     }

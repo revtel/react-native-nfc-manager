@@ -153,9 +153,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         synchronized(this) {
             if (techRequest != null) {
                 try {
-                    TagTechnology tagTech = techRequest.getTechHandle();
-                    Tag tag = tagTech.getTag();
-                    WritableMap parsed = tag2React(tag);
+                    Tag tag = techRequest.getTagHandle();
+                    WritableMap parsed = null;
+                    if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+                        Ndef ndef = Ndef.get(tag);
+                        parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+                    } else {
+                        parsed = tag2React(tag);
+                    }
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
                     Log.d(LOG_TAG, "getTag fail");
@@ -172,7 +177,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         synchronized(this) {
             if (techRequest != null) {
                 try {
-                    Ndef ndef = Ndef.get(techRequest.getTechHandle().getTag());
+                    Ndef ndef = Ndef.get(techRequest.getTagHandle());
                     WritableMap parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
@@ -190,7 +195,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         synchronized(this) {
             if (techRequest != null) {
                 try {
-                    Ndef ndef = Ndef.get(techRequest.getTechHandle().getTag());
+                    Ndef ndef = Ndef.get(techRequest.getTagHandle());
                     WritableMap parsed = ndef2React(null, new NdefMessage[] { ndef.getNdefMessage() });
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
