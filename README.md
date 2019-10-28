@@ -8,26 +8,15 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
-## iOS 13 development is ongoing!
-
-Ndef writing, get UID, send mifare command, and APDU exchange... Lots features come into iOS13!
-
-Currently this work will be published in npm beta channel.
-
 ## Install
 
 ```shell
-# RN >= 0.60, XCode 11 (for all fancy iOS 13 core nfc features!)
-npm i --save react-native-nfc-manager@beta
+# RN >= 0.60
+npm i --save react-native-nfc-manager
 ```
 
 ```shell
-# RN >= 0.60, XCode 10
-npm i --save react-native-nfc-manager@2.0.0-beta.1
-```
-
-```shell
-# RN < 0.60, XCode 10
+# RN < 0.60 (without the latest iOS 13 feature)
 npm i --save react-native-nfc-manager@1.2.2
 ```
 
