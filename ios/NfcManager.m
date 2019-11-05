@@ -620,5 +620,43 @@ RCT_EXPORT_METHOD(isSessionExAvailable:(nonnull RCTResponseSenderBlock)callback)
         callback(@[@"Not support in this device", [NSNull null]]);
     }
 }
+
+RCT_EXPORT_METHOD(getSystemInfoWithRequestFlag:(NSNumber *)flags callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        if (sessionEx != nil) {
+            if (sessionEx.connectedTag) {
+                RequestFlag rFlag = [flags unsignedIntValue];
+                id<NFCISO15693Tag> iso15693Tag = [sessionEx.connectedTag asNFCISO15693Tag];
+                if (iso15693Tag) {
+                    [iso15693Tag getSystemInfoWithRequestFlag:rFlag completionHandler:
+                     ^(NSInteger dsfid, NSInteger afi, NSInteger blockSize, NSInteger blockCount, NSInteger icReference, NSError *error) {
+                        if (error) {
+                            callback(@[getErrorMessage(error), [NSNull null]]);
+                            return;
+                        }
+                        
+                        // success
+                        callback(@[[NSNull null], @{
+                            @"dsfid": @(dsfid),
+                            @"afi": @(afi),
+                            @"blockSize": @(blockSize),
+                            @"blockCount": @(blockCount),
+                            @"icReference": @(icReference)
+                        }]);
+                    }];
+                } else {
+                    callback(@[@"not an iso15693 tag", [NSNull null]]);
+                }
+            }
+            callback(@[@"Not connected", [NSNull null]]);
+        } else {
+            callback(@[@"Not even registered", [NSNull null]]);
+        }
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
 @end
   

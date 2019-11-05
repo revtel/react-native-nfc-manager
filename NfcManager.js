@@ -870,6 +870,22 @@ class NfcManager {
       });
     })
   }
+
+  getSystemInfoWithRequestFlag(requestFlag) {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    return new Promise((resolve, reject) => {
+      NativeNfcManager.getSystemInfoWithRequestFlag(requestFlag, (err, resp) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(resp);
+        }
+      });
+    })
+  }
 }
 
 export default new NfcManager();
