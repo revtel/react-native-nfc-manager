@@ -42,6 +42,14 @@ const NfcAdapter = {
   FLAG_READER_NO_PLATFORM_SOUNDS: 0x100,
 };
 
+const Nfc15693RequestFlagIOS = {
+  DualSubCarriers: (1 << 0),
+  HighDataRate: (1 << 1),
+  Select: (1 << 4),
+  Address: (1 << 5),
+  Option: (1 << 6),
+};
+
 class NfcManager {
   constructor() {
     this.cleanUpTagRegistration = false;
@@ -873,4 +881,5 @@ export {
   NfcEvents,
   NfcAdapter,
   Ndef,
+  Nfc15693RequestFlagIOS,
 }
