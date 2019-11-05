@@ -163,6 +163,8 @@ RCT_EXPORT_MODULE()
         } else if (tag.type == NFCTagTypeISO15693) {
             id<NFCISO15693Tag> iso15693Tag = [tag asNFCISO15693Tag];
             [tagInfo setObject:getHexString(iso15693Tag.identifier) forKey:@"id"];
+            [tagInfo setObject:[NSNumber numberWithUnsignedInteger:iso15693Tag.icManufacturerCode] forKey:@"icManufacturerCode"];
+            [tagInfo setObject:[self dataToArray:iso15693Tag.icSerialNumber] forKey:@"icSerialNumber"];
         } else if (tag.type == NFCTagTypeFeliCa) {
             // TODO
         }
