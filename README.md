@@ -47,7 +47,7 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 
 * https://github.com/hansemannn/iOS11-NFC-Example 
 
-**IMPORTANT: For the new NFC capabilities available on iOS 13 to work, the entitlements file mentioned in the previous guide needs should look like this:**
+**IMPORTANT: For the new NFC capabilities available on iOS 13 to work, the entitlements file mentioned in the previous guide should look like this:**
 
 ```xml
 <key>com.apple.developer.nfc.readersession.formats</key>
