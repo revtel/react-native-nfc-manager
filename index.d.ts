@@ -64,6 +64,15 @@ declare module 'react-native-nfc-manager' {
     formatReadOnly?: boolean;
   }
 
+  interface APDU {
+    cla: number;
+    ins: number;
+    p1: number;
+    p2: number;
+    data: number[];
+    le: number;
+  }
+
   interface NfcManager {
     start(): Promise<void>;
 
@@ -93,7 +102,7 @@ declare module 'react-native-nfc-manager' {
     sendMifareCommandIOS: (bytes: number[]) => Promise<number[]>;
     /** [iOS ONLY] */
     sendCommandAPDUIOS: (
-      bytes: number[],
+      bytesOrApdu: number[] | APDU,
     ) => Promise<{response: number[]; sw1: number; sw2: number}>;
 
     /** [ANDROID ONLY] */
