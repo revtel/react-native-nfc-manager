@@ -103,7 +103,7 @@ RCT_EXPORT_MODULE()
 
 - (NSArray *)dataToArray:(NSData *)data
 {
-    const unsigned char *dataBuffer = (const unsigned char *)[data bytes];
+    const unsigned char *dataBuffer = data ? (const unsigned char *)[data bytes] : NULL;
     
     if (!dataBuffer)
         return @[];
