@@ -4,21 +4,6 @@
 #import "React/RCTEventDispatcher.h"
 #import "React/RCTLog.h"
 
-int isSupported() {
-    bool result = NO;
-    if (@available(iOS 11.0, *)) {
-        @try {
-            if (NFCNDEFReaderSession.readingAvailable) {
-                result = YES;
-            }
-        }
-        @catch (NSException *exception) {
-            RCTLogError(@"Exception thrown during NfcManager.isSupported: %@", exception);
-        }
-    }
-    return result;
-}
-
 NSString* getHexString(NSData *data) {
     NSUInteger capacity = data.length * 2;
     NSMutableString *sbuf = [NSMutableString stringWithCapacity:capacity];
@@ -294,10 +279,14 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(isSupported: (NSString *)tech callback:(nonnull RCTResponseSenderBlock)callback)
 {
-    if (isSupported()) {
-        // iOS only supports Ndef starting from iOS 11.0 (on iPhone 7 onwards)
-        if ([tech isEqualToString:@""] || [tech isEqualToString:@"Ndef"]) {
-            callback(@[[NSNull null], @YES]);
+    if ([tech isEqualToString:@""] || [tech isEqualToString:@"Ndef"]) {
+        if (@available(iOS 11.0, *)) {
+            callback(@[[NSNull null], NFCNDEFReaderSession.readingAvailable ? @YES : @NO]);
+            return;
+        }
+    } else if ([tech isEqualToString:@"mifare"] || [tech isEqualToString:@"felica"] || [tech isEqualToString:@"iso15693"] || [tech isEqualToString:@"IsoDep"]) {
+        if (@available(iOS 13.0, *)) {
+            callback(@[[NSNull null], NFCTagReaderSession.readingAvailable ? @YES : @NO]);
             return;
         }
     }
@@ -307,13 +296,16 @@ RCT_EXPORT_METHOD(isSupported: (NSString *)tech callback:(nonnull RCTResponseSen
 
 RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
 {
-    if (isSupported()) {
-        NSLog(@"NfcManager initialized");
-        [self reset];
-        callback(@[]);
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
+    if (@available(iOS 11.0, *)) {
+        if (NFCNDEFReaderSession.readingAvailable) {
+            NSLog(@"NfcManager initialized");
+            [self reset];
+            callback(@[]);
+            return;
+        }
     }
+
+    callback(@[@"Not support in this device", [NSNull null]]);
 }
 
 RCT_EXPORT_METHOD(requestTechnology: (NSArray *)techs callback:(nonnull RCTResponseSenderBlock)callback)
