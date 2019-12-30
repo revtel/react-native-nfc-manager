@@ -5,7 +5,7 @@ import {
 import ByteParser from './ByteParser'
 import NdefParser from './NdefParser'
 import Ndef from './ndef-lib'
-import {NativeNfcManager, NfcManagerEmitter} from './NativeNfcManager'
+import {NativeNfcManager, NfcManagerEmitter, callNative} from './NativeNfcManager'
 
 const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
   alertMessage: 'Please tap NFC tags',
@@ -41,32 +41,6 @@ const NfcAdapter = {
   FLAG_READER_SKIP_NDEF_CHECK: 0x80,
   FLAG_READER_NO_PLATFORM_SOUNDS: 0x100,
 };
-
-function callNative(name, params=[]) {
-  const nativeMethod = NativeNfcManager[name];
-
-  if (!nativeMethod) {
-    throw new Error(`no sucm native method: "${name}"`);
-  }
-
-  if (!Array.isArray(params)) {
-    throw new Error(`params must be an array`);
-  }
-
-  const createCallback = (resolve, reject) => (err, result) => {
-    if (err) {
-      reject(err);
-    } else {
-      resolve(result);
-    }
-  };
-
-  return new Promise((resolve, reject) => {
-    const callback = createCallback(resolve, reject);
-    const inputParams = [...params, callback];
-    nativeMethod(...inputParams);
-  });
-}
 
 class NfcManager {
   constructor() {
