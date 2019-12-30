@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import NfcManager, {NfcTech} from '../NfcManager';
 
-class AppV2Mifare extends React.Component {
+class AppV2Apdu extends React.Component {
   componentDidMount() {
     NfcManager.start();
   }
@@ -54,7 +54,26 @@ class AppV2Mifare extends React.Component {
       console.warn(tag);
 
       if (Platform.OS === 'ios') {
-        resp = await NfcManager.sendCommandAPDUIOS([0x00, 0x8a]);
+        // here we assume AID A0000002471001 for ePassport
+        // you will need to declare above AID in Info.plist like this:
+        // ------------------------------------------------------------
+	      //   <key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+	      //   <array>
+	      //   	 <string>A0000002471001</string>
+	      //   </array>
+        // ------------------------------------------------------------
+        resp = await NfcManager.sendCommandAPDUIOS([0x00, 0x84, 0x00, 0x00, 0x08]);
+        /**
+         * or, you can use alternative form like this:
+           resp = await NfcManager.sendCommandAPDUIOS({
+             cla: 0,
+             ins: 0x84,
+             p1: 0,
+             p2: 0,
+             data: [],
+             le: 8
+           });
+         */
       } else {
         resp = await NfcManager.transceive([0x00, 0x8a]);
       }
@@ -68,4 +87,4 @@ class AppV2Mifare extends React.Component {
   }
 }
 
-export default AppV2Mifare;
+export default AppV2Apdu;

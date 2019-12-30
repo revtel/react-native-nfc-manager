@@ -7,6 +7,7 @@ import {
 import AppV2 from './AppV2';
 import AppV2Ndef from './AppV2Ndef';
 import AppV2Mifare from './AppV2Mifare';
+import AppV2Apdu from './AppV2Apdu';
 
 class AppIndexV2 extends React.Component {
   constructor(props) {
@@ -30,6 +31,10 @@ class AppIndexV2 extends React.Component {
     } else if (selectedDemo === 'mifare') {
       return (
         <AppV2Mifare />
+      )
+    } else if (selectedDemo === 'iso-dep') {
+      return (
+        <AppV2Apdu />
       )
     }
 
@@ -56,6 +61,13 @@ class AppIndexV2 extends React.Component {
           onPress={() => this.setState({selectedDemo: 'mifare'})}
         >
           <Text>Mifare tech</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
+          onPress={() => this.setState({selectedDemo: 'iso-dep'})}
+        >
+          <Text>IsoDep tech</Text>
         </TouchableOpacity>
       </View>
     )

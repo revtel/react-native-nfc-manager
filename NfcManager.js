@@ -839,20 +839,34 @@ class NfcManager {
     })
   }
 
-  sendCommandAPDUIOS(bytes) {
+  sendCommandAPDUIOS(bytesOrApdu) {
     if (Platform.OS !== 'ios') {
       return Promise.reject('not implemented');
     }
 
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.sendCommandAPDU(bytes, (err, response, sw1, sw2) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({response, sw1, sw2});
-        }
-      });
-    })
+    if (Array.isArray(bytesOrApdu)) {
+      const bytes = bytesOrApdu;
+      return new Promise((resolve, reject) => {
+        NativeNfcManager.sendCommandAPDUBytes(bytes, (err, response, sw1, sw2) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({response, sw1, sw2});
+          }
+        });
+      })
+    } else {
+      const apdu = bytesOrApdu;
+      return new Promise((resolve, reject) => {
+        NativeNfcManager.sendCommandAPDU(apdu, (err, response, sw1, sw2) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({response, sw1, sw2});
+          }
+        });
+      })
+    }
   }
 
   invalidateSessionWithErrorIOS(errorMessage='Error') {
