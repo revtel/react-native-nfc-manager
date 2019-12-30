@@ -199,7 +199,7 @@ class NfcManager {
   // -------------------------------------
   // public only for iOS
   // -------------------------------------
-  setAlertMessageIOS = (alertMessage) => callNative('setAlertMessageIOS', [alertMessage]);
+  setAlertMessageIOS = (alertMessage) => callNative('setAlertMessage', [alertMessage]);
 
   invalidateSessionWithErrorIOS = (errorMessage='Error') => callNative('invalidateSessionWithError', [errorMessage]);
 
