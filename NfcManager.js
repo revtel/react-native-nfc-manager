@@ -173,7 +173,12 @@ class NfcManager {
   // -------------------------------------
   // public only for iOS
   // -------------------------------------
-  setAlertMessageIOS = (alertMessage) => callNative('setAlertMessage', [alertMessage]);
+  setAlertMessageIOS = (alertMessage) => {
+    if (Platform.OS !== 'ios') {
+      return Promise.resolve(); //no-op
+    }
+    callNative('setAlertMessage', [alertMessage]);
+  }
 
   invalidateSessionWithErrorIOS = (errorMessage='Error') => callNative('invalidateSessionWithError', [errorMessage]);
 
