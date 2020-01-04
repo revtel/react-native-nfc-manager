@@ -82,7 +82,7 @@ declare module 'react-native-nfc-manager' {
 
     unregisterTagEvent(): Promise<void>;
 
-    setEventListener(name: NfcEvents, callback: OnNfcEvents): void;
+    setEventListener(name: NfcEvents, callback: OnNfcEvents | null): void;
 
     requestTechnology: (tech: NfcTech) => Promise<NfcTech>;
 
