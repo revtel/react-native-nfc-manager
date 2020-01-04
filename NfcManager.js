@@ -5,7 +5,7 @@ import {
 import ByteParser from './ByteParser'
 import NdefParser from './NdefParser'
 import Ndef from './ndef-lib'
-import {NativeNfcManager, NfcManagerEmitter} from './NativeNfcManager'
+import {NativeNfcManager, NfcManagerEmitter, callNative} from './NativeNfcManager'
 
 const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
   alertMessage: 'Please tap NFC tags',
@@ -30,6 +30,7 @@ const NfcTech = {
   MifareClassic: 'MifareClassic',
   MifareUltralight: 'MifareUltralight',
   MifareIOS: 'mifare',
+  Iso15693IOS: 'iso15693',
 }
 
 const NfcAdapter = {
@@ -62,7 +63,7 @@ class NfcManager {
   }
 
   // -------------------------------------
-  // public 
+  // public for both platforms
   // -------------------------------------
   setEventListener = (name, callback) => {
     const allNfcEvents = Object.keys(NfcEvents).map(k => NfcEvents[k]);
@@ -79,57 +80,240 @@ class NfcManager {
 	get MIFARE_ULTRALIGHT_TYPE_C() { return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE_C };
 	get MIFARE_ULTRALIGHT_TYPE_UNKNOWN() { return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE_UNKNOWN };
 
-  start() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.start((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    })
-  }
+  start = () => callNative('start');
 
-  isSupported(tech = ''){
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.isSupported(tech, (err,result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
+  isSupported = (tech = '') => callNative('isSupported', [tech]);
 
-  registerTagEvent(options = {}) {
+  registerTagEvent = (options = {}) => {
     const optionsWithDefault = {
       ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
       ...options,
     };
 
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.registerTagEvent(optionsWithDefault, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
+    return callNative('registerTagEvent', [optionsWithDefault]);
   }
 
-  unregisterTagEvent() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.unregisterTagEvent((err, result) => {
-        if (err) {
-          reject(err);
+  unregisterTagEvent = () => callNative('unregisterTagEvent');
+
+  getTag = () => callNative('getTag');
+
+  requestTechnology = async (tech, options={}) => {
+    try {
+      if (typeof tech === 'string') {
+        tech = [tech];
+      }
+
+      let hasNdefTech = tech.indexOf(NfcTech.Ndef) !== -1;
+      let sessionAvailable = false;
+
+      // check if required session is available
+      if (Platform.OS === 'ios') {
+        if (hasNdefTech) {
+          sessionAvailable = await this._isSessionAvailableIOS();
         } else {
-          resolve(result)
+          sessionAvailable = await this._isSessionExAvailableIOS();
         }
+      } else {
+        sessionAvailable = await this._hasTagEventRegistrationAndroid();
+      }
+
+      // make sure we do register for tag event 
+      if (!sessionAvailable) {
+        if (Platform.OS === 'ios') {
+          if (hasNdefTech) {
+            await this.registerTagEvent(options);
+          } else {
+            await this._registerTagEventExIOS(options);
+          }
+        } else {
+          await this.registerTagEvent(options);
+        }
+
+        // the tag registration is 
+        this.cleanUpTagRegistration = true;
+      }
+
+      return callNative('requestTechnology', [tech]);
+    } catch (ex) {
+      throw ex;
+    }
+  }
+
+  cancelTechnologyRequest = async () => {
+    await callNative('cancelTechnologyRequest');
+
+    if (this.cleanUpTagRegistration) {
+      this.cleanUpTagRegistration = false;
+
+      if (Platform.OS === 'ios') {
+        let sessionAvailable = false;
+
+        // because we don't know which tech currently requested
+        // so we try both, and perform early return when hitting any
+        sessionAvailable = await this._isSessionExAvailableIOS();
+        if (sessionAvailable) {
+          await this._unregisterTagEventExIOS();
+          return;
+        }
+
+        sessionAvailable = await this._isSessionAvailableIOS();
+        if (sessionAvailable) {
+          await this.unregisterTagEvent();
+          return;
+        }
+      } else {
+        await this.unregisterTagEvent();
+        return;
+      }
+    }
+  }
+
+  // -------------------------------------
+  // public only for Android
+  // -------------------------------------
+  isEnabled = () => callNative('isEnabled');
+
+  goToNfcSetting = () => callNative('goToNfcSetting');
+
+  getLaunchTagEvent = () => callNative('getLaunchTagEvent');
+
+  setNdefPushMessage = (bytes) => callNative('setNdefPushMessage', [bytes]);
+
+  // -------------------------------------
+  // public only for iOS
+  // -------------------------------------
+  setAlertMessageIOS = (alertMessage) => {
+    if (Platform.OS !== 'ios') {
+      return Promise.resolve(); //no-op
+    }
+    callNative('setAlertMessage', [alertMessage]);
+  }
+
+  invalidateSessionWithErrorIOS = (errorMessage='Error') => callNative('invalidateSessionWithError', [errorMessage]);
+
+  // -------------------------------------
+  // NfcTech.Ndef API
+  // -------------------------------------
+  writeNdefMessage = (bytes) => callNative('writeNdefMessage', [bytes]);
+
+  getNdefMessage = () => callNative('getNdefMessage');
+
+  // -------------------------------------
+  // (android) NfcTech.Ndef API
+  // -------------------------------------
+  getCachedNdefMessageAndroid = () => callNative('getCachedNdefMessage');
+
+  makeReadOnlyAndroid = () => callNative('makeReadOnly');
+
+  // -------------------------------------
+  // (android) tNfcTech.MifareClassic API
+  // -------------------------------------
+  mifareClassicAuthenticateA = (sector, key) => {
+    if (!key || !Array.isArray(key) || key.length !== 6) {
+      return Promise.reject('key should be an Array[6] of integers (0 - 255)');
+    }
+
+    return callNative('mifareClassicAuthenticateA', [sector, key]);
+  }
+
+  mifareClassicAuthenticateB = (sector, key) => {
+    if (!key || !Array.isArray(key) || key.length !== 6) {
+      return Promise.reject('key should be an Array[6] of integers (0 - 255)');
+    }
+
+    return callNative('mifareClassicAuthenticateB', [sector, key]);
+  }
+
+  mifareClassicGetBlockCountInSector = (sector) => callNative('mifareClassicGetBlockCountInSector', [sector]);
+
+  mifareClassicGetSectorCount = () => callNative('mifareClassicGetSectorCount');
+
+  mifareClassicSectorToBlock = (sector) => callNative('mifareClassicSectorToBlock', [sector]);
+
+  mifareClassicReadBlock = (block) => callNative('mifareClassicReadBlock', [block]);
+
+  mifareClassicReadSector = (sector) => callNative('mifareClassicReadSector', [sector]);
+
+  mifareClassicWriteBlock = (block, data) => {
+    if (!data || !Array.isArray(data) || data.length !== this.MIFARE_BLOCK_SIZE) {
+      return Promise.reject(`data should be a non-empty Array[${this.MIFARE_BLOCK_SIZE}] of integers (0 - 255)`);
+    }
+
+    return callNative('mifareClassicWriteBlock', [block, data]);
+  }
+
+  // -------------------------------------
+  // (android) NfcTech.MifareUltralight API
+  // -------------------------------------
+  mifareUltralightReadPages = (pageOffset) => callNative('mifareUltralightReadPages', [pageOffset]);
+
+  mifareUltralightWritePage = (pageOffset, data) => {
+    if (!data || !Array.isArray(data) || data.length !== this.MIFARE_ULTRALIGHT_PAGE_SIZE) {
+      return Promise.reject(`data should be a non-empty Array[${this.MIFARE_ULTRALIGHT_PAGE_SIZE}] of integers (0 - 255)`);
+    }
+
+    return callNative('mifareUltralightWritePage', [pageOffset, data]);
+  }
+
+  // -------------------------------------
+  // (android) setTimeout works for NfcA, NfcF, IsoDep, MifareClassic, MifareUltralight
+  // -------------------------------------
+  setTimeout = (timeout) => callNative('setTimeout', [timeout]);
+
+  connect = (techs) => callNative('connect', [techs]);
+
+  close = () => callNative('close');
+
+  // -------------------------------------
+  // (android) transceive works for NfcA, NfcB, NfcF, NfcV, IsoDep and MifareUltralight
+  // -------------------------------------
+  transceive = (bytes) => callNative('transceive', [bytes]);
+
+  getMaxTransceiveLength = () => callNative('getMaxTransceiveLength');
+
+  // -------------------------------------
+  // (iOS) NfcTech.MifareIOS API
+  // -------------------------------------
+  sendMifareCommandIOS = (bytes) => callNative('sendMifareCommand', [bytes]);
+
+  // -------------------------------------
+  // (iOS) NfcTech.IsoDep API
+  // -------------------------------------
+  sendCommandAPDUIOS = (bytesOrApdu) => {
+    if (Platform.OS !== 'ios') {
+      return Promise.reject('not implemented');
+    }
+
+    if (Array.isArray(bytesOrApdu)) {
+      const bytes = bytesOrApdu;
+      return new Promise((resolve, reject) => {
+        NativeNfcManager.sendCommandAPDUBytes(bytes, (err, response, sw1, sw2) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({response, sw1, sw2});
+          }
+        });
       })
-    })
+    } else {
+      const apdu = bytesOrApdu;
+      return new Promise((resolve, reject) => {
+        NativeNfcManager.sendCommandAPDU(apdu, (err, response, sw1, sw2) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({response, sw1, sw2});
+          }
+        });
+      })
+    }
+  }
+
+  // -------------------------------------
+  // (iOS) NfcTech.Iso15693IOS
+  // -------------------------------------
+  getSystemInfo(requestFlag) {
+    return callNative('iso15693_getSystemInfo', [requestFlag]);
   }
 
   // -------------------------------------
@@ -176,730 +360,35 @@ class NfcManager {
     }
   }
 
-  _requestTechnology(tech) {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.requestTechnology(tech, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  _cancelTechnologyRequest() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.cancelTechnologyRequest((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  _getTag() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.getTag((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  // -------------------------------------
-  // public only for Android
-  // -------------------------------------
-  isEnabled() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.isEnabled((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result)
-        }
-      })
-    })
-  }
-
-  goToNfcSetting() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.goToNfcSetting((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  getLaunchTagEvent() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.getLaunchTagEvent((err, tag) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(tag)
-        }
-      });
-    })
-  }
-
-  setNdefPushMessage(bytes) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.setNdefPushMessage(bytes, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  // -------------------------------------
-  // public only for iOS
-  // -------------------------------------
-  setAlertMessageIOS(alertMessage) {
-    if (Platform.OS !== 'ios') {
-      // it's a no-op for android
-      return;
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.setAlertMessage(alertMessage, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      })
-    })
-  }
-
   // -------------------------------------
   // Android private
   // -------------------------------------
-  _hasTagEventRegistrationAndroid() {
-    if (Platform.OS !== 'android') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.hasTagEventRegistration((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
+  _hasTagEventRegistrationAndroid = () => callNative('hasTagEventRegistration');
 
   // -------------------------------------
   // iOS private
   // -------------------------------------
-  _isSessionAvailableIOS() {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
+  _isSessionAvailableIOS = () => callNative('isSessionAvailable');
 
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.isSessionAvailable((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
+  _isSessionExAvailableIOS = () => callNative('isSessionExAvailable');
 
-  _isSessionExAvailableIOS() {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.isSessionExAvailable((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
-
-  _registerTagEventExIOS(options = {}) {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
+  _registerTagEventExIOS = (options = {}) => {
     const optionsWithDefault = {
       ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
       ...options,
     };
 
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.registerTagEventEx(optionsWithDefault, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
+    return callNative('registerTagEventEx', [optionsWithDefault]);
   }
 
-  _unregisterTagEventExIOS() {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.unregisterTagEventEx((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result)
-        }
-      })
-    })
-  }
+  _unregisterTagEventExIOS = () => callNative('unregisterTagEventEx');
 
   // -------------------------------------
   // deprecated APIs 
   // -------------------------------------
-  requestNdefWrite(bytes, {format=false, formatReadOnly=false}={}) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
+  requestNdefWrite = (bytes, {format=false, formatReadOnly=false}={}) => callNative('requestNdefWrite', [bytes, {format, formatReadOnly}]);
 
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.requestNdefWrite(bytes, {format, formatReadOnly}, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  cancelNdefWrite() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.cancelNdefWrite((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  // -------------------------------------
-  // Nfc Tech request API  
-  // -------------------------------------
-  requestTechnology = async (tech, options={}) => {
-    try {
-      if (typeof tech === 'string') {
-        tech = [tech];
-      }
-
-      let hasNdefTech = tech.indexOf(NfcTech.Ndef) !== -1;
-      let sessionAvailable = false;
-
-      // check if required session is available
-      if (Platform.OS === 'ios') {
-        if (hasNdefTech) {
-          sessionAvailable = await this._isSessionAvailableIOS();
-        } else {
-          sessionAvailable = await this._isSessionExAvailableIOS();
-        }
-      } else {
-        sessionAvailable = await this._hasTagEventRegistrationAndroid();
-      }
-
-      // make sure we do register for tag event 
-      if (!sessionAvailable) {
-        if (Platform.OS === 'ios') {
-          if (hasNdefTech) {
-            await this.registerTagEvent(options);
-          } else {
-            await this._registerTagEventExIOS(options);
-          }
-        } else {
-          await this.registerTagEvent(options);
-        }
-
-        // the tag registration is 
-        this.cleanUpTagRegistration = true;
-      }
-
-      return await this._requestTechnology(tech);
-    } catch (ex) {
-      throw ex;
-    }
-  }
-
-  cancelTechnologyRequest = async () => {
-    await this._cancelTechnologyRequest();
-
-    if (this.cleanUpTagRegistration) {
-      this.cleanUpTagRegistration = false;
-
-      if (Platform.OS === 'ios') {
-        let sessionAvailable = false;
-
-        // because we don't know which tech currently requested
-        // so we try both, and perform early return when hitting any
-        sessionAvailable = await this._isSessionExAvailableIOS();
-        if (sessionAvailable) {
-          await this._unregisterTagEventExIOS();
-          return;
-        }
-
-        sessionAvailable = await this._isSessionAvailableIOS();
-        if (sessionAvailable) {
-          await this.unregisterTagEvent();
-          return;
-        }
-      } else {
-        await this.unregisterTagEvent();
-        return;
-      }
-    }
-  }
-
-  getTag = async () => {
-    return this._getTag();
-  }
-
-  // -------------------------------------
-  // NfcTech.Ndef API
-  // -------------------------------------
-  writeNdefMessage(bytes) {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.writeNdefMessage(bytes, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  getNdefMessage() {
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.getNdefMessage((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  getCachedNdefMessageAndroid() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.getCachedNdefMessage((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  makeReadOnlyAndroid() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.makeReadOnly((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  // -------------------------------------
-  // NfcTech.MifareClassic API
-  // -------------------------------------
-  mifareClassicAuthenticateA(sector, key) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    if (!key || !Array.isArray(key) || key.length !== 6) {
-      return Promise.reject('key should be an Array[6] of integers (0 - 255)');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicAuthenticateA(sector, key, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  mifareClassicAuthenticateB(sector, key) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    if (!key || !Array.isArray(key) || key.length !== 6) {
-      return Promise.reject('key should be an Array[6] of integers (0 - 255)');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicAuthenticateB(sector, key, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  mifareClassicGetBlockCountInSector(sector) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicGetBlockCountInSector(sector, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  mifareClassicGetSectorCount() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicGetSectorCount((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  mifareClassicSectorToBlock(sector) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicSectorToBlock(sector, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  mifareClassicReadBlock(block) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicReadBlock(block, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  mifareClassicReadSector(sector) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicReadSector(sector, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  mifareClassicWriteBlock(block, data) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    if (!data || !Array.isArray(data) || data.length !== this.MIFARE_BLOCK_SIZE) {
-      return Promise.reject(`data should be a non-empty Array[${this.MIFARE_BLOCK_SIZE}] of integers (0 - 255)`);
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareClassicWriteBlock(block, data, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  // -------------------------------------
-  // NfcTech.MifareUltralight API
-  // -------------------------------------
-  mifareUltralightReadPages(pageOffset) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareUltralightReadPages(pageOffset, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  mifareUltralightWritePage(pageOffset, data) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    if (!data || !Array.isArray(data) || data.length !== this.MIFARE_ULTRALIGHT_PAGE_SIZE) {
-      return Promise.reject(`data should be a non-empty Array[${this.MIFARE_ULTRALIGHT_PAGE_SIZE}] of integers (0 - 255)`);
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.mifareUltralightWritePage(pageOffset, data, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  // -------------------------------------
-  // setTimeout works for NfcA, NfcF, IsoDep, MifareClassic, MifareUltralight
-  // -------------------------------------
-  setTimeout(timeout) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.setTimeout(timeout, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  connect(techs) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.connect(techs, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  close() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.close((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  // -------------------------------------
-  // transceive works for NfcA, NfcB, NfcF, NfcV, IsoDep and MifareUltralight
-  // -------------------------------------
-  transceive(bytes) {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.transceive(bytes, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  getMaxTransceiveLength() {
-    if (Platform.OS === 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.getMaxTransceiveLength((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      })
-    })
-  }
-
-  // -------------------------------------
-  // iOS specific 
-  // -------------------------------------
-  sendMifareCommandIOS(bytes) {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.sendMifareCommand(bytes, (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    })
-  }
-
-  sendCommandAPDUIOS(bytesOrApdu) {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    if (Array.isArray(bytesOrApdu)) {
-      const bytes = bytesOrApdu;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.sendCommandAPDUBytes(bytes, (err, response, sw1, sw2) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({response, sw1, sw2});
-          }
-        });
-      })
-    } else {
-      const apdu = bytesOrApdu;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.sendCommandAPDU(apdu, (err, response, sw1, sw2) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({response, sw1, sw2});
-          }
-        });
-      })
-    }
-  }
-
-  invalidateSessionWithErrorIOS(errorMessage='Error') {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.invalidateSessionWithError(errorMessage, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    })
-  }
-
-  getSystemInfoWithRequestFlag(requestFlag) {
-    if (Platform.OS !== 'ios') {
-      return Promise.reject('not implemented');
-    }
-
-    return new Promise((resolve, reject) => {
-      NativeNfcManager.getSystemInfoWithRequestFlag(requestFlag, (err, resp) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(resp);
-        }
-      });
-    })
-  }
+  cancelNdefWrite = () => callNative('cancelNdefWrite');
 }
 
 export default new NfcManager();
