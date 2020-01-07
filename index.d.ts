@@ -24,6 +24,17 @@ declare module 'react-native-nfc-manager' {
     MifareClassic = 'MifareClassic',
     MifareUltralight = 'MifareUltralight',
     MifareIOS = 'mifare',
+    Iso15693IOS = 'iso15693',
+  }
+
+  /** [iOS ONLY] */
+  export enum Nfc15693RequestFlagIOS {
+    DualSubCarriers = (1 << 0),
+    HighDataRate = (1 << 1),
+    ProtocolExtension = (1 << 3),
+    Select = (1 << 4),
+    Address = (1 << 5),
+    Option = (1 << 6),
   }
 
   /** [ANDROID ONLY] */
@@ -73,6 +84,27 @@ declare module 'react-native-nfc-manager' {
     le: number;
   }
 
+  /** [iOS ONLY] */
+  interface Iso15693HandlerIOS {
+    getSystemInfo: (
+      requestFloags: number,
+    ) => Promise<{ dsfid: number, afi: number, blockSize: number, blockCount: number, icReference: number}>;
+    readSingleBlock: (params: {flags: number, blockNumber: number}) => Promise<number[]>;
+    writeSingleBlock: (params: {flags: number, blockNumber: number, dataBlock: number[]}) => Promise<void>; 
+    lockBlock: (params: {flags: number, blockNumber: number}) => Promise<void>; 
+    writeAFI: (params: {flags: number, afi: number}) => Promise<void>; 
+    lockAFI: (params: {flags: number}) => Promise<void>; 
+    writeDSFID: (params: {flags: number, dsfid: number}) => Promise<void>; 
+    lockDSFID: (params: {flags: number}) => Promise<void>; 
+    resetToReady: (params: {flags: number}) => Promise<void>; 
+    select: (params: {flags: number}) => Promise<void>; 
+    stayQuite: () => Promise<void>; 
+    customCommand: (params: {flags: number, customCommandCode: number, customRequestParameters: number[]}) => Promise<number[]>;
+    extendedReadSingleBlock: (params: {flags: number, blockNumber: number}) => Promise<number[]>;
+    extendedWriteSingleBlock: (params: {flags: number, blockNumber: number, dataBlock: number[]}) => Promise<void>; 
+    extendedLockBlock: (params: {flags: number, blockNumber: number}) => Promise<void>; 
+  }
+
   interface NfcManager {
     start(): Promise<void>;
 
@@ -104,6 +136,8 @@ declare module 'react-native-nfc-manager' {
     sendCommandAPDUIOS: (
       bytesOrApdu: number[] | APDU,
     ) => Promise<{response: number[]; sw1: number; sw2: number}>;
+    /** [iOS ONLY] */
+    getIso15693HandlerIOS: () => Iso15693HandlerIOS;
 
     /** [ANDROID ONLY] */
     isEnabled(): Promise<boolean>;

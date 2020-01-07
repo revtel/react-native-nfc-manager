@@ -46,15 +46,82 @@ const NfcAdapter = {
 const Nfc15693RequestFlagIOS = {
   DualSubCarriers: (1 << 0),
   HighDataRate: (1 << 1),
+  ProtocolExtension: (1 << 3),
   Select: (1 << 4),
   Address: (1 << 5),
   Option: (1 << 6),
 };
 
+class Iso15693HandlerIOS {
+  getSystemInfo(requestFlag) {
+    return callNative('iso15693_getSystemInfo', [requestFlag]);
+  }
+
+  readSingleBlock({flags, blockNumber}) {
+    return callNative('iso15693_readSingleBlock', [{flags, blockNumber}]);
+  }
+
+  writeSingleBlock({flags, blockNumber, dataBlock}) {
+    return callNative('iso15693_writeSingleBlock', [{flags, blockNumber, dataBlock}]);
+  }
+
+  lockBlock({flags, blockNumber}) {
+    return callNative('iso15693_lockBlock', [{flags, blockNumber}]);
+  }
+
+  writeAFI({flags, afi}) {
+    return callNative('iso15693_writeAFI', [{flags, afi}]);
+  }
+
+  lockAFI({flags}) {
+    return callNative('iso15693_lockAFI', [{flags}]);
+  }
+
+  writeDSFID({flags, dsfid}) {
+    return callNative('iso15693_writeDSFID', [{flags, dsfid}]);
+  }
+
+  lockDSFID({flags}) {
+    return callNative('iso15693_lockDSFID', [{flags}]);
+  }
+
+  resetToReady({flags}) {
+    return callNative('iso15693_resetToReady', [{flags}]);
+  }
+
+  select({flags}) {
+    return callNative('iso15693_select', [{flags}]);
+  }
+
+  stayQuite() {
+    return callNative('iso15693_stayQuiet');
+  }
+
+  customCommand({flags, customCommandCode, customRequestParameters}) {
+    return callNative('iso15693_customCommand', [{flags, customCommandCode, customRequestParameters}]);
+  }
+
+  extendedReadSingleBlock({flags, blockNumber}) {
+    return callNative('iso15693_extendedReadSingleBlock', [{flags, blockNumber}]);
+  }
+
+  extendedWriteSingleBlock({flags, blockNumber, dataBlock}) {
+    return callNative('iso15693_extendedWriteSingleBlock', [{flags, blockNumber, dataBlock}]);
+  }
+
+  extendedLockBlock({flags, blockNumber}) {
+    return callNative('iso15693_extendedLockBlock', [{flags, blockNumber}]);
+  }
+}
+
 class NfcManager {
   constructor() {
     this.cleanUpTagRegistration = false;
     this._subscribeNativeEvents();
+
+    if (Platform.OS === 'ios') {
+      this._iso15693HandlerIOS = new Iso15693HandlerIOS();
+    }
 
     // legacy stuff
     this._clientTagDiscoveryListener = null;
@@ -277,6 +344,11 @@ class NfcManager {
   sendMifareCommandIOS = (bytes) => callNative('sendMifareCommand', [bytes]);
 
   // -------------------------------------
+  // (iOS) NfcTech.Iso15693IOS API
+  // -------------------------------------
+  getIso15693HandlerIOS = () => this._iso15693HandlerIOS;
+
+  // -------------------------------------
   // (iOS) NfcTech.IsoDep API
   // -------------------------------------
   sendCommandAPDUIOS = (bytesOrApdu) => {
@@ -307,13 +379,6 @@ class NfcManager {
         });
       })
     }
-  }
-
-  // -------------------------------------
-  // (iOS) NfcTech.Iso15693IOS
-  // -------------------------------------
-  getSystemInfo(requestFlag) {
-    return callNative('iso15693_getSystemInfo', [requestFlag]);
   }
 
   // -------------------------------------

@@ -3,11 +3,13 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import AppV2 from './AppV2';
 import AppV2Ndef from './AppV2Ndef';
 import AppV2Mifare from './AppV2Mifare';
 import AppV2Apdu from './AppV2Apdu';
+import AppV2Iso15693 from './AppV2Iso15693';
 
 class AppIndexV2 extends React.Component {
   constructor(props) {
@@ -35,6 +37,10 @@ class AppIndexV2 extends React.Component {
     } else if (selectedDemo === 'iso-dep') {
       return (
         <AppV2Apdu />
+      )
+    } else if (selectedDemo === 'iso-15693') {
+      return (
+        <AppV2Iso15693 />
       )
     }
 
@@ -69,6 +75,15 @@ class AppIndexV2 extends React.Component {
         >
           <Text>IsoDep tech</Text>
         </TouchableOpacity>
+
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity 
+            style={{padding: 10, width: 200, margin: 20, borderWidth: 1, borderColor: 'black'}}
+            onPress={() => this.setState({selectedDemo: 'iso-15693'})}
+          >
+            <Text>(iOS) Iso15693 tech</Text>
+          </TouchableOpacity>
+        )}
       </View>
     )
   }

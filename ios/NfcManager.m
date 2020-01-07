@@ -657,7 +657,7 @@ RCT_EXPORT_METHOD(isSessionExAvailable:(nonnull RCTResponseSenderBlock)callback)
 // ---------------------------
 // iso15693
 // ---------------------------
-RCT_EXPORT_METHOD(iso15693_getSystemInfo:(NSNumber *)flags callback:(nonnull RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(iso15693_getSystemInfo:(nonnull NSNumber *)flags callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
         if (!sessionEx || !sessionEx.connectedTag) {
@@ -745,7 +745,7 @@ RCT_EXPORT_METHOD(iso15693_writeSingleBlock:(NSDictionary *)options callback:(no
         
         [tag writeSingleBlockWithRequestFlags:flags
                                   blockNumber:blockNumber
-                                    dataBlock: dataBlock
+                                    dataBlock:dataBlock
                            completionHandler:^(NSError *error) {
             if (error) {
                 callback(@[getErrorMessage(error), [NSNull null]]);
