@@ -196,7 +196,6 @@ class NfcManager {
           await this.registerTagEvent(options);
         }
 
-        // the tag registration is 
         this.cleanUpTagRegistration = true;
       }
 
@@ -207,31 +206,33 @@ class NfcManager {
   }
 
   cancelTechnologyRequest = async () => {
-    await callNative('cancelTechnologyRequest');
+    if (!this.cleanUpTagRegistration) {
+      await callNative('cancelTechnologyRequest');
+      return;
+    }
 
-    if (this.cleanUpTagRegistration) {
-      this.cleanUpTagRegistration = false;
+    this.cleanUpTagRegistration = false;
 
-      if (Platform.OS === 'ios') {
-        let sessionAvailable = false;
+    if (Platform.OS === 'ios') {
+      let sessionAvailable = false;
 
-        // because we don't know which tech currently requested
-        // so we try both, and perform early return when hitting any
-        sessionAvailable = await this._isSessionExAvailableIOS();
-        if (sessionAvailable) {
-          await this._unregisterTagEventExIOS();
-          return;
-        }
+      // because we don't know which tech currently requested
+      // so we try both, and perform early return when hitting any
+      sessionAvailable = await this._isSessionExAvailableIOS();
+      if (sessionAvailable) {
+        await this._unregisterTagEventExIOS();
+        return;
+      }
 
-        sessionAvailable = await this._isSessionAvailableIOS();
-        if (sessionAvailable) {
-          await this.unregisterTagEvent();
-          return;
-        }
-      } else {
+      sessionAvailable = await this._isSessionAvailableIOS();
+      if (sessionAvailable) {
         await this.unregisterTagEvent();
         return;
       }
+    } else {
+      await callNative('cancelTechnologyRequest');
+      await this.unregisterTagEvent();
+      return;
     }
   }
 
