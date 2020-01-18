@@ -494,7 +494,7 @@ RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
                 if (error) {
                     callback(@[getErrorMessage(error), [NSNull null]]);
                 } else {
-                    callback(@[[NSNull null], [self convertNdefMessage:ndefMessage]]);
+                    callback(@[[NSNull null], @{@"ndefMessage": [self convertNdefMessage:ndefMessage]}]);
                 }
             }];
             return;
