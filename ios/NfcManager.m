@@ -158,6 +158,23 @@ RCT_EXPORT_MODULE()
     return tagInfo;
 }
 
+- (id<NFCNDEFTag>)getNDEFTagHandle:(id<NFCTag>)tag {
+    // all following types inherite from NFCNDEFTag
+    if (@available(iOS 13.0, *)) {
+        if (tag.type == NFCTagTypeMiFare) {
+            return [tag asNFCMiFareTag];
+        } else if (tag.type == NFCTagTypeISO7816Compatible) {
+            return [tag asNFCISO7816Tag];
+        } else if (tag.type == NFCTagTypeISO15693) {
+            return [tag asNFCISO15693Tag];
+        } else if (tag.type == NFCTagTypeFeliCa) {
+            return [tag asNFCFeliCaTag];
+        }
+    }
+
+    return nil;
+}
+
 - (void)readerSession:(NFCNDEFReaderSession *)session didDetectNDEFs:(NSArray<NFCNDEFMessage *> *)messages
 {
     NSLog(@"readerSession:didDetectNDEFs");
@@ -431,7 +448,20 @@ RCT_EXPORT_METHOD(getTag: (nonnull RCTResponseSenderBlock)callback)
     if (@available(iOS 13.0, *)) {
         if (sessionEx != nil) {
             if (sessionEx.connectedTag) {
-                NSDictionary* rnTag = [self getRNTag:sessionEx.connectedTag];
+                NSMutableDictionary* rnTag = [self getRNTag:sessionEx.connectedTag].mutableCopy;
+                id<NFCNDEFTag> ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
+                
+                // if we can successfully read ndef message, also send it back to js
+                if (ndefTag) {
+                    [ndefTag readNDEFWithCompletionHandler:^(NFCNDEFMessage *ndefMessage, NSError *error) {
+                        if (!error) {
+                            [rnTag setObject:[self convertNdefMessage:ndefMessage] forKey:@"ndefMessage"];
+                        }
+                        callback(@[[NSNull null], rnTag]);
+                    }];
+                    return;
+                }
+
                 callback(@[[NSNull null], rnTag]);
                 return;
             }
@@ -455,18 +485,7 @@ RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
             }
         } else if (sessionEx != nil) {
             if (sessionEx.connectedTag) {
-                id<NFCTag> tag = sessionEx.connectedTag;
-                if (@available(iOS 13.0, *)) {
-                    if (tag.type == NFCTagTypeMiFare) {
-                        ndefTag = [tag asNFCMiFareTag];
-                    } else if (tag.type == NFCTagTypeISO7816Compatible) {
-                        ndefTag = [tag asNFCISO7816Tag];
-                    } else if (tag.type == NFCTagTypeISO15693) {
-                        ndefTag = [tag asNFCISO15693Tag];
-                    } else if (tag.type == NFCTagTypeFeliCa) {
-                        ndefTag = [tag asNFCFeliCaTag];
-                    }
-                }
+                ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
             }
         }
         
