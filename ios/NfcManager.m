@@ -191,6 +191,11 @@ RCT_EXPORT_MODULE()
 - (void)readerSession:(NFCNDEFReaderSession *)session didInvalidateWithError:(NSError *)error
 {
     NSLog(@"readerSession:didInvalidateWithError: (%@)", [error localizedDescription]);
+    if (techRequestCallback) {
+        techRequestCallback(@[getErrorMessage(error)]);
+        techRequestCallback = nil;
+    }
+    
     [self reset];
     [self sendEventWithName:@"NfcManagerSessionClosed"
                        body:@{}];
@@ -199,8 +204,13 @@ RCT_EXPORT_MODULE()
 - (void)readerSession:(NFCNDEFReaderSession *)session didDetectTags:(NSArray<__kindof id<NFCNDEFTag>> *)tags {
     NSLog(@"readerSession:didDetectTags");
     if (techRequestCallback != nil) {
+        RCTResponseSenderBlock pendingCallback = techRequestCallback;
+        
+        // by setting callback to nil, we know that the JS promise is already resolved
+        techRequestCallback = nil;
+        
         if ([tags count] > 1) {
-            self->techRequestCallback(@[@"only 1 tag allows"]);
+            pendingCallback(@[@"only 1 tag allows"]);
             return;
         }
         
@@ -208,15 +218,15 @@ RCT_EXPORT_MODULE()
         if (@available(iOS 13.0, *)) {
             [session connectToTag:ndefTag completionHandler:^(NSError *error) {
                 if (error != nil) {
-                    self->techRequestCallback(@[getErrorMessage(error)]);
+                    pendingCallback(@[getErrorMessage(error)]);
                     return;
                 }
                 
                 self->connectedNdefTag = ndefTag;
-                self->techRequestCallback(@[[NSNull null], @"Ndef"]);
+                pendingCallback(@[[NSNull null], @"Ndef"]);
             }];
         } else {
-            self->techRequestCallback(@[@"api not available"]);
+            pendingCallback(@[@"api not available"]);
         }
     } else {
         if ([tags count] > 1) {
@@ -252,6 +262,11 @@ RCT_EXPORT_MODULE()
     if (@available(iOS 13.0, *)) {
         if (techRequestCallback != nil) {
             BOOL found = false;
+            RCTResponseSenderBlock pendingCallback = techRequestCallback;
+            
+            // by setting callback to nil, we know the promise is resolved
+            techRequestCallback = nil;
+
             for (NSString* requestType in techRequestTypes) {
                 for (id<NFCTag> tag in tags) {
                     NSString * tagType = [self getRNTechName:tag];
@@ -259,11 +274,11 @@ RCT_EXPORT_MODULE()
                         [sessionEx connectToTag:tag
                               completionHandler:^(NSError *error) {
                             if (error != nil) {
-                                self->techRequestCallback(@[getErrorMessage(error)]);
+                                pendingCallback(@[getErrorMessage(error)]);
                                 return;
                             }
                             
-                            self->techRequestCallback(@[[NSNull null], requestType]);
+                            pendingCallback(@[[NSNull null], requestType]);
                         }];
                         found = true;
                         break;
@@ -272,7 +287,7 @@ RCT_EXPORT_MODULE()
             }
             
             if (!found) {
-                techRequestCallback(@[@"No tech matches", [NSNull null]]);
+                pendingCallback(@[@"No tech matches", [NSNull null]]);
             }
         }
     }
@@ -281,6 +296,11 @@ RCT_EXPORT_MODULE()
 - (void)tagReaderSession:(NFCTagReaderSession *)session didInvalidateWithError:(NSError *)error
 {
     NSLog(@"NFCTag didInvalidateWithError");
+    if (techRequestCallback) {
+        techRequestCallback(@[getErrorMessage(error)]);
+        techRequestCallback = nil;
+    }
+
     [self reset];
     [self sendEventWithName:@"NfcManagerSessionClosed"
                        body:@{}];
