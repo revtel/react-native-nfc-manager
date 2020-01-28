@@ -59,16 +59,16 @@ class AppV2Iso15693 extends React.Component {
 
       const handler = NfcManager.getIso15693HandlerIOS();
 
-      resp = await handler.getSystemInfoIOS(Nfc15693RequestFlagIOS.HighDataRate);
+      resp = await handler.getSystemInfo(Nfc15693RequestFlagIOS.HighDataRate);
       console.warn(resp);
 
-      await handler.writeSingleBlockIOS({
+      await handler.writeSingleBlock({
         flags: Nfc15693RequestFlagIOS.HighDataRate,
         blockNumber: 0,
         dataBlock: [4, 3, 2, 1]
       });
 
-      resp = await handler.readSingleBlockIOS({
+      resp = await handler.readSingleBlock({
         flags: Nfc15693RequestFlagIOS.HighDataRate,
         blockNumber: 0,
       });
