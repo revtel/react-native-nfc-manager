@@ -257,6 +257,8 @@ class NfcManager {
     callNative('setAlertMessage', [alertMessage]);
   }
 
+  invalidateSessionIOS = () => callNative('invalidateSession');
+
   invalidateSessionWithErrorIOS = (errorMessage='Error') => callNative('invalidateSessionWithError', [errorMessage]);
 
   // -------------------------------------

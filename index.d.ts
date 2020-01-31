@@ -129,6 +129,8 @@ declare module 'react-native-nfc-manager' {
     /** [iOS ONLY] */
     setAlertMessageIOS: (alertMessage: string) => Promise<void>;
     /** [iOS ONLY] */
+    invalidateSessionIOS: () => Promise<void>;
+    /** [iOS ONLY] */
     invalidateSessionWithErrorIOS: (errorMessage: string) => Promise<void>;
     /** [iOS ONLY] */
     sendMifareCommandIOS: (bytes: number[]) => Promise<number[]>;
