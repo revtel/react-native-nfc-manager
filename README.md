@@ -57,7 +57,11 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 </array>
 ```
 
-## Example
+## Demo project
+
+Please use [this repo](https://github.com/whitedogg13/nfc-test-app) as a quick start.
+
+## Example codes
 
 Look into `example` for the features you need.
 
