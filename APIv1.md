@@ -75,6 +75,19 @@ Direct the user to NFC setting.
 Get the NFC tag object which launches the app.
 Returned `Promise` resolved to the NFC tag object launching the app and resolved to null if the app isn't launched by NFC tag.
 
+To launch your app with a tag you need to add an intent-filter to your manifest file, see example below. This filter must be set for your main activity, where you also call getLaunchTagEvent(). 
+If you write text content to your tag the ndef message you filter for needs to be the first entry, otherwise if your intent-filter doesnt match the first record your `Promise` will resolve to null ([#208](https://github.com/whitedogg13/react-native-nfc-manager/issues/208)). 
+
+```
+<intent-filter>
+  <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
+  <category android:name="android.intent.category.DEFAULT"/>
+  <data android:mimeType="text/plain" />
+</intent-filter>
+```
+
+Another good point is to add `android:launchMode="singleTask"` to your manifest activity. Otherwise, if your app is already running your tag will start another instance and could lead to strange behavior (thanks [@levelpic](https://github.com/levepic)). 
+
 ### registerTagEvent(listener, alertMessage, invalidateAfterFirstRead)
 Start to listen to *ANY* NFC tags.
 
