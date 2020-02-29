@@ -55,3 +55,19 @@ test('build and parse multiple records', () => {
     expect(message[2]).toEqual(decodedMessage[2]);
 });
 
+test('build and parse wifi simple payload', () => {
+  const wifiCredentials = {
+    ssid: 'my-wifi-ap',
+    networkKey: 'Abcabc123'
+  };
+
+  const payload = ndef.wifiSimple.encodePayload(wifiCredentials);
+  const parsed = ndef.wifiSimple.decodePayload(payload);
+
+  expect(parsed.ssid).toEqual(wifiCredentials.ssid);
+  expect(parsed.networkKey).toEqual(wifiCredentials.networkKey);
+  expect(parsed.authType).toEqual(ndef.wifiSimple.authTypes.WPA2_PSK);
+});
+
+
+

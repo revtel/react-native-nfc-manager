@@ -5,7 +5,8 @@
 
 var util = require('./ndef-util'),
     textHelper = require('./ndef-text'),
-    uriHelper = require('./ndef-uri');
+    uriHelper = require('./ndef-uri'),
+    wifiSimpleHelper = require('./ndef-wifi-simple');
 
 var ndef = {
 
@@ -27,6 +28,8 @@ var ndef = {
     RTD_HANDOVER_CARRIER: "Hc", // [0x48, 0x63]
     RTD_HANDOVER_REQUEST: "Hr", // [0x48, 0x72]
     RTD_HANDOVER_SELECT: "Hs", // [0x48, 0x73]
+
+    MIME_WFA_WSC: "application/vnd.wfa.wsc",
 
     /**
      * Creates a JSON representation of a NDEF Record.
@@ -197,6 +200,17 @@ var ndef = {
         return ndef.record(ndef.TNF_EXTERNAL_TYPE, "android.com:pkg", [], packageName);
     },
 
+    /**
+     * Helper that creates a NDEF record containing wifi credentials
+     *
+     * @credentials Object with ssid,
+     * @id byte[] (optional)
+     */
+    wifiSimpleRecord: function(credentials, id) {
+      var payload = wifiSimpleHelper.encodePayload(credentials);
+      if (!id) { id = []; }
+      return ndef.mimeMediaRecord(ndef.MIME_WFA_WSC, payload, id);     
+    },
 
     /**
      * Encodes an NDEF Message into bytes that can be written to a NFC tag.
@@ -563,6 +577,7 @@ function s(bytes) {
 // expose helper objects
 ndef.text = textHelper;
 ndef.uri = uriHelper;
+ndef.wifiSimple = wifiSimpleHelper;
 ndef.tnfToString = tnfToString;
 ndef.util = util;
 ndef.stringify = stringifier.stringify;
