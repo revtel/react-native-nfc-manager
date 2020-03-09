@@ -544,28 +544,37 @@ RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(writeNdefMessage:(NSArray*)bytes callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
+        id<NFCNDEFTag> ndefTag = nil;
+        
         if (session != nil) {
             if (self->connectedNdefTag) {
-                NSData *data = [self arrayToData:bytes];
-                NFCNDEFMessage *ndefMsg = [NFCNDEFMessage ndefMessageWithData:data];
-                if (!ndefMsg) {
-                    callback(@[@"invalid ndef msg"]);
-                    return;
-                }
-                
-                [self->connectedNdefTag writeNDEF:ndefMsg completionHandler:^(NSError *error) {
-                    if (error) {
-                        callback(@[getErrorMessage(error), [NSNull null]]);
-                    } else {
-                        callback(@[[NSNull null]]);
-                    }
-                }];
+                ndefTag = self->connectedNdefTag;
+            }
+        } else if (sessionEx != nil) {
+            if (sessionEx.connectedTag) {
+                ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
+            }
+        }
+        
+        if (ndefTag) {
+            NSData *data = [self arrayToData:bytes];
+            NFCNDEFMessage *ndefMsg = [NFCNDEFMessage ndefMessageWithData:data];
+            if (!ndefMsg) {
+                callback(@[@"invalid ndef msg"]);
                 return;
             }
-            callback(@[@"Not connected", [NSNull null]]);
-        } else {
-            callback(@[@"Not even registered", [NSNull null]]);
+
+            [ndefTag writeNDEF:ndefMsg completionHandler:^(NSError *error) {
+                if (error) {
+                    callback(@[getErrorMessage(error), [NSNull null]]);
+                } else {
+                    callback(@[[NSNull null]]);
+                }
+            }];
+            return;
         }
+        
+        callback(@[@"No ndef available", [NSNull null]]);
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
     }
