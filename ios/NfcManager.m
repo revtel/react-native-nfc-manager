@@ -481,29 +481,33 @@ RCT_EXPORT_METHOD(invalidateSessionWithError:(NSString *)errorMessage callback:(
 RCT_EXPORT_METHOD(getTag: (nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
-        if (sessionEx != nil) {
-            if (sessionEx.connectedTag) {
-                NSMutableDictionary* rnTag = [self getRNTag:sessionEx.connectedTag].mutableCopy;
-                id<NFCNDEFTag> ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
-                
-                // if we can successfully read ndef message, also send it back to js
-                if (ndefTag) {
-                    [ndefTag readNDEFWithCompletionHandler:^(NFCNDEFMessage *ndefMessage, NSError *error) {
-                        if (!error) {
-                            [rnTag setObject:[self convertNdefMessage:ndefMessage] forKey:@"ndefMessage"];
-                        }
-                        callback(@[[NSNull null], rnTag]);
-                    }];
-                    return;
-                }
-
-                callback(@[[NSNull null], rnTag]);
-                return;
+        NSMutableDictionary* rnTag = @{}.mutableCopy;
+        id<NFCNDEFTag> ndefTag = nil;
+        
+        if (session != nil) {
+            if (self->connectedNdefTag) {
+                ndefTag = self->connectedNdefTag;
             }
-            callback(@[@"Not connected", [NSNull null]]);
+        } else if (sessionEx != nil) {
+            if (sessionEx.connectedTag) {
+                rnTag = [self getRNTag:sessionEx.connectedTag].mutableCopy;
+                ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
+            }
         } else {
-            callback(@[@"Not even registered", [NSNull null]]);
+            callback(@[@"No session available", [NSNull null]]);
         }
+        
+        if (ndefTag) {
+            [ndefTag readNDEFWithCompletionHandler:^(NFCNDEFMessage *ndefMessage, NSError *error) {
+                if (!error) {
+                    [rnTag setObject:[self convertNdefMessage:ndefMessage] forKey:@"ndefMessage"];
+                }
+                callback(@[[NSNull null], rnTag]);
+            }];
+            return;
+        }
+        
+        callback(@[[NSNull null], rnTag]);
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
     }
@@ -544,28 +548,37 @@ RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(writeNdefMessage:(NSArray*)bytes callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
+        id<NFCNDEFTag> ndefTag = nil;
+        
         if (session != nil) {
             if (self->connectedNdefTag) {
-                NSData *data = [self arrayToData:bytes];
-                NFCNDEFMessage *ndefMsg = [NFCNDEFMessage ndefMessageWithData:data];
-                if (!ndefMsg) {
-                    callback(@[@"invalid ndef msg"]);
-                    return;
-                }
-                
-                [self->connectedNdefTag writeNDEF:ndefMsg completionHandler:^(NSError *error) {
-                    if (error) {
-                        callback(@[getErrorMessage(error), [NSNull null]]);
-                    } else {
-                        callback(@[[NSNull null]]);
-                    }
-                }];
+                ndefTag = self->connectedNdefTag;
+            }
+        } else if (sessionEx != nil) {
+            if (sessionEx.connectedTag) {
+                ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
+            }
+        }
+        
+        if (ndefTag) {
+            NSData *data = [self arrayToData:bytes];
+            NFCNDEFMessage *ndefMsg = [NFCNDEFMessage ndefMessageWithData:data];
+            if (!ndefMsg) {
+                callback(@[@"invalid ndef msg"]);
                 return;
             }
-            callback(@[@"Not connected", [NSNull null]]);
-        } else {
-            callback(@[@"Not even registered", [NSNull null]]);
+
+            [ndefTag writeNDEF:ndefMsg completionHandler:^(NSError *error) {
+                if (error) {
+                    callback(@[getErrorMessage(error), [NSNull null]]);
+                } else {
+                    callback(@[[NSNull null]]);
+                }
+            }];
+            return;
         }
+        
+        callback(@[@"No ndef available", [NSNull null]]);
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
     }
