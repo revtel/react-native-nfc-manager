@@ -189,6 +189,12 @@ declare module 'react-native-nfc-manager' {
   type ISOLangCode = 'en' | string;
   type URI = string;
 
+  export interface WifiSimpleCredentials {
+    ssid: string;
+    networkKey: string;
+    authType?: number[];
+  }
+
   export const Ndef: {
     TNF_EMPTY: 0x0;
     TNF_WELL_KNOWN: 0x01;
@@ -207,6 +213,8 @@ declare module 'react-native-nfc-manager' {
     RTD_HANDOVER_REQUEST: 'Hr'; // [0x48, 0x72]
     RTD_HANDOVER_SELECT: 'Hs'; // [0x48, 0x73]
 
+    MIME_WFA_WSC: "application/vnd.wfa.wsc";
+
     text: {
       encodePayload: (
         text: string,
@@ -218,6 +226,10 @@ declare module 'react-native-nfc-manager' {
     uri: {
       encodePayload: (uri: URI) => NdefRecord;
       decodePayload: (data: Uint8Array) => string;
+    };
+    wifiSimple: {
+      encodePayload: (credentials: WifiSimpleCredentials) => NdefRecord;
+      decodePayload: (data: Uint8Array) => WifiSimpleCredentials;
     };
     util: {
       stringToBytes: (string: string) => any[];
@@ -232,6 +244,7 @@ declare module 'react-native-nfc-manager' {
     decodeMessage(bytes: any[] | Buffer): NdefRecord[];
     textRecord(text: string, lang?: ISOLangCode, encoding?: any): NdefRecord;
     uriRecord(uri: URI, id?: any): NdefRecord;
+    wifiSimpleRecord(credentials: WifiSimpleCredentials, id?: any): NdefRecord;
   };
 }
 
