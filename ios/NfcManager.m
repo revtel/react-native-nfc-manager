@@ -16,13 +16,15 @@ NSString* getHexString(NSData *data) {
 }
 
 NSString* getErrorMessage(NSError *error) {
-    NSDictionary *userInfo = [error userInfo];
-    NSError *underlyingError = [userInfo objectForKey:NSUnderlyingErrorKey];
-    NSString* result = [underlyingError localizedDescription];
-    if (result == nil) {
-        return @"unknown error";
+     NSDictionary *userInfo = [error userInfo];
+     NSError *underlyingError = [userInfo objectForKey:NSUnderlyingErrorKey];
+    if (underlyingError != nil) {
+        return [NSString stringWithFormat:@"%@:%ld,%@:%ld",
+                [error domain], (long)[error code],
+                [underlyingError domain], (long)[underlyingError code]];
     }
-    return result;
+    return [NSString stringWithFormat:@"%@:%ld",
+            [error domain], (long)[error code]];
 }
 
 @implementation NfcManager {
