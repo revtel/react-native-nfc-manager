@@ -170,16 +170,11 @@ class NfcManager {
         tech = [tech];
       }
 
-      let hasNdefTech = tech.indexOf(NfcTech.Ndef) !== -1;
       let sessionAvailable = false;
 
       // check if required session is available
       if (Platform.OS === 'ios') {
-        if (hasNdefTech) {
-          sessionAvailable = await this._isSessionAvailableIOS();
-        } else {
-          sessionAvailable = await this._isSessionExAvailableIOS();
-        }
+        sessionAvailable = await this._isSessionExAvailableIOS();
       } else {
         sessionAvailable = await this._hasTagEventRegistrationAndroid();
       }
@@ -187,11 +182,7 @@ class NfcManager {
       // make sure we do register for tag event 
       if (!sessionAvailable) {
         if (Platform.OS === 'ios') {
-          if (hasNdefTech) {
-            await this.registerTagEvent(options);
-          } else {
-            await this._registerTagEventExIOS(options);
-          }
+          await this._registerTagEventExIOS(options);
         } else {
           await this.registerTagEvent(options);
         }

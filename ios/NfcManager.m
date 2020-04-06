@@ -203,61 +203,6 @@ RCT_EXPORT_MODULE()
                        body:@{}];
 }
 
-- (void)readerSession:(NFCNDEFReaderSession *)session didDetectTags:(NSArray<__kindof id<NFCNDEFTag>> *)tags {
-    NSLog(@"readerSession:didDetectTags");
-    if (techRequestCallback != nil) {
-        RCTResponseSenderBlock pendingCallback = techRequestCallback;
-        
-        // by setting callback to nil, we know that the JS promise is already resolved
-        techRequestCallback = nil;
-        
-        if ([tags count] > 1) {
-            pendingCallback(@[@"only 1 tag allows"]);
-            return;
-        }
-        
-        id<NFCNDEFTag> ndefTag = tags[0];
-        if (@available(iOS 13.0, *)) {
-            [session connectToTag:ndefTag completionHandler:^(NSError *error) {
-                if (error != nil) {
-                    pendingCallback(@[getErrorMessage(error)]);
-                    return;
-                }
-                
-                self->connectedNdefTag = ndefTag;
-                pendingCallback(@[[NSNull null], @"Ndef"]);
-            }];
-        } else {
-            pendingCallback(@[@"api not available"]);
-        }
-    } else {
-        if ([tags count] > 1) {
-            return;
-        }
-
-        // no tech request, just a normal tag discover listener
-        id<NFCNDEFTag> ndefTag = tags[0];
-        if (@available(iOS 13.0, *)) {
-            [session connectToTag:ndefTag completionHandler:^(NSError *error) {
-                if (error != nil) {
-                    return;
-                }
-                
-                [ndefTag readNDEFWithCompletionHandler:^(NFCNDEFMessage *ndefMessage, NSError *error) {
-                    if (error != nil) {
-                        return;
-                    }
-
-                    if (ndefMessage != nil) {
-                        [self sendEventWithName:@"NfcManagerDiscoverTag"
-                                           body:@{@"ndefMessage": [self convertNdefMessage:ndefMessage]}];
-                    }
-                }];
-            }];
-        }
-    }
-}
-
 - (void)tagReaderSession:(NFCTagReaderSession *)session didDetectTags:(NSArray<__kindof id<NFCTag>> *)tags
 {
     NSLog(@"NFCTag didDetectTags");
@@ -272,7 +217,9 @@ RCT_EXPORT_MODULE()
             for (NSString* requestType in techRequestTypes) {
                 for (id<NFCTag> tag in tags) {
                     NSString * tagType = [self getRNTechName:tag];
-                    if ([tagType isEqualToString:requestType]) {
+                    // here we treat Ndef is a special case, because all specific tech types
+                    // inherites from NFCNDEFTag, so we simply allow it to connect
+                    if ([tagType isEqualToString:requestType] || [requestType isEqualToString:@"Ndef"]) {
                         [sessionEx connectToTag:tag
                               completionHandler:^(NSError *error) {
                             if (error != nil) {
@@ -351,33 +298,16 @@ RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(requestTechnology: (NSArray *)techs callback:(nonnull RCTResponseSenderBlock)callback)
 {
-    BOOL hasNdefTech = false;
-    for (NSString *tech in techs) {
-        if ([tech isEqualToString:@"Ndef"]) {
-            hasNdefTech = true;
-            break;
-        }
+    if (sessionEx == nil) {
+        callback(@[@"you need to call registerTagEventEx first", [NSNull null]]);
+        return;
     }
     
-    if (hasNdefTech) {
-        if (session == nil) {
-            callback(@[@"you need to call registerTagEvent first", [NSNull null]]);
-            return;
-        }
-        
+    if (techRequestCallback == nil) {
+        techRequestTypes = techs;
         techRequestCallback = callback;
     } else {
-        if (sessionEx == nil) {
-            callback(@[@"you need to call registerTagEventEx first", [NSNull null]]);
-            return;
-        }
-        
-        if (techRequestCallback == nil) {
-            techRequestTypes = techs;
-            techRequestCallback = callback;
-        } else {
-            callback(@[@"duplicate tech request, please call cancelTechnologyRequest to cancel previous one", [NSNull null]]);
-        }
+        callback(@[@"duplicate tech request, please call cancelTechnologyRequest to cancel previous one", [NSNull null]]);
     }
 }
 
