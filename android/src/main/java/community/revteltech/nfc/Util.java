@@ -97,7 +97,8 @@ public class Util {
     static JSONArray byteArrayToJSON(byte[] bytes) {
         JSONArray json = new JSONArray();
         for (byte aByte : bytes) {
-            json.put(aByte);
+            int v = aByte & 0xFF;
+            json.put(v);
         }
         return json;
     }
