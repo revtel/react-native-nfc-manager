@@ -126,6 +126,7 @@ RCT_EXPORT_MODULE()
 
 - (NSString*)getRNTechName:(id<NFCTag>)tag {
     NSString * tech = [nfcTechTypes objectForKey:[NSNumber numberWithInt:(int)tag.type]];
+    NSLog(@"getRNTechName----: %@", tech);
     if (tech == nil) {
         tech = @"unknown";
     }
@@ -153,7 +154,9 @@ RCT_EXPORT_MODULE()
             [tagInfo setObject:[NSNumber numberWithUnsignedInteger:iso15693Tag.icManufacturerCode] forKey:@"icManufacturerCode"];
             [tagInfo setObject:[self dataToArray:iso15693Tag.icSerialNumber] forKey:@"icSerialNumber"];
         } else if (tag.type == NFCTagTypeFeliCa) {
-            // TODO
+            id<NFCFeliCaTag> felicaTag = [tag asNFCFeliCaTag];
+            [tagInfo setObject:getHexString(felicaTag.currentIDm) forKey:@"idm"];
+            [tagInfo setObject:getHexString(felicaTag.currentSystemCode) forKey:@"systemCode"];
         }
     }
 
@@ -217,6 +220,7 @@ RCT_EXPORT_MODULE()
             for (NSString* requestType in techRequestTypes) {
                 for (id<NFCTag> tag in tags) {
                     NSString * tagType = [self getRNTechName:tag];
+                    NSLog(@"tagType : %@", tagType);
                     // here we treat Ndef is a special case, because all specific tech types
                     // inherites from NFCNDEFTag, so we simply allow it to connect
                     if ([tagType isEqualToString:requestType] || [requestType isEqualToString:@"Ndef"]) {
@@ -354,7 +358,7 @@ RCT_EXPORT_METHOD(registerTagEventEx:(NSDictionary *)options callback:(nonnull R
     if (@available(iOS 13.0, *)) {
         if (sessionEx == nil) {
             sessionEx = [[NFCTagReaderSession alloc]
-                         initWithPollingOption:(NFCPollingISO14443 | NFCPollingISO15693 | NFCPollingISO15693) delegate:self queue:dispatch_get_main_queue()];
+                         initWithPollingOption:(NFCPollingISO14443 | NFCPollingISO15693 | NFCPollingISO15693 | NFCPollingISO18092) delegate:self queue:dispatch_get_main_queue()];
             sessionEx.alertMessage = [options objectForKey:@"alertMessage"];
             [sessionEx beginSession];
             callback(@[]);
@@ -536,6 +540,37 @@ RCT_EXPORT_METHOD(sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTRespo
                     return;
                 } else {
                     callback(@[@"not a mifare tag", [NSNull null]]);
+                }
+            }
+            callback(@[@"Not connected", [NSNull null]]);
+        } else {
+            callback(@[@"Not even registered", [NSNull null]]);
+        }
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
+RCT_EXPORT_METHOD(sendFelicaCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        if (sessionEx != nil) {
+            if (sessionEx.connectedTag) {
+                id<NFCFeliCaTag> felicaTag = [sessionEx.connectedTag asNFCFeliCaTag];
+                NSData *data = [self arrayToData:bytes];
+                NSLog(@"sendFeliCaCommandPacket input bytes: %@", getHexString(data));
+                if (felicaTag) {
+                    [felicaTag sendFeliCaCommandPacket:data
+                               completionHandler:^(NSData *response, NSError *error) {
+                        if (error) {
+                            callback(@[getErrorMessage(error), [NSNull null]]);
+                        } else {
+                            callback(@[[NSNull null], [self dataToArray:response]]);
+                        }
+                    }];
+                    return;
+                } else {
+                    callback(@[@"not a felica tag", [NSNull null]]);
                 }
             }
             callback(@[@"Not connected", [NSNull null]]);
