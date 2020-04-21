@@ -126,7 +126,6 @@ RCT_EXPORT_MODULE()
 
 - (NSString*)getRNTechName:(id<NFCTag>)tag {
     NSString * tech = [nfcTechTypes objectForKey:[NSNumber numberWithInt:(int)tag.type]];
-    NSLog(@"getRNTechName----: %@", tech);
     if (tech == nil) {
         tech = @"unknown";
     }
@@ -220,7 +219,6 @@ RCT_EXPORT_MODULE()
             for (NSString* requestType in techRequestTypes) {
                 for (id<NFCTag> tag in tags) {
                     NSString * tagType = [self getRNTechName:tag];
-                    NSLog(@"tagType : %@", tagType);
                     // here we treat Ndef is a special case, because all specific tech types
                     // inherites from NFCNDEFTag, so we simply allow it to connect
                     if ([tagType isEqualToString:requestType] || [requestType isEqualToString:@"Ndef"]) {
@@ -558,7 +556,7 @@ RCT_EXPORT_METHOD(sendFelicaCommand:(NSArray *)bytes callback: (nonnull RCTRespo
             if (sessionEx.connectedTag) {
                 id<NFCFeliCaTag> felicaTag = [sessionEx.connectedTag asNFCFeliCaTag];
                 NSData *data = [self arrayToData:bytes];
-                NSLog(@"sendFeliCaCommandPacket input bytes: %@", getHexString(data));
+                NSLog(@"input bytes: %@", getHexString(data));
                 if (felicaTag) {
                     [felicaTag sendFeliCaCommandPacket:data
                                completionHandler:^(NSData *response, NSError *error) {

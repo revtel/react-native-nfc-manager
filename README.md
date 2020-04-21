@@ -57,6 +57,8 @@ You will need to setup some capabilities / entitlement / plist stuff to enable N
 </array>
 ```
 
+In the ISO18092 system codes for NFC Tag Reader Session, all FeliCa system codes used for reading must be entered in advance. Wildcards cannot be used.
+
 ## Launch app on nfc event
 
 Note on getLaunchTagEvent: keep in mind that you can only create intent-filters for the very first NDEF record on an NFC tag! If your intent-filter doesn't match the FIRST record your app will launch but it won't get the tag data. Check out for details: 
