@@ -31,6 +31,7 @@ const NfcTech = {
   MifareUltralight: 'MifareUltralight',
   MifareIOS: 'mifare',
   Iso15693IOS: 'iso15693',
+  FelicaIOS: 'felica',
 }
 
 const NfcAdapter = {
@@ -336,6 +337,11 @@ class NfcManager {
   // (iOS) NfcTech.MifareIOS API
   // -------------------------------------
   sendMifareCommandIOS = (bytes) => callNative('sendMifareCommand', [bytes]);
+
+  // -------------------------------------
+  // (iOS) NfcTech.FelicaIOS API
+  // -------------------------------------
+  sendFelicaCommandIOS = (bytes) => callNative('sendFelicaCommand', [bytes]);
 
   // -------------------------------------
   // (iOS) NfcTech.Iso15693IOS API

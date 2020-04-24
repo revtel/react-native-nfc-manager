@@ -25,6 +25,7 @@ declare module 'react-native-nfc-manager' {
     MifareUltralight = 'MifareUltralight',
     MifareIOS = 'mifare',
     Iso15693IOS = 'iso15693',
+    FelicaIOS = 'felica',
   }
 
   /** [iOS ONLY] */
@@ -134,6 +135,8 @@ declare module 'react-native-nfc-manager' {
     invalidateSessionWithErrorIOS: (errorMessage: string) => Promise<void>;
     /** [iOS ONLY] */
     sendMifareCommandIOS: (bytes: number[]) => Promise<number[]>;
+    /** [iOS ONLY] */
+    sendFelicaCommandIOS: (bytes: number[]) => Promise<number[]>;
     /** [iOS ONLY] */
     sendCommandAPDUIOS: (
       bytesOrApdu: number[] | APDU,
