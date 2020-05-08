@@ -106,6 +106,8 @@ public abstract class JsonConvert {
                 writableMap.putMap(key,jsonToReact(jsonObject.getJSONObject(key)));
             } else if (value instanceof JSONArray){
                 writableMap.putArray(key, jsonToReact(jsonObject.getJSONArray(key)));
+            } else if ("true".equals(value.toString()) || "false".equals(value.toString())){
+                writableMap.putBoolean(key, "true".equals(value.toString()));
             } else if (value == JSONObject.NULL){
                 writableMap.putNull(key);
             }
@@ -128,6 +130,8 @@ public abstract class JsonConvert {
                 writableArray.pushMap(jsonToReact(jsonArray.getJSONObject(i)));
             } else if (value instanceof JSONArray){
                 writableArray.pushArray(jsonToReact(jsonArray.getJSONArray(i)));
+            } else if ("true".equals(value.toString()) || "false".equals(value.toString())){
+                writableMap.putBoolean(key, "true".equals(value.toString()));
             } else if (value == JSONObject.NULL){
                 writableArray.pushNull();
             }
