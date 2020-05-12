@@ -131,7 +131,7 @@ public abstract class JsonConvert {
             } else if (value instanceof JSONArray){
                 writableArray.pushArray(jsonToReact(jsonArray.getJSONArray(i)));
             } else if ("true".equals(value.toString()) || "false".equals(value.toString())){
-                writableMap.putBoolean(key, "true".equals(value.toString()));
+                writableArray.pushBoolean("true".equals(value.toString()));
             } else if (value == JSONObject.NULL){
                 writableArray.pushNull();
             }
