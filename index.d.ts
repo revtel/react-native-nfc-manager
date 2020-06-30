@@ -51,7 +51,7 @@ declare module 'react-native-nfc-manager' {
 
   export interface NdefRecord {
     id?: number[];
-    tnf: number;
+    tnf: TNF;
     type: number[];
     payload: any[];
   }
@@ -192,6 +192,8 @@ declare module 'react-native-nfc-manager' {
   type ISOLangCode = 'en' | string;
   type URI = string;
 
+  type TNF = 0x0 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07
+
   export interface WifiSimpleCredentials {
     ssid: string;
     networkKey: string;
@@ -241,13 +243,14 @@ declare module 'react-native-nfc-manager' {
       toHex: (i: any) => any;
       toPrintable: (i: any) => string;
     };
-    isType(record: NdefRecord, tnf: number, type: string): boolean;
+    isType(record: NdefRecord, tnf: TNF, type: string): boolean;
     stringify(data: number[], separator: string): string;
     encodeMessage(records: NdefRecord[]): Uint8Array;
     decodeMessage(bytes: any[] | Buffer): NdefRecord[];
     textRecord(text: string, lang?: ISOLangCode, encoding?: any): NdefRecord;
     uriRecord(uri: URI, id?: any): NdefRecord;
     wifiSimpleRecord(credentials: WifiSimpleCredentials, id?: any): NdefRecord;
+    record(tnf: TNF, type: string, id: string | any[], payload: string | any[]): NdefRecord
   };
 }
 
