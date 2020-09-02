@@ -62,6 +62,10 @@ class Iso15693HandlerIOS {
     return callNative('iso15693_readSingleBlock', [{flags, blockNumber}]);
   }
 
+  readMultipleBlocks({flags, blockLocation, blockLength}) {
+    return callNative('iso15693_readMultipleBlocks', [{flags, blockLocation, blockLength}]);
+  }
+
   writeSingleBlock({flags, blockNumber, dataBlock}) {
     return callNative('iso15693_writeSingleBlock', [{flags, blockNumber, dataBlock}]);
   }

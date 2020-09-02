@@ -791,6 +791,45 @@ RCT_EXPORT_METHOD(iso15693_writeSingleBlock:(NSDictionary *)options callback:(no
     }
 }
 
+RCT_EXPORT_METHOD(iso15693_readMultipleBlocks:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        if (!sessionEx || !sessionEx.connectedTag) {
+            callback(@[@"Not connected", [NSNull null]]);
+            return;
+        }
+        
+        id<NFCISO15693Tag> tag = [sessionEx.connectedTag asNFCISO15693Tag];
+        if (!tag) {
+            callback(@[@"incorrect tag type", [NSNull null]]);
+            return;
+        }
+
+        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
+        NSUInteger blockLocation = [[options objectForKey:@"blockLocation"] unsignedIntValue];
+        NSUInteger blockLength = [[options objectForKey:@"blockLength"] unsignedIntValue];
+        NSRange blockRange = NSMakeRange(blockLocation, blockLength);
+        
+        [tag readMultipleBlocksWithRequestFlags:flags
+                                 blockRange:blockRange
+                           completionHandler:^(NSArray<NSData *> *resp, NSError *error) {
+            if (error) {
+                callback(@[getErrorMessage(error), [NSNull null]]);
+                return;
+            }
+            
+            NSMutableArray *mutableArray = [NSMutableArray new];
+            for (id item in resp) {
+                [mutableArray addObject:[self dataToArray:item]];
+            }
+            
+            callback(@[[NSNull null], mutableArray]);
+        }];
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
 RCT_EXPORT_METHOD(iso15693_lockBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
