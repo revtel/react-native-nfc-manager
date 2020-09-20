@@ -8,6 +8,10 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
+## iOS 14 Simulator issue
+
+As mentioned in [issue 326](https://github.com/whitedogg13/react-native-nfc-manager/issues/326), iOS 14 simulator will crash when using CoreNFC, however real iOS 14 device works.
+
 ## Install
 
 ```shell
