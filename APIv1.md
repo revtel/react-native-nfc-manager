@@ -94,7 +94,7 @@ Start to listen to *ANY* NFC tags.
 __Arguments__
 - `listener` - `function` - the callback when discovering NFC tags
 - `alertMessage` - `string` - (iOS) the message to display on iOS when the NFCScanning pops up
-- `options` - `object` - Object containing (iOS)invalidateAfterFirstRead, (Android)isReaderModeEnabled, (Android)readerModeFlags. Use `NfcAdapter` flags. **Reader mode can only be used in Android 19 or later**.
+- `options` - `object` - Object containing (iOS)invalidateAfterFirstRead, (Android)isReaderModeEnabled, (Android)readerModeFlags, (Android)readerModeDelay - set delay in seconds between one-by-one tag detection (default value 10). Use `NfcAdapter` flags. **Reader mode can only be used in Android 19 or later**.
 
 **Examples**
 
@@ -109,6 +109,7 @@ NfcManager.registerTagEvent(
     isReaderModeEnabled: true,
     readerModeFlags:
       NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+      readerModeDelay: 2,
   },
 );
 ```
