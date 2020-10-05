@@ -254,6 +254,7 @@ declare module 'react-native-nfc-manager' {
     textRecord(text: string, lang?: ISOLangCode, encoding?: any): NdefRecord;
     uriRecord(uri: URI, id?: any): NdefRecord;
     wifiSimpleRecord(credentials: WifiSimpleCredentials, id?: any): NdefRecord;
+    androidApplicationRecord(pkgName: string): NdefRecord;
     record(tnf: TNF, type: string, id: string | any[], payload: string | any[]): NdefRecord
   };
 }
