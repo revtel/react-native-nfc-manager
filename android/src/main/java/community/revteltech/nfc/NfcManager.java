@@ -52,6 +52,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     // Use NFC reader mode instead of listening to a dispatch
     private Boolean isReaderModeEnabled = false;
     private int readerModeFlags = 0;
+    private int readerModeDelay = 0;
 
     class WriteNdefRequest {
         NdefMessage message;
@@ -888,6 +889,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private void registerTagEvent(ReadableMap options, Callback callback) {
         this.isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
         this.readerModeFlags = options.getInt("readerModeFlags");
+        this.readerModeDelay = options.getInt("readerModeDelay");
 
         Log.d(LOG_TAG, "registerTag");
         isForegroundEnabled = true;
@@ -967,7 +969,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     if (enable) {
                         Log.i(LOG_TAG, "enableReaderMode");
                         Bundle readerModeExtras = new Bundle();
-                        readerModeExtras.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 10000);
+                        readerModeExtras.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, readerModeDelay * 1000);
                         nfcAdapter.enableReaderMode(currentActivity, new NfcAdapter.ReaderCallback() {
                             @Override
                             public void onTagDiscovered(Tag tag) {

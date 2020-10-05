@@ -69,6 +69,7 @@ declare module 'react-native-nfc-manager' {
     invalidateAfterFirstRead?: boolean;
     isReaderModeEnabled?: boolean;
     readerModeFlags?: number;
+    readerModeDelay?: number;
   }
 
   interface NdefWriteOpts {
