@@ -1122,7 +1122,7 @@ RCT_EXPORT_METHOD(iso15693_extendedReadSingleBlock:(NSDictionary *)options callb
         }
 
         RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint8_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
+        uint16_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
         
         [tag extendedReadSingleBlockWithRequestFlags:flags
                                          blockNumber:blockNumber
@@ -1154,7 +1154,7 @@ RCT_EXPORT_METHOD(iso15693_extendedWriteSingleBlock:(NSDictionary *)options call
         }
 
         RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint8_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
+        uint16_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
         NSData *dataBlock = [self arrayToData:[options mutableArrayValueForKey:@"dataBlock"]];
         
         [tag extendedWriteSingleBlockWithRequestFlags:flags
@@ -1188,7 +1188,7 @@ RCT_EXPORT_METHOD(iso15693_extendedLockBlock:(NSDictionary *)options callback:(n
         }
 
         RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint8_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
+        uint16_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
         
         [tag extendedLockBlockWithRequestFlags:flags
                                   blockNumber:blockNumber
