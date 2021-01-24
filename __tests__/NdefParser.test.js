@@ -1,4 +1,4 @@
-import NdefParser from './NdefParser';
+import NdefParser from '../src/NdefParser';
 
 test('parse RTD_TEXT', () => {
   let RTD_TEXT_TYPE = [0x54];

@@ -4,7 +4,7 @@ import {
 } from 'react-native'
 import ByteParser from './ByteParser'
 import NdefParser from './NdefParser'
-import Ndef from './ndef-lib'
+import Ndef from '../ndef-lib'
 import {NativeNfcManager, NfcManagerEmitter, callNative} from './NativeNfcManager'
 
 const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {

@@ -2,7 +2,7 @@
   "name": "react-native-nfc-manager",
   "version": "2.2.1",
   "description": "A NFC module for react native.",
-  "main": "NfcManager",
+  "main": "src/NfcManager",
   "repository": {
     "type": "git",
     "url": "https://github.com/whitedogg13/react-native-nfc-manager.git"
@@ -36,12 +36,24 @@
   "jest": {
     "testEnvironment": "node"
   },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties",
+      "@babel/plugin-transform-runtime"
+    ]
+  },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-jest": "^22.4.3",
-    "babel-preset-env": "^1.6.1",
-    "jest": "^22.4.3",
-    "jest-cli": "^22.4.3"
+    "@babel/core": "^7.12.10",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
+    "@babel/plugin-transform-runtime": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-react": "^7.12.10",
+    "jest": "^26.6.3",
+    "jest-cli": "^26.6.3"
   },
   "scripts": {
     "test": "jest"

@@ -1,5 +1,5 @@
-const textHelper = require("./ndef-lib/ndef-text");
-const uriHelper = require("./ndef-lib/ndef-uri");
+const textHelper = require("../ndef-lib/ndef-text");
+const uriHelper = require("../ndef-lib/ndef-uri");
 const arrayEqual = (a, b) => a && b && a.length === b.length && a.every((v, i) => v === b[i]);
 
 function parseText(record) {
