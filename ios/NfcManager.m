@@ -31,7 +31,6 @@ NSString* getErrorMessage(NSError *error) {
     NSDictionary *nfcTechTypes;
     NSArray *techRequestTypes;
     RCTResponseSenderBlock techRequestCallback;
-    id<NFCNDEFTag> connectedNdefTag;
 }
 
 RCT_EXPORT_MODULE()
@@ -67,7 +66,6 @@ RCT_EXPORT_MODULE()
     sessionEx = nil;
     techRequestTypes = nil;
     techRequestCallback = nil;
-    connectedNdefTag = nil;
 }
 
 - (NSArray<NSString *> *)supportedEvents
@@ -418,11 +416,7 @@ RCT_EXPORT_METHOD(getTag: (nonnull RCTResponseSenderBlock)callback)
         NSMutableDictionary* rnTag = @{}.mutableCopy;
         id<NFCNDEFTag> ndefTag = nil;
         
-        if (session != nil) {
-            if (self->connectedNdefTag) {
-                ndefTag = self->connectedNdefTag;
-            }
-        } else if (sessionEx != nil) {
+        if (sessionEx != nil) {
             if (sessionEx.connectedTag) {
                 rnTag = [self getRNTag:sessionEx.connectedTag].mutableCopy;
                 ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
@@ -452,11 +446,7 @@ RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
     if (@available(iOS 13.0, *)) {
         id<NFCNDEFTag> ndefTag = nil;
         
-        if (session != nil) {
-            if (self->connectedNdefTag) {
-                ndefTag = self->connectedNdefTag;
-            }
-        } else if (sessionEx != nil) {
+        if (sessionEx != nil) {
             if (sessionEx.connectedTag) {
                 ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
             }
@@ -484,11 +474,7 @@ RCT_EXPORT_METHOD(writeNdefMessage:(NSArray*)bytes callback:(nonnull RCTResponse
     if (@available(iOS 13.0, *)) {
         id<NFCNDEFTag> ndefTag = nil;
         
-        if (session != nil) {
-            if (self->connectedNdefTag) {
-                ndefTag = self->connectedNdefTag;
-            }
-        } else if (sessionEx != nil) {
+        if (sessionEx != nil) {
             if (sessionEx.connectedTag) {
                 ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
             }
