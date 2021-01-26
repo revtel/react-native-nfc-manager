@@ -7,7 +7,7 @@ import {NativeNfcManager, NfcManagerEmitter, callNative} from '../src/NativeNfcM
 
 describe('NfcManager (ios)', () => {
   Platform.setOS('ios');
-  const NfcManagerModule = require('../src/NfcManager');
+  const NfcManagerModule = require('../src/index.js');
   const NfcManager = NfcManagerModule.default;
   const {NfcEvents} = NfcManagerModule;
   const lastNativeCall = () => callNative.mock.calls[callNative.mock.calls.length - 1];
