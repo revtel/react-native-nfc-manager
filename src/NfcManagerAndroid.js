@@ -5,11 +5,7 @@ import {
   NfcManagerEmitter,
   callNative,
 } from './NativeNfcManager';
-import {
-  NfcEvents,
-  NfcManagerBase,
-  DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
-} from './NfcManager';
+import {NfcEvents, NfcManagerBase} from './NfcManager';
 
 const NfcAdapter = {
   FLAG_READER_NFC_A: 0x1,
@@ -25,7 +21,6 @@ class NfcManagerAndroid extends NfcManagerBase {
   constructor() {
     super();
     this.cleanUpTagRegistration = false;
-    this._subscribeNativeEvents();
   }
 
   requestTechnology = async (tech, options = {}) => {
@@ -34,23 +29,11 @@ class NfcManagerAndroid extends NfcManagerBase {
         tech = [tech];
       }
 
-      let sessionAvailable = false;
-
-      // check if required session is available
-      if (Platform.OS === 'ios') {
-        sessionAvailable = await this._isSessionExAvailableIOS();
-      } else {
-        sessionAvailable = await this._hasTagEventRegistrationAndroid();
-      }
+      const sessionAvailable = await this._hasTagEventRegistrationAndroid();
 
       // make sure we do register for tag event
       if (!sessionAvailable) {
-        if (Platform.OS === 'ios') {
-          await this._registerTagEventExIOS(options);
-        } else {
-          await this.registerTagEvent(options);
-        }
-
+        await this.registerTagEvent(options);
         this.cleanUpTagRegistration = true;
       }
 
@@ -61,63 +44,11 @@ class NfcManagerAndroid extends NfcManagerBase {
   };
 
   cancelTechnologyRequest = async () => {
+    await callNative('cancelTechnologyRequest');
+
     if (!this.cleanUpTagRegistration) {
-      await callNative('cancelTechnologyRequest');
-      return;
-    }
-
-    this.cleanUpTagRegistration = false;
-
-    if (Platform.OS === 'ios') {
-      let sessionAvailable = false;
-
-      // because we don't know which tech currently requested
-      // so we try both, and perform early return when hitting any
-      sessionAvailable = await this._isSessionExAvailableIOS();
-      if (sessionAvailable) {
-        await this._unregisterTagEventExIOS();
-        return;
-      }
-
-      sessionAvailable = await this._isSessionAvailableIOS();
-      if (sessionAvailable) {
-        await this.unregisterTagEvent();
-        return;
-      }
-    } else {
-      await callNative('cancelTechnologyRequest');
       await this.unregisterTagEvent();
-      return;
-    }
-  };
-
-  // -------------------------------------
-  // private
-  // -------------------------------------
-  _subscribeNativeEvents = () => {
-    this._subscriptions = {};
-    this._clientListeners = {};
-    this._subscriptions[NfcEvents.DiscoverTag] = NfcManagerEmitter.addListener(
-      NfcEvents.DiscoverTag,
-      this._onDiscoverTag,
-    );
-
-    if (Platform.OS === 'ios') {
-      this._subscriptions[
-        NfcEvents.SessionClosed
-      ] = NfcManagerEmitter.addListener(
-        NfcEvents.SessionClosed,
-        this._onSessionClosedIOS,
-      );
-    }
-
-    if (Platform.OS === 'android') {
-      this._subscriptions[
-        NfcEvents.StateChanged
-      ] = NfcManagerEmitter.addListener(
-        NfcEvents.StateChanged,
-        this._onStateChangedAndroid,
-      );
+      this.cleanUpTagRegistration = false;
     }
   };
 

@@ -5,14 +5,7 @@ import {
   NfcManagerEmitter,
   callNative,
 } from './NativeNfcManager';
-
-const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
-  alertMessage: 'Please tap NFC tags',
-  invalidateAfterFirstRead: false,
-  isReaderModeEnabled: false,
-  readerModeFlags: 0,
-  readerModeDelay: 10,
-};
+import {NdefHandler} from './NfcTech/NdefHandler';
 
 const NfcEvents = {
   DiscoverTag: 'NfcManagerDiscoverTag',
@@ -34,11 +27,23 @@ const NfcTech = {
   FelicaIOS: 'felica',
 };
 
+const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
+  alertMessage: 'Please tap NFC tags',
+  invalidateAfterFirstRead: false,
+  isReaderModeEnabled: false,
+  readerModeFlags: 0,
+  readerModeDelay: 10,
+};
+
 function NotImpl() {
   throw new Error('not implemented');
 }
 
 class NfcManagerBase {
+  constructor() {
+    this._subscribeNativeEvents();
+  }
+
   start = () => callNative('start');
 
   isSupported = (tech = '') => callNative('isSupported', [tech]);
@@ -73,6 +78,13 @@ class NfcManagerBase {
 
   getNdefMessage = () => callNative('getNdefMessage');
 
+  getNdefHandler = () => {
+    if (!this._ndefHandler) {
+      this._ndefHandler = new NdefHandler();
+    }
+    return this._ndefHandler;
+  };
+
   _onDiscoverTag = (tag) => {
     const callback = this._clientListeners[NfcEvents.DiscoverTag];
     if (callback) {
@@ -91,6 +103,33 @@ class NfcManagerBase {
     const callback = this._clientListeners[NfcEvents.StateChanged];
     if (callback) {
       callback(state);
+    }
+  };
+
+  _subscribeNativeEvents = () => {
+    this._subscriptions = {};
+    this._clientListeners = {};
+    this._subscriptions[NfcEvents.DiscoverTag] = NfcManagerEmitter.addListener(
+      NfcEvents.DiscoverTag,
+      this._onDiscoverTag,
+    );
+
+    if (Platform.OS === 'ios') {
+      this._subscriptions[
+        NfcEvents.SessionClosed
+      ] = NfcManagerEmitter.addListener(
+        NfcEvents.SessionClosed,
+        this._onSessionClosedIOS,
+      );
+    }
+
+    if (Platform.OS === 'android') {
+      this._subscriptions[
+        NfcEvents.StateChanged
+      ] = NfcManagerEmitter.addListener(
+        NfcEvents.StateChanged,
+        this._onStateChangedAndroid,
+      );
     }
   };
 

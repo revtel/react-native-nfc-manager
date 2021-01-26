@@ -14,5 +14,5 @@
 }
 
 @property (strong, nonatomic) NFCNDEFReaderSession *session;
-@property (strong, nonatomic) NFCTagReaderSession *sessionEx;
+@property (strong, nonatomic) NFCTagReaderSession *tagSession;
 @end
