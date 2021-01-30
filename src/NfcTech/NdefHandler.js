@@ -1,33 +1,45 @@
 import {Platform} from 'react-native';
 import {callNative} from '../NativeNfcManager';
 
-const NDEFStatusIOS = {
+const NdefStatus = {
   NotSupported: 1,
   ReadWrite: 2,
   ReadOnly: 3,
 };
 
 class NdefHandler {
-  writeNdefMessage(bytes) {
+  async writeNdefMessage(bytes) {
     return callNative('writeNdefMessage', [bytes]);
   }
 
-  getNdefMessage() {
+  async getNdefMessage() {
     return callNative('getNdefMessage');
   }
 
-  makeReadOnly() {
+  async makeReadOnly() {
     return callNative('makeReadOnly');
   }
 
-  getExtraInfo() {
+  async getNdefStatus() {
     if (Platform.OS === 'ios') {
       return callNative('queryNDEFStatus');
     } else {
-      // TODO: impl for android
-      return {};
+      try {
+        const result = await callNative('getNdefStatus');
+        return {
+          status: result.isWritable
+            ? NdefStatus.ReadWrite
+            : NdefStatus.ReadOnly,
+          capacity: result.maxSize,
+        };
+      } catch (ex) {
+        return {
+          status: NdefStatus.NotSupported,
+          capacity: 0,
+        };
+      }
     }
   }
 }
 
-export {NdefHandler, NDEFStatusIOS};
+export {NdefHandler, NdefStatus};

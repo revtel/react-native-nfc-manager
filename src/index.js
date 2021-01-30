@@ -3,7 +3,7 @@ import {Platform} from 'react-native';
 import ByteParser from './ByteParser';
 import NdefParser from './NdefParser';
 import Ndef from '../ndef-lib';
-import {NfcEvents, NfcTech} from './NfcManager';
+import {NfcEvents, NfcTech, NdefStatus} from './NfcManager';
 import {NfcAdapter, NfcManagerAndroid} from './NfcManagerAndroid';
 import {Nfc15693RequestFlagIOS, NfcManagerIOS} from './NfcManagerIOS';
 
@@ -23,6 +23,7 @@ export {
   NfcTech,
   NfcEvents,
   NfcAdapter,
+  NdefStatus,
   Ndef,
   Nfc15693RequestFlagIOS,
 };

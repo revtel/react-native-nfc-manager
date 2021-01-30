@@ -210,6 +210,30 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
+    public void getNdefStatus(Callback callback) {
+        synchronized(this) {
+            if (techRequest != null) {
+                WritableMap writableMap = Arguments.createMap();
+                try {
+                    Ndef ndef = Ndef.get(techRequest.getTagHandle());
+                    int maxSize = ndef.getMaxSize();
+                    boolean isWritable = ndef.isWritable();
+                    boolean canMakeReadOnly = ndef.canMakeReadOnly();
+                    writableMap.putInt("maxSize", maxSize);
+                    writableMap.putBoolean("isWritable", isWritable);
+                    writableMap.putBoolean("canMakeReadOnly", canMakeReadOnly);
+                    callback.invoke(null, writableMap);
+                } catch (Exception ex) {
+                    Log.d(LOG_TAG, "getNdefStatus fail");
+                    callback.invoke("getNdefStatus fail");
+                }
+            } else {
+                callback.invoke("no tech request available");
+            }
+        }
+    }
+
+    @ReactMethod
     public void writeNdefMessage(ReadableArray rnArray, Callback callback) {
         synchronized(this) {
             if (techRequest != null) {

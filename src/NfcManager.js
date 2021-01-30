@@ -5,7 +5,7 @@ import {
   NfcManagerEmitter,
   callNative,
 } from './NativeNfcManager';
-import {NdefHandler} from './NfcTech/NdefHandler';
+import {NdefHandler, NdefStatus} from './NfcTech/NdefHandler';
 
 const NfcEvents = {
   DiscoverTag: 'NfcManagerDiscoverTag',
@@ -150,4 +150,10 @@ class NfcManagerBase {
   }
 }
 
-export {NfcTech, NfcEvents, NfcManagerBase, DEFAULT_REGISTER_TAG_EVENT_OPTIONS};
+export {
+  NfcTech,
+  NfcEvents,
+  NfcManagerBase,
+  NdefStatus,
+  DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
+};
