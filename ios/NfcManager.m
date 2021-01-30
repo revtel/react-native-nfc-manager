@@ -203,20 +203,18 @@ RCT_EXPORT_MODULE()
     NSLog(@"NFCTag didDetectTags");
     if (@available(iOS 13.0, *)) {
         if (techRequestCallback != nil) {
-            BOOL found = false;
-            RCTResponseSenderBlock pendingCallback = techRequestCallback;
-            
-            // by setting callback to nil, we know the promise is resolved
-            techRequestCallback = nil;
-
-            for (NSString* requestType in techRequestTypes) {
-                for (id<NFCTag> tag in tags) {
-                    NSString * tagType = [self getRNTechName:tag];
+            for (id<NFCTag> tag in tags) {
+                NSString * tagType = [self getRNTechName:tag];
+                
+                for (NSString* requestType in techRequestTypes) {
                     // here we treat Ndef is a special case, because all specific tech types
                     // inherites from NFCNDEFTag, so we simply allow it to connect
                     if ([tagType isEqualToString:requestType] || [requestType isEqualToString:@"Ndef"]) {
+                        RCTResponseSenderBlock pendingCallback = techRequestCallback;
+                        techRequestCallback = nil;
+
                         [tagSession connectToTag:tag
-                              completionHandler:^(NSError *error) {
+                               completionHandler:^(NSError *error) {
                             if (error != nil) {
                                 pendingCallback(@[getErrorMessage(error)]);
                                 return;
@@ -224,14 +222,9 @@ RCT_EXPORT_MODULE()
                             
                             pendingCallback(@[[NSNull null], requestType]);
                         }];
-                        found = true;
-                        break;
+                        return;
                     }
                 }
-            }
-            
-            if (!found) {
-                pendingCallback(@[@"No tech matches", [NSNull null]]);
             }
         }
     }
@@ -477,6 +470,69 @@ RCT_EXPORT_METHOD(writeNdefMessage:(NSArray*)bytes callback:(nonnull RCTResponse
         callback(@[@"Not support in this device", [NSNull null]]);
     }
 }
+
+RCT_EXPORT_METHOD(makeReadOnly:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        id<NFCNDEFTag> ndefTag = nil;
+        
+        if (tagSession != nil) {
+            if (tagSession.connectedTag) {
+                ndefTag = [self getNDEFTagHandle:tagSession.connectedTag];
+            }
+        }
+        
+        if (ndefTag) {
+            [ndefTag writeLockWithCompletionHandler:^(NSError *error) {
+                if (error) {
+                    callback(@[getErrorMessage(error), [NSNull null]]);
+                } else {
+                    callback(@[[NSNull null]]);
+                }
+            }];
+            return;
+        }
+        
+        callback(@[@"No ndef available", [NSNull null]]);
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
+RCT_EXPORT_METHOD(queryNDEFStatus:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        id<NFCNDEFTag> ndefTag = nil;
+        
+        if (tagSession != nil) {
+            if (tagSession.connectedTag) {
+                ndefTag = [self getNDEFTagHandle:tagSession.connectedTag];
+            }
+        }
+        
+        if (ndefTag) {
+            [ndefTag queryNDEFStatusWithCompletionHandler:^(NFCNDEFStatus status, NSUInteger capacity, NSError *error) {
+                if (error) {
+                    callback(@[getErrorMessage(error), [NSNull null]]);
+                } else {
+                    callback(@[[NSNull null],
+                               @{
+                                   @"status": [[NSNumber alloc] initWithInt:status],
+                                   @"capacity": [[NSNumber alloc] initWithInt:capacity]
+                               }
+                             ]);
+                }
+            }];
+            return;
+        }
+        
+        callback(@[@"No ndef available", [NSNull null]]);
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
+
 
 RCT_EXPORT_METHOD(sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
 {
