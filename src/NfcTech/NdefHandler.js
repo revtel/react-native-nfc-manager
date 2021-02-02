@@ -40,6 +40,10 @@ class NdefHandler {
       }
     }
   }
+
+  async getCachedNdefMessageAndroid() {
+    return callNative('getCachedNdefMessage');
+  }
 }
 
 export {NdefHandler, NdefStatus};

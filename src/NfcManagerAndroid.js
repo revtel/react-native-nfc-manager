@@ -6,6 +6,8 @@ import {
   callNative,
 } from './NativeNfcManager';
 import {NfcEvents, NfcManagerBase} from './NfcManager';
+import {MifareClassicHandlerAndroid} from './NfcTech/MifareClassicHandlerAndroid';
+import {MifareUltralightHandlerAndroid} from './NfcTech/MifareUltralightHandlerAndroid';
 
 const NfcAdapter = {
   FLAG_READER_NFC_A: 0x1,
@@ -63,95 +65,35 @@ class NfcManagerAndroid extends NfcManagerBase {
 
   setNdefPushMessage = (bytes) => callNative('setNdefPushMessage', [bytes]);
 
-  // -------------------------------------
-  // (android) NfcTech.Ndef API
-  // -------------------------------------
-  getCachedNdefMessageAndroid = () => callNative('getCachedNdefMessage');
-
-  makeReadOnlyAndroid = () => callNative('makeReadOnly');
-
-  // -------------------------------------
-  // (android) tNfcTech.MifareClassic API
-  // -------------------------------------
-  mifareClassicAuthenticateA = (sector, key) => {
-    if (!key || !Array.isArray(key) || key.length !== 6) {
-      return Promise.reject('key should be an Array[6] of integers (0 - 255)');
-    }
-
-    return callNative('mifareClassicAuthenticateA', [sector, key]);
-  };
-
-  mifareClassicAuthenticateB = (sector, key) => {
-    if (!key || !Array.isArray(key) || key.length !== 6) {
-      return Promise.reject('key should be an Array[6] of integers (0 - 255)');
-    }
-
-    return callNative('mifareClassicAuthenticateB', [sector, key]);
-  };
-
-  mifareClassicGetBlockCountInSector = (sector) =>
-    callNative('mifareClassicGetBlockCountInSector', [sector]);
-
-  mifareClassicGetSectorCount = () => callNative('mifareClassicGetSectorCount');
-
-  mifareClassicSectorToBlock = (sector) =>
-    callNative('mifareClassicSectorToBlock', [sector]);
-
-  mifareClassicReadBlock = (block) =>
-    callNative('mifareClassicReadBlock', [block]);
-
-  mifareClassicReadSector = (sector) =>
-    callNative('mifareClassicReadSector', [sector]);
-
-  mifareClassicWriteBlock = (block, data) => {
-    if (
-      !data ||
-      !Array.isArray(data) ||
-      data.length !== this.MIFARE_BLOCK_SIZE
-    ) {
-      return Promise.reject(
-        `data should be a non-empty Array[${this.MIFARE_BLOCK_SIZE}] of integers (0 - 255)`,
-      );
-    }
-
-    return callNative('mifareClassicWriteBlock', [block, data]);
-  };
-
-  // -------------------------------------
-  // (android) NfcTech.MifareUltralight API
-  // -------------------------------------
-  mifareUltralightReadPages = (pageOffset) =>
-    callNative('mifareUltralightReadPages', [pageOffset]);
-
-  mifareUltralightWritePage = (pageOffset, data) => {
-    if (
-      !data ||
-      !Array.isArray(data) ||
-      data.length !== this.MIFARE_ULTRALIGHT_PAGE_SIZE
-    ) {
-      return Promise.reject(
-        `data should be a non-empty Array[${this.MIFARE_ULTRALIGHT_PAGE_SIZE}] of integers (0 - 255)`,
-      );
-    }
-
-    return callNative('mifareUltralightWritePage', [pageOffset, data]);
-  };
-
-  // -------------------------------------
-  // (android) setTimeout works for NfcA, NfcF, IsoDep, MifareClassic, MifareUltralight
-  // -------------------------------------
   setTimeout = (timeout) => callNative('setTimeout', [timeout]);
 
   connect = (techs) => callNative('connect', [techs]);
 
   close = () => callNative('close');
 
-  // -------------------------------------
-  // (android) transceive works for NfcA, NfcB, NfcF, NfcV, IsoDep and MifareUltralight
-  // -------------------------------------
   transceive = (bytes) => callNative('transceive', [bytes]);
 
   getMaxTransceiveLength = () => callNative('getMaxTransceiveLength');
+
+  // -------------------------------------
+  // (android) NfcTech.MifareClassic API
+  // -------------------------------------
+  get mifareClassicHandlerAndroid() {
+    if (!this._mifareClassicHandlerAndroid) {
+      this._mifareClassicHandlerAndroid = new MifareClassicHandlerAndroid();
+    }
+    return this._mifareClassicHandlerAndroid;
+  }
+
+  // -------------------------------------
+  // (android) NfcTech.MifareUltralight API
+  // -------------------------------------
+  get mifareUltralightHandlerAndroid() {
+    if (!this._mifareUltralightHandlerAndroid) {
+      this._mifareUltralightHandlerAndroid = new MifareUltralightHandlerAndroid();
+    }
+    return this._mifareClassicHandlerAndroid;
+  }
 
   // -------------------------------------
   // Android private

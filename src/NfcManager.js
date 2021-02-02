@@ -6,6 +6,8 @@ import {
   callNative,
 } from './NativeNfcManager';
 import {NdefHandler, NdefStatus} from './NfcTech/NdefHandler';
+import {NfcAHandler} from './NfcTech/NfcAHandler';
+import {IsoDepHandler} from './NfcTech/IsoDepHandler';
 
 const NfcEvents = {
   DiscoverTag: 'NfcManagerDiscoverTag',
@@ -44,46 +46,88 @@ class NfcManagerBase {
     this._subscribeNativeEvents();
   }
 
-  start = () => callNative('start');
+  async start() {
+    return callNative('start');
+  }
 
-  isSupported = (tech = '') => callNative('isSupported', [tech]);
+  async isSupported(tech = '') {
+    return callNative('isSupported', [tech]);
+  }
 
-  setEventListener = (name, callback) => {
-    const allNfcEvents = Object.keys(NfcEvents).map((k) => NfcEvents[k]);
-    if (allNfcEvents.indexOf(name) === -1) {
-      throw new Error('no such event');
-    }
-
-    this._clientListeners[name] = callback;
-  };
-
-  registerTagEvent = (options = {}) => {
+  async registerTagEvent(options = {}) {
     const optionsWithDefault = {
       ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
       ...options,
     };
 
     return callNative('registerTagEvent', [optionsWithDefault]);
-  };
+  }
 
-  unregisterTagEvent = () => callNative('unregisterTagEvent');
+  async unregisterTagEvent() {
+    return callNative('unregisterTagEvent');
+  }
 
-  getTag = () => callNative('getTag');
+  async getTag() {
+    return callNative('getTag');
+  }
+
+  setEventListener(name, callback) {
+    const allNfcEvents = Object.keys(NfcEvents).map((k) => NfcEvents[k]);
+    if (allNfcEvents.indexOf(name) === -1) {
+      throw new Error('no such event');
+    }
+
+    this._clientListeners[name] = callback;
+  }
 
   requestTechnology = NotImpl;
 
   cancelTechnologyRequest = NotImpl;
 
-  writeNdefMessage = (bytes) => callNative('writeNdefMessage', [bytes]);
+  async writeNdefMessage(bytes) {
+    return callNative('writeNdefMessage', [bytes]);
+  }
 
-  getNdefMessage = () => callNative('getNdefMessage');
+  async getNdefMessage() {
+    return callNative('getNdefMessage');
+  }
 
-  getNdefHandler = () => {
+  get ndefHandler() {
     if (!this._ndefHandler) {
       this._ndefHandler = new NdefHandler();
     }
     return this._ndefHandler;
-  };
+  }
+
+  get nfcAHandler() {
+    if (!this._nfcAHandler) {
+      this._nfcAHandler = new NfcAHandler();
+    }
+    return this._nfcAHandler;
+  }
+
+  get isoDepHandler() {
+    if (!this._isoDepHandler) {
+      this._isoDepHandler = new IsoDepHandler();
+    }
+    return this._isoDepHandler;
+  }
+
+  get MIFARE_BLOCK_SIZE() {
+    return NativeNfcManager.MIFARE_BLOCK_SIZE;
+  }
+  get MIFARE_ULTRALIGHT_PAGE_SIZE() {
+    return NativeNfcManager.MIFARE_ULTRALIGHT_PAGE_SIZE;
+  }
+  get MIFARE_ULTRALIGHT_TYPE() {
+    return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE;
+  }
+  get MIFARE_ULTRALIGHT_TYPE_C() {
+    return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE_C;
+  }
+  get MIFARE_ULTRALIGHT_TYPE_UNKNOWN() {
+    return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE_UNKNOWN;
+  }
 
   _onDiscoverTag = (tag) => {
     const callback = this._clientListeners[NfcEvents.DiscoverTag];
@@ -132,22 +176,6 @@ class NfcManagerBase {
       );
     }
   };
-
-  get MIFARE_BLOCK_SIZE() {
-    return NativeNfcManager.MIFARE_BLOCK_SIZE;
-  }
-  get MIFARE_ULTRALIGHT_PAGE_SIZE() {
-    return NativeNfcManager.MIFARE_ULTRALIGHT_PAGE_SIZE;
-  }
-  get MIFARE_ULTRALIGHT_TYPE() {
-    return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE;
-  }
-  get MIFARE_ULTRALIGHT_TYPE_C() {
-    return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE_C;
-  }
-  get MIFARE_ULTRALIGHT_TYPE_UNKNOWN() {
-    return NativeNfcManager.MIFARE_ULTRALIGHT_TYPE_UNKNOWN;
-  }
 }
 
 export {

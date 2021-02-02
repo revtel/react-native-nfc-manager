@@ -6,6 +6,7 @@ import {
   callNative,
 } from './NativeNfcManager';
 import {
+  NfcTech,
   NfcEvents,
   NfcManagerBase,
   DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
@@ -26,12 +27,21 @@ class NfcManagerIOS extends NfcManagerBase {
         tech = [tech];
       }
 
+      const techList = [];
+      for (const t of tech) {
+        if (t === NfcTech.NfcA) {
+          techList.push(NfcTech.MifareIOS);
+        } else {
+          techList.push(t);
+        }
+      }
+
       const optionsWithDefault = {
         ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
         ...options,
       };
 
-      return callNative('requestTechnology', [tech, options]);
+      return callNative('requestTechnology', [techList, options]);
     } catch (ex) {
       throw ex;
     }
@@ -63,16 +73,6 @@ class NfcManagerIOS extends NfcManagerBase {
   // (iOS) NfcTech.FelicaIOS API
   // -------------------------------------
   sendFelicaCommandIOS = (bytes) => callNative('sendFelicaCommand', [bytes]);
-
-  // -------------------------------------
-  // (iOS) NfcTech.Iso15693IOS API
-  // -------------------------------------
-  getIso15693HandlerIOS = () => {
-    if (!this._iso15693HandlerIOS) {
-      this._iso15693HandlerIOS = new Iso15693HandlerIOS();
-    }
-    return this._iso15693HandlerIOS;
-  };
 
   // -------------------------------------
   // (iOS) NfcTech.IsoDep API
@@ -109,6 +109,16 @@ class NfcManagerIOS extends NfcManagerBase {
       });
     }
   };
+
+  // -------------------------------------
+  // (iOS) NfcTech.Iso15693IOS API
+  // -------------------------------------
+  get iso15693HandlerIOS() {
+    if (!this._iso15693HandlerIOS) {
+      this._iso15693HandlerIOS = new Iso15693HandlerIOS();
+    }
+    return this._iso15693HandlerIOS;
+  }
 }
 
 export {NfcManagerIOS, Nfc15693RequestFlagIOS};
