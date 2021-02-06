@@ -1,13 +1,8 @@
 'use strict';
 import {Platform} from 'react-native';
-import {
-  NativeNfcManager,
-  NfcManagerEmitter,
-  callNative,
-} from './NativeNfcManager';
+import {NativeNfcManager, callNative} from './NativeNfcManager';
 import {
   NfcTech,
-  NfcEvents,
   NfcManagerBase,
   DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
 } from './NfcManager';
@@ -36,12 +31,13 @@ class NfcManagerIOS extends NfcManagerBase {
         }
       }
 
-      const optionsWithDefault = {
-        ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
-        ...options,
-      };
-
-      return callNative('requestTechnology', [techList, options]);
+      return callNative('requestTechnology', [
+        techList,
+        {
+          ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
+          ...options,
+        },
+      ]);
     } catch (ex) {
       throw ex;
     }

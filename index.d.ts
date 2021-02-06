@@ -30,12 +30,12 @@ declare module 'react-native-nfc-manager' {
 
   /** [iOS ONLY] */
   export enum Nfc15693RequestFlagIOS {
-    DualSubCarriers = (1 << 0),
-    HighDataRate = (1 << 1),
-    ProtocolExtension = (1 << 3),
-    Select = (1 << 4),
-    Address = (1 << 5),
-    Option = (1 << 6),
+    DualSubCarriers = 1 << 0,
+    HighDataRate = 1 << 1,
+    ProtocolExtension = 1 << 3,
+    Select = 1 << 4,
+    Address = 1 << 5,
+    Option = 1 << 6,
   }
 
   /** [ANDROID ONLY] */
@@ -90,22 +90,53 @@ declare module 'react-native-nfc-manager' {
   interface Iso15693HandlerIOS {
     getSystemInfo: (
       requestFloags: number,
-    ) => Promise<{ dsfid: number, afi: number, blockSize: number, blockCount: number, icReference: number}>;
-    readSingleBlock: (params: {flags: number, blockNumber: number}) => Promise<number[]>;
-    readMultipleBlocks: (params: {flags: number, blockNumber: number, blockCount: number}) => Promise<number[][]>;
-    writeSingleBlock: (params: {flags: number, blockNumber: number, dataBlock: number[]}) => Promise<void>; 
-    lockBlock: (params: {flags: number, blockNumber: number}) => Promise<void>; 
-    writeAFI: (params: {flags: number, afi: number}) => Promise<void>; 
-    lockAFI: (params: {flags: number}) => Promise<void>; 
-    writeDSFID: (params: {flags: number, dsfid: number}) => Promise<void>; 
-    lockDSFID: (params: {flags: number}) => Promise<void>; 
-    resetToReady: (params: {flags: number}) => Promise<void>; 
-    select: (params: {flags: number}) => Promise<void>; 
-    stayQuite: () => Promise<void>; 
-    customCommand: (params: {flags: number, customCommandCode: number, customRequestParameters: number[]}) => Promise<number[]>;
-    extendedReadSingleBlock: (params: {flags: number, blockNumber: number}) => Promise<number[]>;
-    extendedWriteSingleBlock: (params: {flags: number, blockNumber: number, dataBlock: number[]}) => Promise<void>; 
-    extendedLockBlock: (params: {flags: number, blockNumber: number}) => Promise<void>; 
+    ) => Promise<{
+      dsfid: number;
+      afi: number;
+      blockSize: number;
+      blockCount: number;
+      icReference: number;
+    }>;
+    readSingleBlock: (params: {
+      flags: number;
+      blockNumber: number;
+    }) => Promise<number[]>;
+    readMultipleBlocks: (params: {
+      flags: number;
+      blockNumber: number;
+      blockCount: number;
+    }) => Promise<number[][]>;
+    writeSingleBlock: (params: {
+      flags: number;
+      blockNumber: number;
+      dataBlock: number[];
+    }) => Promise<void>;
+    lockBlock: (params: {flags: number; blockNumber: number}) => Promise<void>;
+    writeAFI: (params: {flags: number; afi: number}) => Promise<void>;
+    lockAFI: (params: {flags: number}) => Promise<void>;
+    writeDSFID: (params: {flags: number; dsfid: number}) => Promise<void>;
+    lockDSFID: (params: {flags: number}) => Promise<void>;
+    resetToReady: (params: {flags: number}) => Promise<void>;
+    select: (params: {flags: number}) => Promise<void>;
+    stayQuite: () => Promise<void>;
+    customCommand: (params: {
+      flags: number;
+      customCommandCode: number;
+      customRequestParameters: number[];
+    }) => Promise<number[]>;
+    extendedReadSingleBlock: (params: {
+      flags: number;
+      blockNumber: number;
+    }) => Promise<number[]>;
+    extendedWriteSingleBlock: (params: {
+      flags: number;
+      blockNumber: number;
+      dataBlock: number[];
+    }) => Promise<void>;
+    extendedLockBlock: (params: {
+      flags: number;
+      blockNumber: number;
+    }) => Promise<void>;
   }
 
   interface NfcManager {
@@ -121,7 +152,7 @@ declare module 'react-native-nfc-manager' {
 
     requestTechnology(
       tech: NfcTech | NfcTech[],
-      options?: RegisterTagEventOpts
+      options?: RegisterTagEventOpts,
     ): Promise<NfcTech>;
 
     cancelTechnologyRequest: () => Promise<void>;
@@ -197,7 +228,7 @@ declare module 'react-native-nfc-manager' {
   type ISOLangCode = 'en' | string;
   type URI = string;
 
-  type TNF = 0x0 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07
+  type TNF = 0x0 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07;
 
   export interface WifiSimpleCredentials {
     ssid: string;
@@ -223,7 +254,7 @@ declare module 'react-native-nfc-manager' {
     RTD_HANDOVER_REQUEST: 'Hr'; // [0x48, 0x72]
     RTD_HANDOVER_SELECT: 'Hs'; // [0x48, 0x73]
 
-    MIME_WFA_WSC: "application/vnd.wfa.wsc";
+    MIME_WFA_WSC: 'application/vnd.wfa.wsc';
 
     text: {
       encodePayload: (
@@ -256,7 +287,12 @@ declare module 'react-native-nfc-manager' {
     uriRecord(uri: URI, id?: any): NdefRecord;
     wifiSimpleRecord(credentials: WifiSimpleCredentials, id?: any): NdefRecord;
     androidApplicationRecord(pkgName: string): NdefRecord;
-    record(tnf: TNF, type: string, id: string | any[], payload: string | any[]): NdefRecord
+    record(
+      tnf: TNF,
+      type: string,
+      id: string | any[],
+      payload: string | any[],
+    ): NdefRecord;
   };
 }
 

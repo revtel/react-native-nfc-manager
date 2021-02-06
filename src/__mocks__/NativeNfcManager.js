@@ -1,6 +1,4 @@
-const NativeNfcManager =  {
-
-}
+const NativeNfcManager = {};
 
 const NfcManagerEmitterListener = {};
 const NfcManagerEmitter = {
@@ -11,12 +9,8 @@ const NfcManagerEmitter = {
   _testTriggerCallback: (name, data) => {
     NfcManagerEmitterListener[name](data);
   },
-}
+};
 
 const callNative = jest.fn();
 
-export {
-  NativeNfcManager,
-  NfcManagerEmitter,
-  callNative,
-}
+export {NativeNfcManager, NfcManagerEmitter, callNative};

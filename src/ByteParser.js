@@ -1,5 +1,7 @@
 function byteToHexString(bytes) {
-  if (!Array.isArray(bytes) || !bytes.length) return '';
+  if (!Array.isArray(bytes) || !bytes.length) {
+    return '';
+  }
 
   let result = '';
   for (let i = 0; i < bytes.length; i++) {
@@ -9,7 +11,9 @@ function byteToHexString(bytes) {
 }
 
 function byteToString(bytes) {
-  if (!Array.isArray(bytes) || !bytes.length) return '';
+  if (!Array.isArray(bytes) || !bytes.length) {
+    return '';
+  }
 
   let result = '';
   for (let i = 0; i < bytes.length; i++) {
@@ -19,6 +23,6 @@ function byteToString(bytes) {
 }
 
 export default {
-    byteToHexString,
-    byteToString,
-}
+  byteToHexString,
+  byteToString,
+};

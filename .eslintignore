@@ -3,3 +3,4 @@ coverage/
 dist/
 lib/
 example/
+index.d.ts

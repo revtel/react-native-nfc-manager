@@ -1,11 +1,5 @@
-'use strict';
-import {Platform} from 'react-native';
-import {
-  NativeNfcManager,
-  NfcManagerEmitter,
-  callNative,
-} from './NativeNfcManager';
-import {NfcEvents, NfcManagerBase} from './NfcManager';
+import {callNative} from './NativeNfcManager';
+import {NfcManagerBase} from './NfcManager';
 import {MifareClassicHandlerAndroid} from './NfcTech/MifareClassicHandlerAndroid';
 import {MifareUltralightHandlerAndroid} from './NfcTech/MifareUltralightHandlerAndroid';
 

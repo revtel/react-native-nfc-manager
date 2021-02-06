@@ -1,4 +1,3 @@
-import {Platform} from 'react-native';
 import {callNative} from '../NativeNfcManager';
 
 class MifareClassicHandlerAndroid {

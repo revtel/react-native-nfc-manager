@@ -1,5 +1,5 @@
 import {Platform} from 'react-native';
-import {callNative} from '../NativeNfcManager';
+import {callNative, NativeNfcManager} from '../NativeNfcManager';
 
 class IsoDepHandler {
   async transceive(bytes) {

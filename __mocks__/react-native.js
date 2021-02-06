@@ -7,12 +7,11 @@ const Platform = {
     return _os;
   },
 
-  setOS: os => {
+  setOS: (os) => {
     _os = os;
-  }
-}
+  },
+};
 
 ReactNative.Platform = Platform;
 
-module.exports = ReactNative; 
-
+module.exports = ReactNative;

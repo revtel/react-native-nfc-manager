@@ -1,16 +1,15 @@
 jest.mock('../src/NativeNfcManager');
 
-import {
-  Platform
-} from 'react-native'
-import {NativeNfcManager, NfcManagerEmitter, callNative} from '../src/NativeNfcManager'
+import {Platform} from 'react-native';
+import {NfcManagerEmitter, callNative} from '../src/NativeNfcManager';
 
 describe('NfcManager (ios)', () => {
   Platform.setOS('ios');
   const NfcManagerModule = require('../src/index.js');
   const NfcManager = NfcManagerModule.default;
   const {NfcEvents} = NfcManagerModule;
-  const lastNativeCall = () => callNative.mock.calls[callNative.mock.calls.length - 1];
+  const lastNativeCall = () =>
+    callNative.mock.calls[callNative.mock.calls.length - 1];
 
   test('constructor', () => {
     expect(Platform.OS).toBe('ios');
@@ -30,7 +29,7 @@ describe('NfcManager (ios)', () => {
 
       if (!hit) {
         // this native event is not registered, treat as error
-        exect(true).toBe(false);
+        expect(true).toBe(false);
       }
     }
   });
@@ -66,16 +65,16 @@ describe('NfcManager (ios)', () => {
       expect(true).toBe(true);
     }
 
-    // can receive DiscoverTag event 
+    // can receive DiscoverTag event
     const tag1 = {id: '3939889'};
     let tag2 = null;
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
+    NfcManager.setEventListener(NfcEvents.DiscoverTag, (tag) => {
       tag2 = tag;
     });
     NfcManagerEmitter._testTriggerCallback(NfcEvents.DiscoverTag, tag1);
     expect(tag2).toEqual(tag1);
 
-    // can receive SessionClosed event 
+    // can receive SessionClosed event
     let sessionClosed = false;
     NfcManager.setEventListener(NfcEvents.SessionClosed, () => {
       sessionClosed = true;
@@ -92,5 +91,4 @@ describe('NfcManager (ios)', () => {
     expect(options.alertMessage).toEqual('Please tap NFC tags');
     expect(options.invalidateAfterFirstRead).toBe(false);
   });
-
 });
