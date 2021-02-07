@@ -1,4 +1,4 @@
-var util = require('./ndef-util');
+var util = require('./util');
 
 // URI identifier codes from URI Record Type Definition NFCForum-TS-RTD_URI_1.0 2006-07-24
 // index in array matches code in the spec

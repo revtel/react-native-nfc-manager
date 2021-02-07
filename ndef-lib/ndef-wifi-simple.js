@@ -1,4 +1,4 @@
-var util = require('./ndef-util');
+var util = require('./util');
 
 const CREDENTIAL_FIELD_ID = [0x10, 0x0e];
 const SSID_FIELD_ID = [0x10, 0x45];

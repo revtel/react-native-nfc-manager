@@ -1,4 +1,4 @@
-var util = require('./ndef-util');
+var util = require('./util');
 
 // decode text bytes from ndef record payload
 // @returns a string
