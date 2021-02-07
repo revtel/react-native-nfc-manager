@@ -9,11 +9,6 @@ declare module 'react-native-nfc-manager' {
     StateChanged = 'NfcManagerStateChanged',
   }
 
-  type OnDiscoverTag = (evt: TagEvent) => void;
-  type OnSessionClosed = (evt: {}) => void;
-  type OnStateChanged = (evt: {state: string}) => void;
-  type OnNfcEvents = OnDiscoverTag | OnSessionClosed | OnStateChanged;
-
   export enum NfcTech {
     Ndef = 'Ndef',
     NfcA = 'NfcA',
@@ -28,17 +23,12 @@ declare module 'react-native-nfc-manager' {
     FelicaIOS = 'felica',
   }
 
-  /** [iOS ONLY] */
-  export enum Nfc15693RequestFlagIOS {
-    DualSubCarriers = 1 << 0,
-    HighDataRate = 1 << 1,
-    ProtocolExtension = 1 << 3,
-    Select = 1 << 4,
-    Address = 1 << 5,
-    Option = 1 << 6,
+  export enum NdefStatus {
+    NotSupported = 1,
+    ReadWrite = 2,
+    ReadOnly = 3,
   }
 
-  /** [ANDROID ONLY] */
   export enum NfcAdapter {
     FLAG_READER_NFC_A = 0x1,
     FLAG_READER_NFC_B = 0x2,
@@ -49,10 +39,21 @@ declare module 'react-native-nfc-manager' {
     FLAG_READER_NO_PLATFORM_SOUNDS = 0x100,
   }
 
+  export enum Nfc15693RequestFlagIOS {
+    DualSubCarriers = 1 << 0,
+    HighDataRate = 1 << 1,
+    ProtocolExtension = 1 << 3,
+    Select = 1 << 4,
+    Address = 1 << 5,
+    Option = 1 << 6,
+  }
+
+  type TNF = 0x0 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07;
+
   export interface NdefRecord {
     id?: number[];
     tnf: TNF;
-    type: number[];
+    type: number[] | string;
     payload: any[];
   }
 
@@ -64,7 +65,7 @@ declare module 'react-native-nfc-manager' {
     id?: number[];
   }
 
-  interface RegisterTagEventOpts {
+  export interface RegisterTagEventOpts {
     alertMessage?: string;
     invalidateAfterFirstRead?: boolean;
     isReaderModeEnabled?: boolean;
@@ -72,18 +73,44 @@ declare module 'react-native-nfc-manager' {
     readerModeDelay?: number;
   }
 
-  interface NdefWriteOpts {
-    format?: boolean;
-    formatReadOnly?: boolean;
+  interface NdefHandler {
+    writeNdefMessage: (bytes: number[]) => Promise<void>;
+    getNdefMessage: () => Promise<TagEvent | null>;
+    makeReadOnly: () => Promise<void>;
+    getNdefStatus: () => Promise<{
+      status: NdefStatus,
+      capacity: number,
+    }>;
+    getCachedNdefMessageAndroid: () => Promise<TagEvent | null>;
   }
 
-  interface APDU {
-    cla: number;
-    ins: number;
-    p1: number;
-    p2: number;
-    data: number[];
-    le: number;
+  interface NfcAHandler {
+    transceive: (bytes: number[]) => Promise<void>;
+  }
+
+  interface IsoDepHandler {
+    transceive: (bytes: number[]) => Promise<void>;
+  }
+
+  interface MifareClassicHandlerAndroid {
+    mifareClassicSectorToBlock: (sector: number) => Promise<ArrayLike<number>>;
+    mifareClassicReadBlock: (
+      block: ArrayLike<number>,
+    ) => Promise<ArrayLike<number>>;
+    mifareClassicWriteBlock: (
+      block: ArrayLike<number>,
+      simpliArr: any[],
+    ) => Promise<void>;
+    mifareClassicGetSectorCount: () => Promise<number>;
+    mifareClassicAuthenticateA: (
+      sector: number,
+      keys: number[],
+    ) => Promise<void>;
+  }
+
+  interface MifareUltralightHandlerAndroid {
+    mifareUltralightReadPages: (offset: number) => Promise<ArrayLike<number>>;
+    mifareUltralightWritePage: (offset: number, data: number[]) => Promise<void>;
   }
 
   /** [iOS ONLY] */
@@ -139,91 +166,67 @@ declare module 'react-native-nfc-manager' {
     }) => Promise<void>;
   }
 
+  type OnDiscoverTag = (evt: TagEvent) => void;
+  type OnSessionClosed = (evt: {}) => void;
+  type OnStateChanged = (evt: {state: string}) => void;
+  type OnNfcEvents = OnDiscoverTag | OnSessionClosed | OnStateChanged;
+
   interface NfcManager {
     start(): Promise<void>;
-
     isSupported(): Promise<boolean>;
-
     registerTagEvent(options?: RegisterTagEventOpts): Promise<void>;
-
     unregisterTagEvent(): Promise<void>;
-
     setEventListener(name: NfcEvents, callback: OnNfcEvents | null): void;
-
     requestTechnology(
       tech: NfcTech | NfcTech[],
       options?: RegisterTagEventOpts,
     ): Promise<NfcTech>;
-
     cancelTechnologyRequest: () => Promise<void>;
+    getTag: () => Promise<TagEvent | null>;
 
-    getTag: () => Promise<any>;
+    /**
+     * common tech handler getters for both iOS / Android
+     */
+    ndefHandler: NdefHandler;
+    nfcAHandler: NfcAHandler;
+    isoDepHandler: IsoDepHandler;
 
-    writeNdefMessage: (bytes: number[]) => Promise<void>;
-
-    getNdefMessage: () => Promise<TagEvent | null>;
-
-    /** [iOS ONLY] */
+    /**
+     * iOS only
+     */
     setAlertMessageIOS: (alertMessage: string) => Promise<void>;
-    /** [iOS ONLY] */
     invalidateSessionIOS: () => Promise<void>;
-    /** [iOS ONLY] */
     invalidateSessionWithErrorIOS: (errorMessage: string) => Promise<void>;
-    /** [iOS ONLY] */
     sendMifareCommandIOS: (bytes: number[]) => Promise<number[]>;
-    /** [iOS ONLY] */
     sendFelicaCommandIOS: (bytes: number[]) => Promise<number[]>;
-    /** [iOS ONLY] */
     sendCommandAPDUIOS: (
-      bytesOrApdu: number[] | APDU,
+      bytesOrApdu: number[] | {
+        cla: number;
+        ins: number;
+        p1: number;
+        p2: number;
+        data: number[];
+        le: number;
+      }
     ) => Promise<{response: number[]; sw1: number; sw2: number}>;
-    /** [iOS ONLY] */
-    getIso15693HandlerIOS: () => Iso15693HandlerIOS;
+    iso15693HandlerIOS: Iso15693HandlerIOS;
 
-    /** [ANDROID ONLY] */
+    /**
+     * Android only
+     */
     isEnabled(): Promise<boolean>;
-    /** [ANDROID ONLY] */
     goToNfcSetting(): Promise<any>;
-    /** [ANDROID ONLY] */
     getLaunchTagEvent(): Promise<TagEvent | null>;
-    /** [ANDROID ONLY] */
-    requestNdefWrite(bytes: number[], opts?: NdefWriteOpts): Promise<any>;
-    /** [ANDROID ONLY] */
-    cancelNdefWrite(): Promise<any>;
-    /** [ANDROID ONLY] */
-    getCachedNdefMessageAndroid: () => Promise<TagEvent | null>;
-    /** [ANDROID ONLY] */
-    makeReadOnlyAndroid: () => Promise<boolean>;
-    /** [ANDROID ONLY] */
     transceive(bytes: number[]): Promise<number[]>;
-    /** [ANDROID ONLY] */
     getMaxTransceiveLength(): Promise<number>;
-    /** [ANDROID ONLY] */
-    mifareClassicSectorToBlock: (sector: number) => Promise<ArrayLike<number>>;
-    /** [ANDROID ONLY] */
-    mifareClassicReadBlock: (
-      block: ArrayLike<number>,
-    ) => Promise<ArrayLike<number>>;
-    /** [ANDROID ONLY] */
-    mifareClassicWriteBlock: (
-      block: ArrayLike<number>,
-      simpliArr: any[],
-    ) => Promise<void>;
-    /** [ANDROID ONLY] */
-    mifareClassicGetSectorCount: () => Promise<number>;
-    /** [ANDROID ONLY] */
-    mifareClassicAuthenticateA: (
-      sector: number,
-      keys: number[],
-    ) => Promise<void>;
+    mifareClassicHandlerAndroid: MifareClassicHandlerAndroid;
+    mifareUltralightHandlerAndroid: MifareUltralightHandlerAndroid;
   }
 
   const nfcManager: NfcManager;
 
   type ISOLangCode = 'en' | string;
   type URI = string;
-
-  type TNF = 0x0 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07;
 
   export interface WifiSimpleCredentials {
     ssid: string;
