@@ -5,6 +5,7 @@ const {
   createNdefRecord,
   encodeNdefMessage,
   decodeNdefMessage,
+  equalToRecordType,
 } = require('./ndef');
 const constants = require('./constants');
 const util = require('./util');
@@ -97,6 +98,7 @@ const NDEF = {
   record: createNdefRecord,
   encodeMessage: encodeNdefMessage,
   decodeMessage: decodeNdefMessage,
+  isType: equalToRecordType,
 
   // individual record type helpers
   text: textHelper,
@@ -105,9 +107,6 @@ const NDEF = {
 
   // other helpers
   util,
-  isType(record, tnf, type) {
-    return record.tnf === tnf && record.type === type;
-  },
 };
 
 module.exports = NDEF;

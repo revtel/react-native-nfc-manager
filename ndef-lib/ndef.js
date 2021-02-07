@@ -178,8 +178,20 @@ function decodeNdefMessage(ndefBytes) {
   return ndef_message;
 }
 
+function equalToRecordType(record, tnf, type) {
+  if (record.tnf === tnf) {
+    if (Array.isArray(record.type)) {
+      return util.bytesToString(record.type) === type;
+    } else {
+      return record.type === type;
+    }
+  }
+  return record.tnf === tnf && record.type === type;
+}
+
 module.exports = {
   createNdefRecord,
   encodeNdefMessage,
   decodeNdefMessage,
+  equalToRecordType,
 };
