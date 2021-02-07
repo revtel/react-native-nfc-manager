@@ -7,7 +7,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import NfcManager, { ByteParser, NfcTech } from 'react-native-nfc-manager';
+import NfcManager, { Ndef, NfcTech } from 'react-native-nfc-manager';
 
 const KeyTypes = ['A', 'B'];
 
@@ -222,7 +222,7 @@ class App extends Component {
           NfcManager.mifareClassicReadSector(parseInt(this.state.sector)),
         )
         .then(tag => {
-          let parsedText = ByteParser.byteToHexString(tag);
+          let parsedText = Ndef.util.bytesToHexString(tag);
           this.setState({ parsedText });
         })
         .then(() =>
@@ -230,7 +230,7 @@ class App extends Component {
         )
         .then(block => NfcManager.mifareClassicReadBlock(block))
         .then(data => {
-          const parsedText = ByteParser.byteToString(data);
+          const parsedText = Ndef.util.bytesToHexString(data);
           this.setState({ firstBlockInSector: parsedText });
         })
     };
