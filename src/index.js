@@ -1,6 +1,5 @@
 'use strict';
 import {Platform} from 'react-native';
-import NdefParser from './NdefParser';
 import Ndef from '../ndef-lib';
 import {NfcEvents, NfcTech, NdefStatus} from './NfcManager';
 import {NfcAdapter, NfcManagerAndroid} from './NfcManagerAndroid';
@@ -17,11 +16,10 @@ let nfcManager = (() => {
 export default nfcManager;
 
 export {
-  NdefParser,
   NfcTech,
   NfcEvents,
   NfcAdapter,
-  NdefStatus,
-  Ndef,
   Nfc15693RequestFlagIOS,
+  Ndef,
+  NdefStatus,
 };

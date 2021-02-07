@@ -220,11 +220,6 @@ declare module 'react-native-nfc-manager' {
 
   const nfcManager: NfcManager;
 
-  export namespace NdefParser {
-    function parseUri(ndef: NdefRecord): {uri: string};
-    function parseText(ndef: NdefRecord): string | null;
-  }
-
   type ISOLangCode = 'en' | string;
   type URI = string;
 

@@ -6,7 +6,7 @@ import {
     ScrollView,
     TextInput,
 } from 'react-native';
-import NfcManager, {NdefParser, NfcTech} from 'react-native-nfc-manager';
+import NfcManager, {Ndef, NfcTech} from 'react-native-nfc-manager';
 
 function strToBytes(str) {
     let result = [];
@@ -112,7 +112,7 @@ class App extends Component {
 
         const parseText = (tag) => {
             if (tag.ndefMessage) {
-                return NdefParser.parseText(tag.ndefMessage[0]);
+                return Ndef.text.decodePayload(tag.ndefMessage[0].payload);
             }
             return null;
         }
