@@ -13,7 +13,7 @@ const textHelper = require('./ndef-text');
 const uriHelper = require('./ndef-uri');
 const wifiSimpleHelper = require('./ndef-wifi-simple');
 
-const WellKnownRecord = {
+const PrimitiveRecord = {
   emptyRecord() {
     return createNdefRecord(constants.TNF_EMPTY, [], [], []);
   },
@@ -26,6 +26,17 @@ const WellKnownRecord = {
     return createNdefRecord(constants.TNF_MIME_MEDIA, mimeType, id, payload);
   },
 
+  externalTypeRecord(externalType, payload, id = []) {
+    return createNdefRecord(
+      constants.TNF_EXTERNAL_TYPE,
+      externalType,
+      id,
+      payload,
+    );
+  },
+};
+
+const WellKnownRecord = {
   textRecord(text, languageCode, id = []) {
     return createNdefRecord(
       constants.TNF_WELL_KNOWN,
@@ -71,29 +82,26 @@ const WellKnownRecord = {
   },
 };
 
-const ExtraRecord = {
-  androidApplicationRecord(packageName) {
-    return createNdefRecord(
-      constants.TNF_EXTERNAL_TYPE,
+const ExtraTypeRecord = {
+  androidApplicationRecord(packageName, id = []) {
+    return PrimitiveRecord.externalTypeRecord(
       'android.com:pkg',
-      [],
+      id,
       packageName,
     );
   },
 
-  wifiSimpleRecord: function (credentials, id) {
+  wifiSimpleRecord: function (credentials, id = []) {
     let payload = wifiSimpleHelper.encodePayload(credentials);
-    if (!id) {
-      id = [];
-    }
-    return WellKnownRecord.mimeMediaRecord(constants.MIME_WFA_WSC, payload, id);
+    return PrimitiveRecord.mimeMediaRecord(constants.MIME_WFA_WSC, payload, id);
   },
 };
 
 const NDEF = {
   ...constants,
+  ...PrimitiveRecord,
   ...WellKnownRecord,
-  ...ExtraRecord,
+  ...ExtraTypeRecord,
 
   record: createNdefRecord,
   encodeMessage: encodeNdefMessage,
