@@ -41,9 +41,11 @@
     "babel-jest": "^22.4.3",
     "babel-preset-env": "^1.6.1",
     "jest": "^22.4.3",
-    "jest-cli": "^22.4.3"
+    "jest-cli": "^22.4.3",
+    "release-it": "^14.4.0"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "release": "release-it"
   }
 }
