@@ -14,3 +14,15 @@ The same as above, please check if the tag is properly formatted, and contain at
 ## [iOS] cannot read / write Mifare Classic
 
 Indeed, currently MifareClassic isn't supported by Core NFC in our tests. It is also not listed in Core NFC's [NFCMiFareFamily](https://developer.apple.com/documentation/corenfc/nfcmifarefamily?language=objc)
+
+## [Android] My NFC tag cannot launch my app
+
+Note on getLaunchTagEvent: keep in mind that you can only create intent-filters for the very first NDEF record on an NFC tag! If your intent-filter doesn't match the FIRST record your app will launch but it won't get the tag data. Check out for details: 
+https://stackoverflow.com/questions/25504418/get-nfc-tag-with-ndef-android-application-record-aar/25510642
+
+Also you should add 
+```xml
+android:launchMode="singleTask"
+```
+to your manifest to prevent launching your app as another task when it is already running.
+
