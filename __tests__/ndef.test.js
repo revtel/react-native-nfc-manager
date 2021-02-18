@@ -1,5 +1,4 @@
 const ndef = require('../ndef-lib');
-const textHelper = require('../ndef-lib/ndef-text');
 
 const textMessageHelloWorld = [
   209,
@@ -126,7 +125,7 @@ test('build and parse text', () => {
 
   let decodedMessage = ndef.decodeMessage(encoded);
   expect(message[0]).toEqual(decodedMessage[0]);
-  expect(textHelper.decodePayload(message[0].payload)).toEqual(text);
+  expect(ndef.text.decodePayload(message[0].payload)).toEqual(text);
 });
 
 test('build and parse uri', () => {
