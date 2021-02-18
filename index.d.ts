@@ -78,8 +78,8 @@ declare module 'react-native-nfc-manager' {
     getNdefMessage: () => Promise<TagEvent | null>;
     makeReadOnly: () => Promise<void>;
     getNdefStatus: () => Promise<{
-      status: NdefStatus,
-      capacity: number,
+      status: NdefStatus;
+      capacity: number;
     }>;
     getCachedNdefMessageAndroid: () => Promise<TagEvent | null>;
   }
@@ -110,7 +110,10 @@ declare module 'react-native-nfc-manager' {
 
   interface MifareUltralightHandlerAndroid {
     mifareUltralightReadPages: (offset: number) => Promise<ArrayLike<number>>;
-    mifareUltralightWritePage: (offset: number, data: number[]) => Promise<void>;
+    mifareUltralightWritePage: (
+      offset: number,
+      data: number[],
+    ) => Promise<void>;
   }
 
   /** [iOS ONLY] */
@@ -200,14 +203,16 @@ declare module 'react-native-nfc-manager' {
     sendMifareCommandIOS: (bytes: number[]) => Promise<number[]>;
     sendFelicaCommandIOS: (bytes: number[]) => Promise<number[]>;
     sendCommandAPDUIOS: (
-      bytesOrApdu: number[] | {
-        cla: number;
-        ins: number;
-        p1: number;
-        p2: number;
-        data: number[];
-        le: number;
-      }
+      bytesOrApdu:
+        | number[]
+        | {
+            cla: number;
+            ins: number;
+            p1: number;
+            p2: number;
+            data: number[];
+            le: number;
+          },
     ) => Promise<{response: number[]; sw1: number; sw2: number}>;
     iso15693HandlerIOS: Iso15693HandlerIOS;
 
@@ -291,7 +296,7 @@ declare module 'react-native-nfc-manager' {
       'urn:epc:raw:',
       'urn:epc:',
       'urn:nfc:',
-    ],
+    ];
 
     text: {
       encodePayload: (
