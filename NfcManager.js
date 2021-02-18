@@ -265,6 +265,8 @@ class NfcManager {
 
   getNdefMessage = () => callNative('getNdefMessage');
 
+  makeReadOnly = () => callNative('makeReadOnly');
+
   // -------------------------------------
   // (android) NfcTech.Ndef API
   // -------------------------------------

@@ -132,6 +132,8 @@ declare module 'react-native-nfc-manager' {
 
     getNdefMessage: () => Promise<TagEvent | null>;
 
+    makeReadOnly: () => Promise<boolean>;
+
     /** [iOS ONLY] */
     setAlertMessageIOS: (alertMessage: string) => Promise<void>;
     /** [iOS ONLY] */

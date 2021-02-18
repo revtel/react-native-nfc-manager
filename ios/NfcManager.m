@@ -518,6 +518,31 @@ RCT_EXPORT_METHOD(writeNdefMessage:(NSArray*)bytes callback:(nonnull RCTResponse
     }
 }
 
+RCT_EXPORT_METHOD(makeReadOnly: (nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        if (sessionEx != nil) {
+            if (sessionEx.connectedTag) {
+                id<NFCNDEFTag> ndefTag = [self getNDEFTagHandle:sessionEx.connectedTag];
+                [ndefTag writeLockWithCompletionHandler:^(NSError *error) {
+                    if (error) {
+                        callback(@[getErrorMessage(error), [NSNull null]]);
+                    } else {
+                        callback(@[[NSNull null]]);
+                        callback(@[[NSNull null], @YES]);
+                    }
+                }];
+                return;
+            }
+            callback(@[@"Not connected", [NSNull null]]);
+        } else {
+            callback(@[@"Not even registered", [NSNull null]]);
+        }
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
 RCT_EXPORT_METHOD(sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {
