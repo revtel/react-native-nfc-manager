@@ -1,45 +1,5 @@
-var util = require('./util');
-
-// URI identifier codes from URI Record Type Definition NFCForum-TS-RTD_URI_1.0 2006-07-24
-// index in array matches code in the spec
-var protocols = [
-  '',
-  'http://www.',
-  'https://www.',
-  'http://',
-  'https://',
-  'tel:',
-  'mailto:',
-  'ftp://anonymous:anonymous@',
-  'ftp://ftp.',
-  'ftps://',
-  'sftp://',
-  'smb://',
-  'nfs://',
-  'ftp://',
-  'dav://',
-  'news:',
-  'telnet://',
-  'imap:',
-  'rtsp://',
-  'urn:',
-  'pop:',
-  'sip:',
-  'sips:',
-  'tftp:',
-  'btspp://',
-  'btl2cap://',
-  'btgoep://',
-  'tcpobex://',
-  'irdaobex://',
-  'file://',
-  'urn:epc:id:',
-  'urn:epc:tag:',
-  'urn:epc:pat:',
-  'urn:epc:raw:',
-  'urn:epc:',
-  'urn:nfc:',
-];
+const util = require('./util');
+const protocols = require('./constants').RTD_URI_PROTOCOLS;
 
 // decode a URI payload bytes
 // @returns a string
