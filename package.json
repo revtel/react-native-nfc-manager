@@ -62,7 +62,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "jest",
+    "test": "jest -i",
     "release": "release-it"
   }
 }

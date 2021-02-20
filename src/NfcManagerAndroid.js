@@ -74,7 +74,7 @@ class NfcManagerAndroid extends NfcManagerBase {
   // -------------------------------------
   get mifareClassicHandlerAndroid() {
     if (!this._mifareClassicHandlerAndroid) {
-      this._mifareClassicHandlerAndroid = new MifareClassicHandlerAndroid();
+      this._mifareClassicHandlerAndroid = new MifareClassicHandlerAndroid(this);
     }
     return this._mifareClassicHandlerAndroid;
   }

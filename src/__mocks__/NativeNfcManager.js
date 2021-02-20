@@ -1,4 +1,6 @@
-const NativeNfcManager = {};
+const NativeNfcManager = {
+  MIFARE_BLOCK_SIZE: 16,
+};
 
 const NfcManagerEmitterListener = {};
 const NfcManagerEmitter = {

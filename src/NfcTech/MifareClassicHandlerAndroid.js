@@ -1,6 +1,10 @@
 import {callNative} from '../NativeNfcManager';
 
 class MifareClassicHandlerAndroid {
+  constructor(nfcManager) {
+    this.nfcManager = nfcManager;
+  }
+
   async mifareClassicAuthenticateA(sector, key) {
     if (!key || !Array.isArray(key) || key.length !== 6) {
       throw new Error('key should be an Array[6] of integers (0 - 255)');
@@ -41,10 +45,10 @@ class MifareClassicHandlerAndroid {
     if (
       !data ||
       !Array.isArray(data) ||
-      data.length !== this.MIFARE_BLOCK_SIZE
+      data.length !== this.nfcManager.MIFARE_BLOCK_SIZE
     ) {
       throw new Error(
-        `data should be a non-empty Array[${this.MIFARE_BLOCK_SIZE}] of integers (0 - 255)`,
+        `data should be a non-empty Array[${this.nfcManager.MIFARE_BLOCK_SIZE}] of integers (0 - 255)`,
       );
     }
 
