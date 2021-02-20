@@ -41,6 +41,11 @@ If all you want to do is to read `NDEF` data, you can use this example:
 ```javascript
 import NfcManager, {NfcEvents} from 'react-native-nfc-manager';
 
+// Pre-step, call this before any NFC operations
+async function initNfc() {
+  await NfcManager.start();
+}
+
 function readNdef() {
   const cleanUp = () => {
     NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
@@ -89,6 +94,11 @@ For example, here's an example to write NDEF:
 
 ```javascript
 import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
+
+// Pre-step, call this before any NFC operations
+async function initNfc() {
+  await NfcManager.start();
+}
 
 async function writeNdef({type, value}) {
   let result = false;
