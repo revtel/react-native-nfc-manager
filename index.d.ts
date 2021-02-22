@@ -183,7 +183,7 @@ declare module 'react-native-nfc-manager' {
     requestTechnology(
       tech: NfcTech | NfcTech[],
       options?: RegisterTagEventOpts,
-    ): Promise<NfcTech>;
+    ): Promise<NfcTech | null>;
     cancelTechnologyRequest: () => Promise<void>;
     getTag: () => Promise<TagEvent | null>;
 

@@ -153,20 +153,17 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     public void getTag(Callback callback) {
         synchronized(this) {
             if (techRequest != null) {
-                try {
-                    Tag tag = techRequest.getTagHandle();
-                    WritableMap parsed = null;
-                    if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+                Tag tag = techRequest.getTagHandle();
+                WritableMap parsed = tag2React(tag);
+                if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+                    try {
                         Ndef ndef = Ndef.get(tag);
                         parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
-                    } else {
-                        parsed = tag2React(tag);
+                    } catch (Exception ex) {
+                        // bypass
                     }
-                    callback.invoke(null, parsed);
-                } catch (Exception ex) {
-                    Log.d(LOG_TAG, "getTag fail");
-                    callback.invoke("getTag fail");
                 }
+                callback.invoke(null, parsed);
             } else {
                 callback.invoke("no tech request available");
             }
@@ -1140,8 +1137,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     if (result) {
                         techRequest.getPendingCallback().invoke(null, techRequest.getTechType());
                     } else {
-                        techRequest.getPendingCallback().invoke("fail to connect tag");
-                        techRequest = null;
+                        // this indicates that we get a NFC tag, but none of the user required tech is matched
+                        techRequest.getPendingCallback().invoke(null, null);
                     }
                 }
 

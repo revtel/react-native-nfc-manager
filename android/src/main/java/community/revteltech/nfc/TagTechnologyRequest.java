@@ -55,6 +55,8 @@ class TagTechnologyRequest {
             return false;
         }
 
+        mTag = tag;
+
         for (int i = 0; i < mTechTypes.size(); i++) {
             String techType = (String)mTechTypes.get(i);
 
@@ -84,7 +86,6 @@ class TagTechnologyRequest {
                 Log.d(LOG_TAG, "connect to " + techType);
                 mTech.connect();
                 mTechType = techType;
-                mTag = tag;
                 return true;
             } catch (Exception ex) {
                 Log.d(LOG_TAG, "fail to connect tech");
@@ -94,7 +95,6 @@ class TagTechnologyRequest {
         // not connected, restore to default
         mTech = null;
         mTechType = null;
-        mTag = null;
 
         return false;
     }
