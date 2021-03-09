@@ -153,18 +153,4 @@ Please see [here](FAQ.md)
 
 ## Legacy (v1, v2) docs
 
-### v2
-
-- [v2 doc](APIv2.md)
-- [v2-ios+android-read-ndef](example/AppV2.js)
-- [v2-ios+android-write-ndef](example/AppV2Ndef.js)
-- [v2-ios+android-get-uid](example/AppV2Mifare.js)
-- [v2-ios+android-mifare-custom-command](example/AppV2Mifare.js)
-
-### v1
-
-- [v1 doc](APIv1.md)
-- [v1-ios-read-ndef](example/App.js)
-- [v1-android-read-write-ndef](example/App.js)
-- [v1-android-mifare-classic](example/AndroidMifareClassic.js)
-- [v1-android-read-write-ndef-with-ndef-tech](example/AndroidTechTestNdef.js)
+Please see [v2 branch](https://github.com/whitedogg13/react-native-nfc-manager/tree/v2)

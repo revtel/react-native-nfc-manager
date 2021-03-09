@@ -22,8 +22,7 @@
     "index.d.ts",
     "android",
     "ios",
-    "react-native-nfc-manager.podspec",
-    "example"
+    "react-native-nfc-manager.podspec"
   ],
   "license": "Apache-2.0",
   "author": {
