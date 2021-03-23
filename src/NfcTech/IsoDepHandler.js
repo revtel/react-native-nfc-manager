@@ -18,7 +18,7 @@ class IsoDepHandler {
               reject(err);
             } else {
               // TODO: make following data the same format as Android
-              resolve({response, sw1, sw2});
+              resolve([...response, sw1, sw2]);
             }
           },
         );
