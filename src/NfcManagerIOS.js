@@ -16,6 +16,10 @@ class NfcManagerIOS extends NfcManagerBase {
     super();
   }
 
+  isEnabled = async () => {
+    return true;
+  }
+
   requestTechnology = async (tech, options = {}) => {
     try {
       if (typeof tech === 'string') {

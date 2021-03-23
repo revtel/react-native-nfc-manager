@@ -177,6 +177,7 @@ declare module 'react-native-nfc-manager' {
   interface NfcManager {
     start(): Promise<void>;
     isSupported(): Promise<boolean>;
+    isEnabled(): Promise<boolean>;
     registerTagEvent(options?: RegisterTagEventOpts): Promise<void>;
     unregisterTagEvent(): Promise<void>;
     setEventListener(name: NfcEvents, callback: OnNfcEvents | null): void;
@@ -219,7 +220,6 @@ declare module 'react-native-nfc-manager' {
     /**
      * Android only
      */
-    isEnabled(): Promise<boolean>;
     goToNfcSetting(): Promise<any>;
     getLaunchTagEvent(): Promise<TagEvent | null>;
     transceive(bytes: number[]): Promise<number[]>;
