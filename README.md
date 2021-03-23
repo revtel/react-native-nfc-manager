@@ -8,6 +8,8 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
+> We also have a slack channel, you're welcome to chat with us for any issue or idea! [join us here](https://join.slack.com/t/reactnativenf-ewh2625/shared_invite/zt-mxipzsua-Vns0lMlRUTHBJzOL1tLc4Q)
+
 ## Install
 
 ### javascript part
@@ -26,13 +28,20 @@ cd ios && pod install && cd ..
 
 For Android, it should be properly auto-linked, so you don't need to do anything.
 
-## Setup 
+## Setup
 
 Please see [here](setup.md)
 
-## Demo
+## Demo App
 
 Please see this project: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
+
+## Latest Changes
+
+`v2` to `v3` is primarily a refactor, to let long-term maintain easier. During the refactor, there're also several major enhancements:
+
+- Separate each NFC technology into its own handler, and provide `getter` from main `NfcManager` object to access them. This way we can avoid namespace corrupting due to individual tech methods.
+- Provide `compatibility layer` for common NFC tech handler, such as `NfcA` or `IsoDep`, so we don't need to do lots of if/else according to `Platform.OS`.
 
 ## Basic Usage
 
@@ -79,14 +88,15 @@ Anything else, ex: write NDEF, send custom command, please read next section.
 ## Advanced Usage
 
 In high level, there're 3 steps to perform advanced NFC operations:
+
 1. request your specific NFC technology
 2. select the proper NFC technology handler, which is implemented as getter in main `NfcManager` object, including:
-    * ndefHandler
-    * nfcAHandler
-    * isoDepHandler
-    * iso15693HandlerIOS
-    * mifareClassicHandlerAndroid
-    * mifareUltralightHandlerAndroid 
+   - ndefHandler
+   - nfcAHandler
+   - isoDepHandler
+   - iso15693HandlerIOS
+   - mifareClassicHandlerAndroid
+   - mifareUltralightHandlerAndroid
 3. call specific methods on the NFC technology handler
 4. clean up your tech registration
 
@@ -109,11 +119,10 @@ async function writeNdef({type, value}) {
       alertMessage: 'Ready to write some NDEF',
     });
 
-    const bytes = Ndef.encodeMessage([Ndef.textRecord("Hello NFC")]);
+    const bytes = Ndef.encodeMessage([Ndef.textRecord('Hello NFC')]);
 
     if (bytes) {
-      await NfcManager
-        .ndefHandler // Step2
+      await NfcManager.ndefHandler // Step2
         .writeNdefMessage(bytes); // Step3
 
       if (Platform.OS === 'ios') {
@@ -144,20 +153,4 @@ Please see [here](FAQ.md)
 
 ## Legacy (v1, v2) docs
 
-### v2
-
-* [v2 doc](APIv2.md)
-* [v2-ios+android-read-ndef](example/AppV2.js)
-* [v2-ios+android-write-ndef](example/AppV2Ndef.js)
-* [v2-ios+android-get-uid](example/AppV2Mifare.js)
-* [v2-ios+android-mifare-custom-command](example/AppV2Mifare.js)
-
-### v1
-
-* [v1 doc](APIv1.md)
-* [v1-ios-read-ndef](example/App.js)
-* [v1-android-read-write-ndef](example/App.js)
-* [v1-android-mifare-classic](example/AndroidMifareClassic.js)
-* [v1-android-read-write-ndef-with-ndef-tech](example/AndroidTechTestNdef.js)
-
-
+Please see [v2 branch](https://github.com/whitedogg13/react-native-nfc-manager/tree/v2)

@@ -85,11 +85,11 @@ declare module 'react-native-nfc-manager' {
   }
 
   interface NfcAHandler {
-    transceive: (bytes: number[]) => Promise<void>;
+    transceive: (bytes: number[]) => Promise<number[]>;
   }
 
   interface IsoDepHandler {
-    transceive: (bytes: number[]) => Promise<void>;
+    transceive: (bytes: number[]) => Promise<number[]>;
   }
 
   interface MifareClassicHandlerAndroid {

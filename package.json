@@ -1,6 +1,6 @@
 {
   "name": "react-native-nfc-manager",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "A NFC module for react native.",
   "main": "src/index.js",
   "repository": {
@@ -22,8 +22,7 @@
     "index.d.ts",
     "android",
     "ios",
-    "react-native-nfc-manager.podspec",
-    "example"
+    "react-native-nfc-manager.podspec"
   ],
   "license": "Apache-2.0",
   "author": {
@@ -50,6 +49,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-react": "^7.12.10",
     "@react-native-community/eslint-config": "^2.0.0",
+    "@release-it/conventional-changelog": "^2.0.1",
     "eslint": "^7.19.0",
     "jest": "^26.6.3",
     "jest-cli": "^26.6.3",
