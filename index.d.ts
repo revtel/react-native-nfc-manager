@@ -224,6 +224,7 @@ declare module 'react-native-nfc-manager' {
     getLaunchTagEvent(): Promise<TagEvent | null>;
     transceive(bytes: number[]): Promise<number[]>;
     getMaxTransceiveLength(): Promise<number>;
+    setTimeout(timeout: number): Promise<void>;
     mifareClassicHandlerAndroid: MifareClassicHandlerAndroid;
     mifareUltralightHandlerAndroid: MifareUltralightHandlerAndroid;
   }
