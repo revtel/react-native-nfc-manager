@@ -170,6 +170,8 @@ declare module 'react-native-nfc-manager' {
     /** [ANDROID ONLY] */
     getMaxTransceiveLength(): Promise<number>;
     /** [ANDROID ONLY] */
+    setTimeout(timeout: number): Promise<void>;
+    /** [ANDROID ONLY] */
     mifareClassicSectorToBlock: (sector: number) => Promise<ArrayLike<number>>;
     /** [ANDROID ONLY] */
     mifareClassicReadBlock: (
