@@ -2,7 +2,11 @@ import {Platform} from 'react-native';
 import Ndef from '../ndef-lib';
 import {NfcEvents, NfcTech, NdefStatus} from './NfcManager';
 import {NfcAdapter, NfcManagerAndroid} from './NfcManagerAndroid';
-import {Nfc15693RequestFlagIOS, NfcManagerIOS} from './NfcManagerIOS';
+import {
+  Nfc15693RequestFlagIOS,
+  NfcManagerIOS,
+  NfcErrorIOS,
+} from './NfcManagerIOS';
 
 const nfcManager = (() => {
   if (Platform.OS === 'ios') {
@@ -21,4 +25,5 @@ export {
   Nfc15693RequestFlagIOS,
   Ndef,
   NdefStatus,
+  NfcErrorIOS,
 };

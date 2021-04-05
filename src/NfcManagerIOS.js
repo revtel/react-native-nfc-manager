@@ -18,7 +18,7 @@ class NfcManagerIOS extends NfcManagerBase {
 
   isEnabled = async () => {
     return true;
-  }
+  };
 
   requestTechnology = async (tech, options = {}) => {
     try {
@@ -121,4 +121,27 @@ class NfcManagerIOS extends NfcManagerBase {
   }
 }
 
-export {NfcManagerIOS, Nfc15693RequestFlagIOS};
+const NfcErrorIOS = {
+  errCodes: {
+    unknown: -1,
+    userCancel: 200,
+    timeout: 201,
+    unexpected: 202,
+    systemBusy: 203,
+    firstNdefInvalid: 204,
+  },
+  parse: (errorString) => {
+    const [domainError] = errorString.split(',');
+
+    if (domainError) {
+      const [nfcError, nfcErrorCode] = domainError.split(':');
+      if (nfcError === 'NFCError') {
+        return parseInt(nfcErrorCode, 10);
+      }
+    }
+
+    return NfcErrorIOS.errCodes.unknown;
+  },
+};
+
+export {NfcManagerIOS, Nfc15693RequestFlagIOS, NfcErrorIOS};

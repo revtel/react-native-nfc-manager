@@ -7,7 +7,7 @@ describe('NfcManager (ios)', () => {
   Platform.setOS('ios');
   const NfcManagerModule = require('../src/index.js');
   const NfcManager = NfcManagerModule.default;
-  const {NfcEvents} = NfcManagerModule;
+  const {NfcEvents, NfcErrorIOS} = NfcManagerModule;
   const lastNativeCall = () =>
     callNative.mock.calls[callNative.mock.calls.length - 1];
 
@@ -90,5 +90,14 @@ describe('NfcManager (ios)', () => {
     // check if we pass the default options into native
     expect(options.alertMessage).toEqual('Please tap NFC tags');
     expect(options.invalidateAfterFirstRead).toBe(false);
+  });
+
+  test('NfcErrorIOS', () => {
+    expect(NfcErrorIOS.parse('nosucherror')).toEqual(
+      NfcErrorIOS.errCodes.unknown,
+    );
+    expect(NfcErrorIOS.parse('NFCError:200')).toEqual(
+      NfcErrorIOS.errCodes.userCancel,
+    );
   });
 });
