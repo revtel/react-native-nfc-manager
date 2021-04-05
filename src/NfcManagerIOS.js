@@ -131,15 +131,16 @@ const NfcErrorIOS = {
     firstNdefInvalid: 204,
   },
   parse: (errorString) => {
-    const [domainError] = errorString.split(',');
+    if (typeof errorString === 'string') {
+      const [domainError] = errorString.split(',');
 
-    if (domainError) {
-      const [nfcError, nfcErrorCode] = domainError.split(':');
-      if (nfcError === 'NFCError') {
-        return parseInt(nfcErrorCode, 10);
+      if (domainError) {
+        const [nfcError, nfcErrorCode] = domainError.split(':');
+        if (nfcError === 'NFCError') {
+          return parseInt(nfcErrorCode, 10);
+        }
       }
     }
-
     return NfcErrorIOS.errCodes.unknown;
   },
 };

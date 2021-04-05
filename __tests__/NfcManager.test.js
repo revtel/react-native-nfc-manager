@@ -93,6 +93,7 @@ describe('NfcManager (ios)', () => {
   });
 
   test('NfcErrorIOS', () => {
+    expect(NfcErrorIOS.parse({})).toEqual(NfcErrorIOS.errCodes.unknown);
     expect(NfcErrorIOS.parse('nosucherror')).toEqual(
       NfcErrorIOS.errCodes.unknown,
     );
