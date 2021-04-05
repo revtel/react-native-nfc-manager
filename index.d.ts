@@ -346,7 +346,7 @@ declare module 'react-native-nfc-manager' {
     ): NdefRecord;
   };
 
-  export interface NfcErrorIOS {
+  export const NfcErrorIOS: {
     errCodes: {
       unknown: -1;
       userCancel: 200;
