@@ -240,18 +240,6 @@ declare module 'react-native-nfc-manager' {
     authType?: number[];
   }
 
-  export interface NfcErrorIOS {
-    errCodes: {
-      unknown: -1;
-      userCancel: 200;
-      timeout: 201;
-      unexpected: 202;
-      systemBusy: 203;
-      firstNdefInvalid: 204;
-    };
-    parse(errorString: string): number;
-  }
-
   export const Ndef: {
     TNF_EMPTY: 0x0;
     TNF_WELL_KNOWN: 0x01;
@@ -357,6 +345,18 @@ declare module 'react-native-nfc-manager' {
       payload: string | any[],
     ): NdefRecord;
   };
+
+  export interface NfcErrorIOS {
+    errCodes: {
+      unknown: -1;
+      userCancel: 200;
+      timeout: 201;
+      unexpected: 202;
+      systemBusy: 203;
+      firstNdefInvalid: 204;
+    };
+    parse(errorString: string): number;
+  }
 }
 
 export default nfcManager;
