@@ -258,6 +258,14 @@ declare module 'react-native-nfc-manager' {
     RTD_HANDOVER_REQUEST: 'Hr'; // [0x48, 0x72]
     RTD_HANDOVER_SELECT: 'Hs'; // [0x48, 0x73]
 
+    RTD_BYTES_TEXT: [0x54],
+    RTD_BYTES_URI: [0x55],
+    RTD_BYTES_SMART_POSTER: [0x53, 0x70],
+    RTD_BYTES_ALTERNATIVE_CARRIER: [0x61, 0x63],
+    RTD_BYTES_HANDOVER_CARRIER: [0x48, 0x63],
+    RTD_BYTES_HANDOVER_REQUEST: [0x48, 0x72],
+    RTD_BYTES_HANDOVER_SELECT: [0x48, 0x73],
+
     MIME_WFA_WSC: 'application/vnd.wfa.wsc';
 
     RTD_URI_PROTOCOLS: [
