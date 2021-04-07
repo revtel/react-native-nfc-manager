@@ -1,6 +1,10 @@
 import {callNative} from '../NativeNfcManager';
 
 class MifareUltralightHandlerAndroid {
+  constructor(nfcManager) {
+    this.nfcManager = nfcManager;
+  }
+
   async mifareUltralightReadPages(pageOffset) {
     return callNative('mifareUltralightReadPages', [pageOffset]);
   }
@@ -9,10 +13,10 @@ class MifareUltralightHandlerAndroid {
     if (
       !data ||
       !Array.isArray(data) ||
-      data.length !== this.MIFARE_ULTRALIGHT_PAGE_SIZE
+      data.length !== this.nfcManager.MIFARE_ULTRALIGHT_PAGE_SIZE
     ) {
       throw new Error(
-        `data should be a non-empty Array[${this.MIFARE_ULTRALIGHT_PAGE_SIZE}] of integers (0 - 255)`,
+        `data should be a non-empty Array[${this.nfcManager.MIFARE_ULTRALIGHT_PAGE_SIZE}] of integers (0 - 255)`,
       );
     }
 

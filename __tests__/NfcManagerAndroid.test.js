@@ -24,10 +24,30 @@ describe('NfcManager (android)', () => {
       expect(true).toBe(false);
     } catch (ex) {}
 
-    // testcase for https://github.com/whitedogg13/react-native-nfc-manager/issues/371
+    // https://github.com/whitedogg13/react-native-nfc-manager/issues/371
     await NfcManager.mifareClassicHandlerAndroid.mifareClassicWriteBlock(
       5,
       Array.from({length: 16}).map((_, i) => i),
+    );
+  });
+
+  test('mifareUltralightHandler', async () => {
+    expect(!!NfcManager.mifareUltralightHandlerAndroid).toBe(true);
+
+    try {
+      // should throw exception if the data is not an array of length 4
+      await NfcManager.mifareUltralightHandlerAndroid.mifareUltralightWritePage(
+        1,
+        [1],
+      );
+      expect(true).toBe(false);
+    } catch (ex) {}
+
+    // https://github.com/whitedogg13/react-native-nfc-manager/issues/386
+    // https://github.com/whitedogg13/react-native-nfc-manager/issues/387
+    await NfcManager.mifareUltralightHandlerAndroid.mifareUltralightWritePage(
+      5,
+      Array.from({length: 4}).map((_, i) => i),
     );
   });
 });

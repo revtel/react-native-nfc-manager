@@ -84,9 +84,11 @@ class NfcManagerAndroid extends NfcManagerBase {
   // -------------------------------------
   get mifareUltralightHandlerAndroid() {
     if (!this._mifareUltralightHandlerAndroid) {
-      this._mifareUltralightHandlerAndroid = new MifareUltralightHandlerAndroid();
+      this._mifareUltralightHandlerAndroid = new MifareUltralightHandlerAndroid(
+        this,
+      );
     }
-    return this._mifareClassicHandlerAndroid;
+    return this._mifareUltralightHandlerAndroid;
   }
 
   // -------------------------------------
