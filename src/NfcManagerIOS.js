@@ -47,16 +47,28 @@ class NfcManagerIOS extends NfcManagerBase {
     }
   };
 
-  cancelTechnologyRequest = async () => callNative('cancelTechnologyRequest');
+  cancelTechnologyRequest = async (options = {}) => {
+    const {throwOnError = false} = options;
+
+    try {
+      return await callNative('cancelTechnologyRequest');
+    } catch (ex) {
+      if (throwOnError) {
+        throw ex;
+      }
+    }
+  };
 
   // -------------------------------------
   // public only for iOS
   // -------------------------------------
+  setAlertMessage = (alertMessage) => {
+    // override the parent one
+    return callNative('setAlertMessage', [alertMessage]);
+  };
+
   setAlertMessageIOS = (alertMessage) => {
-    if (Platform.OS !== 'ios') {
-      return Promise.resolve(); //no-op
-    }
-    callNative('setAlertMessage', [alertMessage]);
+    return callNative('setAlertMessage', [alertMessage]);
   };
 
   invalidateSessionIOS = () => callNative('invalidateSession');

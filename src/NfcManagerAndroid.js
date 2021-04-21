@@ -39,12 +39,20 @@ class NfcManagerAndroid extends NfcManagerBase {
     }
   };
 
-  cancelTechnologyRequest = async () => {
-    await callNative('cancelTechnologyRequest');
+  cancelTechnologyRequest = async (options = {}) => {
+    const {throwOnError = false} = options;
 
-    if (!this.cleanUpTagRegistration) {
-      await this.unregisterTagEvent();
-      this.cleanUpTagRegistration = false;
+    try {
+      await callNative('cancelTechnologyRequest');
+
+      if (!this.cleanUpTagRegistration) {
+        await this.unregisterTagEvent();
+        this.cleanUpTagRegistration = false;
+      }
+    } catch (ex) {
+      if (throwOnError) {
+        throw ex;
+      }
     }
   };
 

@@ -50,4 +50,10 @@ describe('NfcManager (android)', () => {
       Array.from({length: 4}).map((_, i) => i),
     );
   });
+
+  test('API: setAlertMessage', async () => {
+    // test if the method stub exists and can be called without exception
+    await NfcManager.setAlertMessage();
+    expect(true).toBe(true);
+  });
 });

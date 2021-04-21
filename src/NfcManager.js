@@ -41,6 +41,10 @@ function NotImpl() {
   throw new Error('not implemented');
 }
 
+async function DoNothing() {
+  // allow derived class to not implment it
+}
+
 class NfcManagerBase {
   constructor() {
     this._subscribeNativeEvents();
@@ -83,6 +87,8 @@ class NfcManagerBase {
   requestTechnology = NotImpl;
 
   cancelTechnologyRequest = NotImpl;
+
+  setAlertMessage = DoNothing;
 
   async writeNdefMessage(bytes) {
     return callNative('writeNdefMessage', [bytes]);

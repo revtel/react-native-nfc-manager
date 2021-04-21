@@ -1,7 +1,11 @@
 jest.mock('../src/NativeNfcManager');
 
 import {Platform} from 'react-native';
-import {NfcManagerEmitter, callNative} from '../src/NativeNfcManager';
+import {
+  NativeNfcManager,
+  NfcManagerEmitter,
+  callNative,
+} from '../src/NativeNfcManager';
 
 describe('NfcManager (ios)', () => {
   Platform.setOS('ios');
@@ -90,6 +94,30 @@ describe('NfcManager (ios)', () => {
     // check if we pass the default options into native
     expect(options.alertMessage).toEqual('Please tap NFC tags');
     expect(options.invalidateAfterFirstRead).toBe(false);
+  });
+
+  test('API: cancelTechnologyRequest', async () => {
+    // won't throw any error during cancellation by default
+    NativeNfcManager.setNextError('fake-error');
+    await NfcManager.cancelTechnologyRequest();
+
+    NativeNfcManager.setNextError('fake-error-again');
+    try {
+      // default can be overriden by throwOnError
+      await NfcManager.cancelTechnologyRequest({throwOnError: true});
+    } catch (ex) {
+      expect(ex).toEqual('fake-error-again');
+    }
+  });
+
+  test('API: setAlertMessage', () => {
+    NfcManager.setAlertMessageIOS('hello');
+    expect(lastNativeCall()[0]).toEqual('setAlertMessage');
+    expect(lastNativeCall()[1]).toEqual(['hello']);
+
+    NfcManager.setAlertMessage('hello');
+    expect(lastNativeCall()[0]).toEqual('setAlertMessage');
+    expect(lastNativeCall()[1]).toEqual(['hello']);
   });
 
   test('NfcErrorIOS', () => {

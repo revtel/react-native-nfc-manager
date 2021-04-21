@@ -73,6 +73,10 @@ declare module 'react-native-nfc-manager' {
     readerModeDelay?: number;
   }
 
+  export interface CancelTechReqOpts {
+    throwOnError?: boolean = false;
+  }
+
   interface NdefHandler {
     writeNdefMessage: (bytes: number[]) => Promise<void>;
     getNdefMessage: () => Promise<TagEvent | null>;
@@ -185,8 +189,9 @@ declare module 'react-native-nfc-manager' {
       tech: NfcTech | NfcTech[],
       options?: RegisterTagEventOpts,
     ): Promise<NfcTech | null>;
-    cancelTechnologyRequest: () => Promise<void>;
+    cancelTechnologyRequest: (options?: CancelTechReqOpts) => Promise<void>;
     getTag: () => Promise<TagEvent | null>;
+    setAlertMessage: (alertMessage: string) => Promise<void>;
 
     /**
      * common tech handler getters for both iOS / Android
