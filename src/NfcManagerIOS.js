@@ -10,6 +10,35 @@ import {
   Nfc15693RequestFlagIOS,
   Iso15693HandlerIOS,
 } from './NfcTech/Iso15693HandlerIOS';
+import * as NfcError from './NfcError';
+
+const NfcErrorIOS = {
+  errCodes: {
+    unknown: -1,
+    userCancel: 200,
+    timeout: 201,
+    unexpected: 202,
+    systemBusy: 203,
+    firstNdefInvalid: 204,
+  },
+  parse: (error) => {
+    if (typeof error === 'string') {
+      const [domainError] = error.split(',');
+
+      if (domainError) {
+        const [nfcError, nfcErrorCode] = domainError.split(':');
+        if (nfcError === 'NFCError') {
+          return parseInt(nfcErrorCode, 10);
+        }
+      }
+    } else if (error instanceof NfcError.UserCancel) {
+      // this is for backward capability only
+      console.warn('API Deprecated: please use NfcError.UserCancel instead');
+      return NfcErrorIOS.errCodes.userCancel;
+    }
+    return NfcErrorIOS.errCodes.unknown;
+  },
+};
 
 class NfcManagerIOS extends NfcManagerBase {
   constructor() {
@@ -35,7 +64,7 @@ class NfcManagerIOS extends NfcManagerBase {
         }
       }
 
-      return callNative('requestTechnology', [
+      return await callNative('requestTechnology', [
         techList,
         {
           ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
@@ -43,6 +72,10 @@ class NfcManagerIOS extends NfcManagerBase {
         },
       ]);
     } catch (ex) {
+      if (NfcErrorIOS.parse(ex) === NfcErrorIOS.errCodes.userCancel) {
+        throw new NfcError.UserCancel();
+      }
+
       throw ex;
     }
   };
@@ -132,29 +165,5 @@ class NfcManagerIOS extends NfcManagerBase {
     return this._iso15693HandlerIOS;
   }
 }
-
-const NfcErrorIOS = {
-  errCodes: {
-    unknown: -1,
-    userCancel: 200,
-    timeout: 201,
-    unexpected: 202,
-    systemBusy: 203,
-    firstNdefInvalid: 204,
-  },
-  parse: (errorString) => {
-    if (typeof errorString === 'string') {
-      const [domainError] = errorString.split(',');
-
-      if (domainError) {
-        const [nfcError, nfcErrorCode] = domainError.split(':');
-        if (nfcError === 'NFCError') {
-          return parseInt(nfcErrorCode, 10);
-        }
-      }
-    }
-    return NfcErrorIOS.errCodes.unknown;
-  },
-};
 
 export {NfcManagerIOS, Nfc15693RequestFlagIOS, NfcErrorIOS};

@@ -7,6 +7,7 @@ import {
   NfcManagerIOS,
   NfcErrorIOS,
 } from './NfcManagerIOS';
+import * as NfcError from './NfcError';
 
 const nfcManager = (() => {
   if (Platform.OS === 'ios') {
@@ -25,5 +26,6 @@ export {
   Nfc15693RequestFlagIOS,
   Ndef,
   NdefStatus,
+  NfcError,
   NfcErrorIOS,
 };

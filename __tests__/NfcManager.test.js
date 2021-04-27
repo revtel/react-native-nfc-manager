@@ -6,12 +6,13 @@ import {
   NfcManagerEmitter,
   callNative,
 } from '../src/NativeNfcManager';
+import * as NfcError from '../src/NfcError';
 
 describe('NfcManager (ios)', () => {
   Platform.setOS('ios');
   const NfcManagerModule = require('../src/index.js');
   const NfcManager = NfcManagerModule.default;
-  const {NfcEvents, NfcErrorIOS} = NfcManagerModule;
+  const {NfcEvents, NfcErrorIOS, NfcTech} = NfcManagerModule;
   const lastNativeCall = () =>
     callNative.mock.calls[callNative.mock.calls.length - 1];
 
@@ -128,5 +129,21 @@ describe('NfcManager (ios)', () => {
     expect(NfcErrorIOS.parse('NFCError:200')).toEqual(
       NfcErrorIOS.errCodes.userCancel,
     );
+  });
+
+  test('NfcError', async () => {
+    try {
+      NativeNfcManager.setNextError('NFCError:200');
+      await NfcManager.requestTechnology(NfcTech.Ndef);
+    } catch (ex) {
+      if (!(ex instanceof NfcError.UserCancel)) {
+        expect(true).toBe(false);
+      }
+
+      // for backward capatible
+      if (NfcErrorIOS.parse(ex) !== NfcErrorIOS.errCodes.userCancel) {
+        expect(true).toBe(false);
+      }
+    }
   });
 });

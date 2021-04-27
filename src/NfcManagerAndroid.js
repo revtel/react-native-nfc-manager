@@ -2,6 +2,7 @@ import {callNative} from './NativeNfcManager';
 import {NfcManagerBase} from './NfcManager';
 import {MifareClassicHandlerAndroid} from './NfcTech/MifareClassicHandlerAndroid';
 import {MifareUltralightHandlerAndroid} from './NfcTech/MifareUltralightHandlerAndroid';
+import * as NfcError from './NfcError';
 
 const NfcAdapter = {
   FLAG_READER_NFC_A: 0x1,
@@ -33,8 +34,13 @@ class NfcManagerAndroid extends NfcManagerBase {
         this.cleanUpTagRegistration = true;
       }
 
-      return callNative('requestTechnology', [tech]);
+      return await callNative('requestTechnology', [tech]);
     } catch (ex) {
+      if (typeof ex === 'string' && ex === 'cancelled') {
+        // native will always throw "cancelled" string in this case
+        throw new NfcError.UserCancel();
+      }
+
       throw ex;
     }
   };
