@@ -362,6 +362,10 @@ declare module 'react-native-nfc-manager' {
     };
     parse(errorString: string): number;
   }
+
+  namespace NfcError {
+    export class UserCancel extends Error {}
+  }
 }
 
 export default nfcManager;
