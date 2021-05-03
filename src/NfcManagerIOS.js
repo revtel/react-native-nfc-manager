@@ -10,35 +10,7 @@ import {
   Nfc15693RequestFlagIOS,
   Iso15693HandlerIOS,
 } from './NfcTech/Iso15693HandlerIOS';
-import * as NfcError from './NfcError';
-
-const NfcErrorIOS = {
-  errCodes: {
-    unknown: -1,
-    userCancel: 200,
-    timeout: 201,
-    unexpected: 202,
-    systemBusy: 203,
-    firstNdefInvalid: 204,
-  },
-  parse: (error) => {
-    if (typeof error === 'string') {
-      const [domainError] = error.split(',');
-
-      if (domainError) {
-        const [nfcError, nfcErrorCode] = domainError.split(':');
-        if (nfcError === 'NFCError') {
-          return parseInt(nfcErrorCode, 10);
-        }
-      }
-    } else if (error instanceof NfcError.UserCancel) {
-      // this is for backward capability only
-      console.warn('API Deprecated: please use NfcError.UserCancel instead');
-      return NfcErrorIOS.errCodes.userCancel;
-    }
-    return NfcErrorIOS.errCodes.unknown;
-  },
-};
+import {handleNativeException} from './NfcError';
 
 class NfcManagerIOS extends NfcManagerBase {
   constructor() {
@@ -50,46 +22,35 @@ class NfcManagerIOS extends NfcManagerBase {
   };
 
   requestTechnology = async (tech, options = {}) => {
-    try {
-      if (typeof tech === 'string') {
-        tech = [tech];
-      }
+    if (typeof tech === 'string') {
+      tech = [tech];
+    }
 
-      const techList = [];
-      for (const t of tech) {
-        if (t === NfcTech.NfcA) {
-          techList.push(NfcTech.MifareIOS);
-        } else {
-          techList.push(t);
-        }
+    const techList = [];
+    for (const t of tech) {
+      if (t === NfcTech.NfcA) {
+        techList.push(NfcTech.MifareIOS);
+      } else {
+        techList.push(t);
       }
+    }
 
-      return await callNative('requestTechnology', [
+    return handleNativeException(
+      callNative('requestTechnology', [
         techList,
         {
           ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
           ...options,
         },
-      ]);
-    } catch (ex) {
-      if (NfcErrorIOS.parse(ex) === NfcErrorIOS.errCodes.userCancel) {
-        throw new NfcError.UserCancel();
-      }
-
-      throw ex;
-    }
+      ]),
+    );
   };
 
   cancelTechnologyRequest = async (options = {}) => {
     const {throwOnError = false} = options;
-
-    try {
-      return await callNative('cancelTechnologyRequest');
-    } catch (ex) {
-      if (throwOnError) {
-        throw ex;
-      }
-    }
+    return handleNativeException(
+      callNative('cancelTechnologyRequest', !throwOnError),
+    );
   };
 
   // -------------------------------------
