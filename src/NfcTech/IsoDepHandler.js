@@ -1,5 +1,6 @@
 import {Platform} from 'react-native';
 import {callNative, NativeNfcManager} from '../NativeNfcManager';
+import {handleNativeException} from '../NfcError';
 
 class IsoDepHandler {
   async transceive(bytes) {
@@ -10,22 +11,24 @@ class IsoDepHandler {
     }
 
     if (Platform.OS === 'ios') {
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.sendCommandAPDUBytes(
-          bytes,
-          (err, response, sw1, sw2) => {
-            if (err) {
-              reject(err);
-            } else {
-              // TODO: make following data the same format as Android
-              resolve([...response, sw1, sw2]);
-            }
-          },
-        );
-      });
+      return handleNativeException(
+        new Promise((resolve, reject) => {
+          NativeNfcManager.sendCommandAPDUBytes(
+            bytes,
+            (err, response, sw1, sw2) => {
+              if (err) {
+                reject(err);
+              } else {
+                // TODO: make following data the same format as Android
+                resolve([...response, sw1, sw2]);
+              }
+            },
+          );
+        }),
+      );
     }
 
-    return callNative('transceive', [bytes]);
+    return handleNativeException(callNative('transceive', [bytes]));
   }
 }
 

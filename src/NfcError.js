@@ -135,6 +135,16 @@ function buildNfcExceptionIOS(error) {
   return error;
 }
 
+function buildNfcExceptionAndroid(error) {
+  if (typeof error === 'string') {
+    if (error === 'cancelled') {
+      return new UserCancel();
+    }
+  }
+
+  return error;
+}
+
 export async function handleNativeException(
   callNativePromise,
   ignoreError = false,
@@ -145,6 +155,8 @@ export async function handleNativeException(
     if (!ignoreError) {
       if (Platform.OS === 'ios') {
         throw buildNfcExceptionIOS(err);
+      } else if (Platform.OS === 'android') {
+        throw buildNfcExceptionAndroid(err);
       }
       throw err;
     }

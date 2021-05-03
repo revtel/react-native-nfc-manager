@@ -49,7 +49,7 @@ class NfcManagerIOS extends NfcManagerBase {
   cancelTechnologyRequest = async (options = {}) => {
     const {throwOnError = false} = options;
     return handleNativeException(
-      callNative('cancelTechnologyRequest'), 
+      callNative('cancelTechnologyRequest'),
       !throwOnError,
     );
   };
@@ -57,29 +57,31 @@ class NfcManagerIOS extends NfcManagerBase {
   // -------------------------------------
   // public only for iOS
   // -------------------------------------
-  setAlertMessage = (alertMessage) => {
-    // override the parent one
-    return callNative('setAlertMessage', [alertMessage]);
-  };
+  setAlertMessage = (alertMessage) =>
+    handleNativeException(callNative('setAlertMessage', [alertMessage]));
 
-  setAlertMessageIOS = (alertMessage) => {
-    return callNative('setAlertMessage', [alertMessage]);
-  };
+  setAlertMessageIOS = (alertMessage) =>
+    handleNativeException(callNative('setAlertMessage', [alertMessage]));
 
-  invalidateSessionIOS = () => callNative('invalidateSession');
+  invalidateSessionIOS = () =>
+    handleNativeException(callNative('invalidateSession'));
 
   invalidateSessionWithErrorIOS = (errorMessage = 'Error') =>
-    callNative('invalidateSessionWithError', [errorMessage]);
+    handleNativeException(
+      callNative('invalidateSessionWithError', [errorMessage]),
+    );
 
   // -------------------------------------
   // (iOS) NfcTech.MifareIOS API
   // -------------------------------------
-  sendMifareCommandIOS = (bytes) => callNative('sendMifareCommand', [bytes]);
+  sendMifareCommandIOS = (bytes) =>
+    handleNativeException(callNative('sendMifareCommand', [bytes]));
 
   // -------------------------------------
   // (iOS) NfcTech.FelicaIOS API
   // -------------------------------------
-  sendFelicaCommandIOS = (bytes) => callNative('sendFelicaCommand', [bytes]);
+  sendFelicaCommandIOS = (bytes) =>
+    handleNativeException(callNative('sendFelicaCommand', [bytes]));
 
   // -------------------------------------
   // (iOS) NfcTech.IsoDep API
@@ -91,29 +93,33 @@ class NfcManagerIOS extends NfcManagerBase {
 
     if (Array.isArray(bytesOrApdu)) {
       const bytes = bytesOrApdu;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.sendCommandAPDUBytes(
-          bytes,
-          (err, response, sw1, sw2) => {
+      return handleNativeException(
+        new Promise((resolve, reject) => {
+          NativeNfcManager.sendCommandAPDUBytes(
+            bytes,
+            (err, response, sw1, sw2) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({response, sw1, sw2});
+              }
+            },
+          );
+        }),
+      );
+    } else {
+      const apdu = bytesOrApdu;
+      return handleNativeException(
+        new Promise((resolve, reject) => {
+          NativeNfcManager.sendCommandAPDU(apdu, (err, response, sw1, sw2) => {
             if (err) {
               reject(err);
             } else {
               resolve({response, sw1, sw2});
             }
-          },
-        );
-      });
-    } else {
-      const apdu = bytesOrApdu;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.sendCommandAPDU(apdu, (err, response, sw1, sw2) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({response, sw1, sw2});
-          }
-        });
-      });
+          });
+        }),
+      );
     }
   };
 

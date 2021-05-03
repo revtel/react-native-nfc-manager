@@ -1,4 +1,5 @@
 import {callNative} from '../NativeNfcManager';
+import {handleNativeException} from '../NfcError';
 
 class MifareUltralightHandlerAndroid {
   constructor(nfcManager) {
@@ -6,7 +7,9 @@ class MifareUltralightHandlerAndroid {
   }
 
   async mifareUltralightReadPages(pageOffset) {
-    return callNative('mifareUltralightReadPages', [pageOffset]);
+    return handleNativeException(
+      callNative('mifareUltralightReadPages', [pageOffset]),
+    );
   }
 
   async mifareUltralightWritePage(pageOffset, data) {
@@ -20,7 +23,9 @@ class MifareUltralightHandlerAndroid {
       );
     }
 
-    return callNative('mifareUltralightWritePage', [pageOffset, data]);
+    return handleNativeException(
+      callNative('mifareUltralightWritePage', [pageOffset, data]),
+    );
   }
 }
 

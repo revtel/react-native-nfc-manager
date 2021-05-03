@@ -8,6 +8,7 @@ import {
 import {NdefHandler, NdefStatus} from './NfcTech/NdefHandler';
 import {NfcAHandler} from './NfcTech/NfcAHandler';
 import {IsoDepHandler} from './NfcTech/IsoDepHandler';
+import {handleNativeException} from './NfcError';
 
 const NfcEvents = {
   DiscoverTag: 'NfcManagerDiscoverTag',
@@ -51,11 +52,11 @@ class NfcManagerBase {
   }
 
   async start() {
-    return callNative('start');
+    return handleNativeException(callNative('start'));
   }
 
   async isSupported(tech = '') {
-    return callNative('isSupported', [tech]);
+    return handleNativeException(callNative('isSupported', [tech]));
   }
 
   async registerTagEvent(options = {}) {
@@ -64,15 +65,17 @@ class NfcManagerBase {
       ...options,
     };
 
-    return callNative('registerTagEvent', [optionsWithDefault]);
+    return handleNativeException(
+      callNative('registerTagEvent', [optionsWithDefault]),
+    );
   }
 
   async unregisterTagEvent() {
-    return callNative('unregisterTagEvent');
+    return handleNativeException(callNative('unregisterTagEvent'));
   }
 
   async getTag() {
-    return callNative('getTag');
+    return handleNativeException(callNative('getTag'));
   }
 
   setEventListener(name, callback) {
@@ -91,11 +94,11 @@ class NfcManagerBase {
   setAlertMessage = DoNothing;
 
   async writeNdefMessage(bytes) {
-    return callNative('writeNdefMessage', [bytes]);
+    return handleNativeException(callNative('writeNdefMessage', [bytes]));
   }
 
   async getNdefMessage() {
-    return callNative('getNdefMessage');
+    return handleNativeException(callNative('getNdefMessage'));
   }
 
   get ndefHandler() {
