@@ -49,7 +49,8 @@ class NfcManagerIOS extends NfcManagerBase {
   cancelTechnologyRequest = async (options = {}) => {
     const {throwOnError = false} = options;
     return handleNativeException(
-      callNative('cancelTechnologyRequest', !throwOnError),
+      callNative('cancelTechnologyRequest'), 
+      !throwOnError,
     );
   };
 
@@ -127,4 +128,4 @@ class NfcManagerIOS extends NfcManagerBase {
   }
 }
 
-export {NfcManagerIOS, Nfc15693RequestFlagIOS, NfcErrorIOS};
+export {NfcManagerIOS, Nfc15693RequestFlagIOS};

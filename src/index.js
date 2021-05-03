@@ -5,7 +5,6 @@ import {NfcAdapter, NfcManagerAndroid} from './NfcManagerAndroid';
 import {
   Nfc15693RequestFlagIOS,
   NfcManagerIOS,
-  NfcErrorIOS,
 } from './NfcManagerIOS';
 import * as NfcError from './NfcError';
 
@@ -16,6 +15,9 @@ const nfcManager = (() => {
     return new NfcManagerAndroid();
   }
 })();
+
+// only for backward-capability
+const NfcErrorIOS = NfcError.NfcErrorIOS;
 
 export default nfcManager;
 
