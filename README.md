@@ -8,7 +8,7 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
-> We also have a slack channel, you're welcome to chat with us for any issue or idea! [join us here](https://join.slack.com/t/reactnativenf-ewh2625/shared_invite/zt-odksfoyr-IotE0tXobm4QggTEDC3nCA)
+> We also have a slack channel, you're welcome to chat with us for any issue or idea! [join us here](https://join.slack.com/t/reactnativenf-ewh2625/shared_invite/zt-puz9y22v-3rkORO6_zQe4FmaWm6ku_w)
 
 ## Install
 
