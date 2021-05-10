@@ -77,7 +77,7 @@ export const NfcErrorIOS = {
   },
 };
 
-function buildNfcExceptionIOS(error) {
+export function buildNfcExceptionIOS(error) {
   if (typeof error === 'string') {
     const [domainError] = error.split(',');
 
@@ -135,7 +135,7 @@ function buildNfcExceptionIOS(error) {
   return error;
 }
 
-function buildNfcExceptionAndroid(error) {
+export function buildNfcExceptionAndroid(error) {
   if (typeof error === 'string') {
     if (error === 'cancelled') {
       return new UserCancel();
@@ -158,7 +158,6 @@ export async function handleNativeException(
       } else if (Platform.OS === 'android') {
         throw buildNfcExceptionAndroid(err);
       }
-      throw err;
     }
   }
 }

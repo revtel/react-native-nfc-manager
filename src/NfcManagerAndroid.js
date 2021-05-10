@@ -2,7 +2,7 @@ import {callNative} from './NativeNfcManager';
 import {NfcManagerBase} from './NfcManager';
 import {MifareClassicHandlerAndroid} from './NfcTech/MifareClassicHandlerAndroid';
 import {MifareUltralightHandlerAndroid} from './NfcTech/MifareUltralightHandlerAndroid';
-import {handleNativeException} from './NfcError';
+import {handleNativeException, buildNfcExceptionAndroid} from './NfcError';
 
 const NfcAdapter = {
   FLAG_READER_NFC_A: 0x1,
@@ -36,7 +36,7 @@ class NfcManagerAndroid extends NfcManagerBase {
 
       return await callNative('requestTechnology', [tech]);
     } catch (ex) {
-      handleNativeException(ex);
+      throw buildNfcExceptionAndroid(ex);
     }
   };
 
@@ -52,7 +52,7 @@ class NfcManagerAndroid extends NfcManagerBase {
       }
     } catch (ex) {
       if (throwOnError) {
-        handleNativeException(ex);
+        throw buildNfcExceptionAndroid(ex);
       }
     }
   };
