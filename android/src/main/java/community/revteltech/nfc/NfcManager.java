@@ -53,6 +53,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private Boolean isReaderModeEnabled = false;
     private int readerModeFlags = 0;
     private int readerModeDelay = 0;
+    private static final String ERR_CANCEL = "cancelled";
+    private static final String ERR_NOT_REGISTERED = "you should requestTagEvent first";
+    private static final String ERR_MULTI_REQ = "You can only issue one request at a time";
+    private static final String ERR_NO_TECH_REQ = "no tech request available";
+    private static final String ERR_TRANSCEIVE_FAIL = "transceive fail";
+    private static final String ERR_API_NOT_SUPPORT = "unsupported tag api";
+    private static final String ERR_GET_ACTIVITY_FAIL = "fail to get current activity";
+    private static final String ERR_NO_NFC_SUPPORT = "no nfc support";
 
     class WriteNdefRequest {
         NdefMessage message;
@@ -105,7 +113,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             if (techRequest != null) {
                 techRequest.close();
                 try {
-                    techRequest.getPendingCallback().invoke("cancelled");
+                    techRequest.getPendingCallback().invoke(ERR_CANCEL);
                 } catch (RuntimeException ex) {
                     // the pending callback might already been invoked when there is an ongoing
                     // connected tag, bypass this case explicitly
@@ -123,12 +131,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     public void requestTechnology(ReadableArray techs, Callback callback) {
         synchronized(this) {
             if (!isForegroundEnabled) {
-                callback.invoke("you should requestTagEvent first");
+                callback.invoke(ERR_NOT_REGISTERED);
                 return;
             }
 
             if (hasPendingRequest()) {
-                callback.invoke("You can only issue one request at a time");
+                callback.invoke(ERR_MULTI_REQ);
             } else {
                 techRequest = new TagTechnologyRequest(techs.toArrayList(), callback);
             }
@@ -165,7 +173,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 }
                 callback.invoke(null, parsed);
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -179,11 +187,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     WritableMap parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
-                    Log.d(LOG_TAG, "getCachedNdefMessage fail");
-                    callback.invoke("getCachedNdefMessage fail");
+                    Log.d(LOG_TAG, ex.toString());
+                    callback.invoke(ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -197,11 +205,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     WritableMap parsed = ndef2React(null, new NdefMessage[] { ndef.getNdefMessage() });
                     callback.invoke(null, parsed);
                 } catch (Exception ex) {
-                    Log.d(LOG_TAG, "getNdefMessage fail");
-                    callback.invoke("getNdefMessage fail");
+                    Log.d(LOG_TAG, ex.toString());
+                    callback.invoke(ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -221,11 +229,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     writableMap.putBoolean("canMakeReadOnly", canMakeReadOnly);
                     callback.invoke(null, writableMap);
                 } catch (Exception ex) {
-                    Log.d(LOG_TAG, "getNdefStatus fail");
-                    callback.invoke("getNdefStatus fail");
+                    Log.d(LOG_TAG, ex.toString());
+                    callback.invoke(ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -236,15 +244,19 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             if (techRequest != null) {
                 try {
                     Ndef ndef = (Ndef)techRequest.getTechHandle();
-                    byte[] bytes = rnArrayToBytes(rnArray);
-                    ndef.writeNdefMessage(new NdefMessage(bytes));
-                    callback.invoke();
+                    if (ndef == null) {
+                        callback.invoke(ERR_API_NOT_SUPPORT);
+                    } else {
+                        byte[] bytes = rnArrayToBytes(rnArray);
+                        ndef.writeNdefMessage(new NdefMessage(bytes));
+                        callback.invoke();
+                    }
                 } catch (Exception ex) {
-                    Log.d(LOG_TAG, "writeNdefMessage fail");
-                    callback.invoke("writeNdefMessage fail");
+                    Log.d(LOG_TAG, ex.toString());
+                    callback.invoke(ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -288,7 +300,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 callback.invoke("mifareClassicAuthenticate fail: " + ex.toString());
             }
         } else {
-            callback.invoke("no tech request available");
+            callback.invoke(ERR_NO_TECH_REQ);
         }
     }
 
@@ -328,7 +340,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke("mifareClassicGetBlockCountInSector fail: " + ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -350,7 +362,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke("mifareClassicGetSectorCount fail: " + ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -377,7 +389,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke("mifareClassicSectorToBlock fail: " + ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -410,7 +422,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke("mifareClassicReadBlock fail: " + ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -447,7 +459,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke("mifareClassicReadSector fail: " + ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -484,7 +496,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke("mifareClassicWriteBlock fail: " + ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -505,7 +517,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke("mifareUltralight fail: " + ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -526,7 +538,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke("mifareUltralight fail: " + ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -540,11 +552,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     boolean result = ndef.makeReadOnly();
                     callback.invoke(null, result);
                 } catch (Exception ex) {
-                    Log.d(LOG_TAG, "makeReadOnly fail");
-                    callback.invoke("makeReadOnly fail");
+                    Log.d(LOG_TAG, ex.toString());
+                    callback.invoke(ex.toString());
                 }
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -585,12 +597,13 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     }
                     Log.d(LOG_TAG, "setTimeout not supported");
+                    callback.invoke(ERR_API_NOT_SUPPORT);
                 } catch (Exception ex) {
-                    Log.d(LOG_TAG, "setTimeout fail");
+                    Log.d(LOG_TAG, ex.toString());
+                    callback.invoke(ex.toString());
                 }
-                callback.invoke("setTimeout fail");
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -677,13 +690,13 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     }
                     Log.d(LOG_TAG, "transceive not supported");
+                    callback.invoke(ERR_API_NOT_SUPPORT);
                 } catch (Exception ex) {
-                    Log.d(LOG_TAG, "transceive fail");
+                    Log.d(LOG_TAG, "transceive fail: " + ex.toString());
+                    callback.invoke(ERR_TRANSCEIVE_FAIL);
                 }
-
-                callback.invoke("transceive fail");
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -730,12 +743,13 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                         return;
                     }
                     Log.d(LOG_TAG, "getMaxTransceiveLength not supported");
+                    callback.invoke(ERR_API_NOT_SUPPORT);
                 } catch (Exception ex) {
                     Log.d(LOG_TAG, "getMaxTransceiveLength fail");
+                    callback.invoke(ex.toString());
                 }
-                callback.invoke("getMaxTransceiveLength fail");
             } else {
-                callback.invoke("no tech request available");
+                callback.invoke(ERR_NO_TECH_REQ);
             }
         }
     }
@@ -744,11 +758,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     public void cancelNdefWrite(Callback callback) {
         synchronized(this) {
             if (writeNdefRequest != null) {
-                writeNdefRequest.callback.invoke("cancelled");
+                writeNdefRequest.callback.invoke(ERR_CANCEL);
                 writeNdefRequest = null;
                 callback.invoke();
             } else {
-                callback.invoke("no writing request available");
+                callback.invoke(ERR_NOT_REGISTERED);
             }
         }
     }
@@ -757,12 +771,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     public void requestNdefWrite(ReadableArray rnArray, ReadableMap options, Callback callback) {
         synchronized(this) {
             if (!isForegroundEnabled) {
-                callback.invoke("you should requestTagEvent first");
+                callback.invoke(ERR_NOT_REGISTERED);
                 return;
             }
 
             if (hasPendingRequest()) {
-                callback.invoke("You can only issue one request at a time");
+                callback.invoke(ERR_MULTI_REQ);
             } else {
                 boolean format = options.getBoolean("format");
                 boolean formatReadOnly = options.getBoolean("formatReadOnly");
@@ -787,7 +801,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                             formatReadOnly
                     );
                 } catch (FormatException e) {
-                    callback.invoke("Incorrect ndef format");
+                    callback.invoke(e.toString());
                 }
             }
         }
@@ -812,11 +826,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     nfcAdapter.setNdefPushMessage(msgToPush, currentActivity);
                     callback.invoke();
                 } catch (Exception ex) {
-                    Log.d(LOG_TAG, "sendNdefPushMessage fail, " + ex.getMessage());
-                    callback.invoke("sendNdefPushMessage fail");
+                    Log.d(LOG_TAG, ex.toString());
+                    callback.invoke(ex.toString());
                 }
             } else {
-                callback.invoke("please first cancel existing tech or write request");
+                callback.invoke(ERR_MULTI_REQ);
             }
         }
     }
@@ -830,7 +844,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
             Activity currentActivity = getCurrentActivity();
             if (currentActivity == null) {
-                callback.invoke("fail to get current activity");
+                callback.invoke(ERR_GET_ACTIVITY_FAIL);
                 return;
             }
 
@@ -838,7 +852,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             callback.invoke();
         } else {
             Log.d(LOG_TAG, "not support in this device");
-            callback.invoke("no nfc support");
+            callback.invoke(ERR_NO_NFC_SUPPORT);
         }
     }
 
@@ -847,7 +861,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         Log.d(LOG_TAG, "isSupported");
         Activity currentActivity = getCurrentActivity();
         if (currentActivity == null) {
-            callback.invoke("fail to get current activity");
+            callback.invoke(ERR_GET_ACTIVITY_FAIL);
             return;
         }
 
@@ -885,7 +899,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         Log.d(LOG_TAG, "goToNfcSetting");
         Activity currentActivity = getCurrentActivity();
         if (currentActivity == null) {
-            callback.invoke("fail to get current activity");
+            callback.invoke(ERR_GET_ACTIVITY_FAIL);
             return;
         }
 
@@ -897,7 +911,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     public void getLaunchTagEvent(Callback callback) {
         Activity currentActivity = getCurrentActivity();
         if (currentActivity == null) {
-            callback.invoke("fail to get current activity");
+            callback.invoke(ERR_GET_ACTIVITY_FAIL);
             return;
         }
 
@@ -1222,7 +1236,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 Log.d(LOG_TAG, "ready to writeNdef");
                 NdefFormatable formatable = NdefFormatable.get(tag);
                 if (formatable == null) {
-                    callback.invoke("fail to apply ndef formatable tech");
+                    callback.invoke(ERR_API_NOT_SUPPORT);
                 } else {
                     Log.d(LOG_TAG, "ready to format ndef, seriously");
                     formatable.connect();
@@ -1234,14 +1248,14 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke();
                 }
             } catch (Exception ex) {
-                callback.invoke("writeNdef fail: " + ex.getMessage());
+                callback.invoke(ex.toString());
             }
         } else {
             try {
                 Log.d(LOG_TAG, "ready to writeNdef");
                 Ndef ndef = Ndef.get(tag);
                 if (ndef == null) {
-                    callback.invoke("fail to apply ndef tech");
+                    callback.invoke(ERR_API_NOT_SUPPORT);
                 } else if (!ndef.isWritable()) {
                     callback.invoke("tag is not writeable");
                 } else if (ndef.getMaxSize() < message.toByteArray().length) {
@@ -1253,7 +1267,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     callback.invoke();
                 }
             } catch (Exception ex) {
-                callback.invoke("writeNdef fail: " + ex.getMessage());
+                callback.invoke(ex.toString());
             }
         }
     }
