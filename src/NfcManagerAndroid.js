@@ -2,6 +2,7 @@ import {callNative} from './NativeNfcManager';
 import {NfcManagerBase} from './NfcManager';
 import {MifareClassicHandlerAndroid} from './NfcTech/MifareClassicHandlerAndroid';
 import {MifareUltralightHandlerAndroid} from './NfcTech/MifareUltralightHandlerAndroid';
+import {handleNativeException, buildNfcExceptionAndroid} from './NfcError';
 
 const NfcAdapter = {
   FLAG_READER_NFC_A: 0x1,
@@ -33,9 +34,9 @@ class NfcManagerAndroid extends NfcManagerBase {
         this.cleanUpTagRegistration = true;
       }
 
-      return callNative('requestTechnology', [tech]);
+      return await callNative('requestTechnology', [tech]);
     } catch (ex) {
-      throw ex;
+      throw buildNfcExceptionAndroid(ex);
     }
   };
 
@@ -51,7 +52,7 @@ class NfcManagerAndroid extends NfcManagerBase {
       }
     } catch (ex) {
       if (throwOnError) {
-        throw ex;
+        throw buildNfcExceptionAndroid(ex);
       }
     }
   };
@@ -59,23 +60,28 @@ class NfcManagerAndroid extends NfcManagerBase {
   // -------------------------------------
   // public only for Android
   // -------------------------------------
-  isEnabled = () => callNative('isEnabled');
+  isEnabled = () => handleNativeException(callNative('isEnabled'));
 
-  goToNfcSetting = () => callNative('goToNfcSetting');
+  goToNfcSetting = () => handleNativeException(callNative('goToNfcSetting'));
 
-  getLaunchTagEvent = () => callNative('getLaunchTagEvent');
+  getLaunchTagEvent = () =>
+    handleNativeException(callNative('getLaunchTagEvent'));
 
-  setNdefPushMessage = (bytes) => callNative('setNdefPushMessage', [bytes]);
+  setNdefPushMessage = (bytes) =>
+    handleNativeException(callNative('setNdefPushMessage', [bytes]));
 
-  setTimeout = (timeout) => callNative('setTimeout', [timeout]);
+  setTimeout = (timeout) =>
+    handleNativeException(callNative('setTimeout', [timeout]));
 
-  connect = (techs) => callNative('connect', [techs]);
+  connect = (techs) => handleNativeException(callNative('connect', [techs]));
 
-  close = () => callNative('close');
+  close = () => handleNativeException(callNative('close'));
 
-  transceive = (bytes) => callNative('transceive', [bytes]);
+  transceive = (bytes) =>
+    handleNativeException(callNative('transceive', [bytes]));
 
-  getMaxTransceiveLength = () => callNative('getMaxTransceiveLength');
+  getMaxTransceiveLength = () =>
+    handleNativeException(callNative('getMaxTransceiveLength'));
 
   // -------------------------------------
   // (android) NfcTech.MifareClassic API
@@ -102,7 +108,8 @@ class NfcManagerAndroid extends NfcManagerBase {
   // -------------------------------------
   // Android private
   // -------------------------------------
-  _hasTagEventRegistrationAndroid = () => callNative('hasTagEventRegistration');
+  _hasTagEventRegistrationAndroid = () =>
+    handleNativeException(callNative('hasTagEventRegistration'));
 }
 
 export {NfcAdapter, NfcManagerAndroid};

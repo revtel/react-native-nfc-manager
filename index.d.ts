@@ -362,6 +362,35 @@ declare module 'react-native-nfc-manager' {
     };
     parse(errorString: string): number;
   }
+
+  export namespace NfcError {
+    export class UnsupportedFeature extends Error {}
+    export class SecurityViolation extends Error {}
+    export class InvalidParameter extends Error {}
+    export class InvalidParameterLength extends Error {}
+    export class ParameterOutOfBound extends Error {}
+    export class RadioDisabled extends Error {}
+    // transceive errors
+    export class TagConnectionLost extends Error {}
+    export class RetryExceeded extends Error {}
+    export class TagResponseError extends Error {}
+    export class SessionInvalidated extends Error {}
+    export class TagNotConnected extends Error {}
+    export class PacketTooLong extends Error {}
+    // reader session errors
+    export class UserCancel extends Error {}
+    export class Timeout extends Error {}
+    export class Unexpected extends Error {}
+    export class SystemBusy extends Error {}
+    export class FirstNdefInvalid extends Error {}
+    // tag command configuration errors
+    export class InvalidConfiguration extends Error {}
+    // ndef reader session error
+    export class TagNotWritable extends Error {}
+    export class TagUpdateFailure extends Error {}
+    export class TagSizeTooSmall extends Error {}
+    export class ZeroLengthMessage extends Error {
+  }
 }
 
 export default nfcManager;

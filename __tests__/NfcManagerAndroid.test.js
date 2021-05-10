@@ -1,11 +1,14 @@
 jest.mock('../src/NativeNfcManager');
 
 import {Platform} from 'react-native';
+import {NativeNfcManager} from '../src/NativeNfcManager';
+import * as NfcError from '../src/NfcError';
 
 describe('NfcManager (android)', () => {
   Platform.setOS('android');
   const NfcManagerModule = require('../src/index.js');
   const NfcManager = NfcManagerModule.default;
+  const {NfcTech} = NfcManagerModule;
 
   test('constructor', () => {
     expect(Platform.OS).toBe('android');
@@ -55,5 +58,16 @@ describe('NfcManager (android)', () => {
     // test if the method stub exists and can be called without exception
     await NfcManager.setAlertMessage();
     expect(true).toBe(true);
+  });
+
+  test('NfcError', async () => {
+    try {
+      NativeNfcManager.setNextError('cancelled');
+      await NfcManager.requestTechnology(NfcTech.Ndef);
+    } catch (ex) {
+      if (!(ex instanceof NfcError.UserCancel)) {
+        expect(true).toBe(false);
+      }
+    }
   });
 });

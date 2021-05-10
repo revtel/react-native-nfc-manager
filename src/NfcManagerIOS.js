@@ -10,6 +10,7 @@ import {
   Nfc15693RequestFlagIOS,
   Iso15693HandlerIOS,
 } from './NfcTech/Iso15693HandlerIOS';
+import {handleNativeException} from './NfcError';
 
 class NfcManagerIOS extends NfcManagerBase {
   constructor() {
@@ -21,70 +22,66 @@ class NfcManagerIOS extends NfcManagerBase {
   };
 
   requestTechnology = async (tech, options = {}) => {
-    try {
-      if (typeof tech === 'string') {
-        tech = [tech];
-      }
+    if (typeof tech === 'string') {
+      tech = [tech];
+    }
 
-      const techList = [];
-      for (const t of tech) {
-        if (t === NfcTech.NfcA) {
-          techList.push(NfcTech.MifareIOS);
-        } else {
-          techList.push(t);
-        }
+    const techList = [];
+    for (const t of tech) {
+      if (t === NfcTech.NfcA) {
+        techList.push(NfcTech.MifareIOS);
+      } else {
+        techList.push(t);
       }
+    }
 
-      return callNative('requestTechnology', [
+    return handleNativeException(
+      callNative('requestTechnology', [
         techList,
         {
           ...DEFAULT_REGISTER_TAG_EVENT_OPTIONS,
           ...options,
         },
-      ]);
-    } catch (ex) {
-      throw ex;
-    }
+      ]),
+    );
   };
 
   cancelTechnologyRequest = async (options = {}) => {
     const {throwOnError = false} = options;
-
-    try {
-      return await callNative('cancelTechnologyRequest');
-    } catch (ex) {
-      if (throwOnError) {
-        throw ex;
-      }
-    }
+    return handleNativeException(
+      callNative('cancelTechnologyRequest'),
+      !throwOnError,
+    );
   };
 
   // -------------------------------------
   // public only for iOS
   // -------------------------------------
-  setAlertMessage = (alertMessage) => {
-    // override the parent one
-    return callNative('setAlertMessage', [alertMessage]);
-  };
+  setAlertMessage = (alertMessage) =>
+    handleNativeException(callNative('setAlertMessage', [alertMessage]));
 
-  setAlertMessageIOS = (alertMessage) => {
-    return callNative('setAlertMessage', [alertMessage]);
-  };
+  setAlertMessageIOS = (alertMessage) =>
+    handleNativeException(callNative('setAlertMessage', [alertMessage]));
 
-  invalidateSessionIOS = () => callNative('invalidateSession');
+  invalidateSessionIOS = () =>
+    handleNativeException(callNative('invalidateSession'));
 
   invalidateSessionWithErrorIOS = (errorMessage = 'Error') =>
-    callNative('invalidateSessionWithError', [errorMessage]);
+    handleNativeException(
+      callNative('invalidateSessionWithError', [errorMessage]),
+    );
 
   // -------------------------------------
   // (iOS) NfcTech.MifareIOS API
   // -------------------------------------
-  sendMifareCommandIOS = (bytes) => callNative('sendMifareCommand', [bytes]);
+  sendMifareCommandIOS = (bytes) =>
+    handleNativeException(callNative('sendMifareCommand', [bytes]));
 
   // -------------------------------------
   // (iOS) NfcTech.FelicaIOS API
   // -------------------------------------
-  sendFelicaCommandIOS = (bytes) => callNative('sendFelicaCommand', [bytes]);
+  sendFelicaCommandIOS = (bytes) =>
+    handleNativeException(callNative('sendFelicaCommand', [bytes]));
 
   // -------------------------------------
   // (iOS) NfcTech.IsoDep API
@@ -96,29 +93,33 @@ class NfcManagerIOS extends NfcManagerBase {
 
     if (Array.isArray(bytesOrApdu)) {
       const bytes = bytesOrApdu;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.sendCommandAPDUBytes(
-          bytes,
-          (err, response, sw1, sw2) => {
+      return handleNativeException(
+        new Promise((resolve, reject) => {
+          NativeNfcManager.sendCommandAPDUBytes(
+            bytes,
+            (err, response, sw1, sw2) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({response, sw1, sw2});
+              }
+            },
+          );
+        }),
+      );
+    } else {
+      const apdu = bytesOrApdu;
+      return handleNativeException(
+        new Promise((resolve, reject) => {
+          NativeNfcManager.sendCommandAPDU(apdu, (err, response, sw1, sw2) => {
             if (err) {
               reject(err);
             } else {
               resolve({response, sw1, sw2});
             }
-          },
-        );
-      });
-    } else {
-      const apdu = bytesOrApdu;
-      return new Promise((resolve, reject) => {
-        NativeNfcManager.sendCommandAPDU(apdu, (err, response, sw1, sw2) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({response, sw1, sw2});
-          }
-        });
-      });
+          });
+        }),
+      );
     }
   };
 
@@ -133,28 +134,4 @@ class NfcManagerIOS extends NfcManagerBase {
   }
 }
 
-const NfcErrorIOS = {
-  errCodes: {
-    unknown: -1,
-    userCancel: 200,
-    timeout: 201,
-    unexpected: 202,
-    systemBusy: 203,
-    firstNdefInvalid: 204,
-  },
-  parse: (errorString) => {
-    if (typeof errorString === 'string') {
-      const [domainError] = errorString.split(',');
-
-      if (domainError) {
-        const [nfcError, nfcErrorCode] = domainError.split(':');
-        if (nfcError === 'NFCError') {
-          return parseInt(nfcErrorCode, 10);
-        }
-      }
-    }
-    return NfcErrorIOS.errCodes.unknown;
-  },
-};
-
-export {NfcManagerIOS, Nfc15693RequestFlagIOS, NfcErrorIOS};
+export {NfcManagerIOS, Nfc15693RequestFlagIOS};

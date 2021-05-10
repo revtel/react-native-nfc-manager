@@ -1,5 +1,6 @@
 import {Platform} from 'react-native';
 import {callNative} from '../NativeNfcManager';
+import {handleNativeException} from '../NfcError';
 
 const NdefStatus = {
   NotSupported: 1,
@@ -9,23 +10,23 @@ const NdefStatus = {
 
 class NdefHandler {
   async writeNdefMessage(bytes) {
-    return callNative('writeNdefMessage', [bytes]);
+    return handleNativeException(callNative('writeNdefMessage', [bytes]));
   }
 
   async getNdefMessage() {
-    return callNative('getNdefMessage');
+    return handleNativeException(callNative('getNdefMessage'));
   }
 
   async makeReadOnly() {
-    return callNative('makeReadOnly');
+    return handleNativeException(callNative('makeReadOnly'));
   }
 
   async getNdefStatus() {
     if (Platform.OS === 'ios') {
-      return callNative('queryNDEFStatus');
+      return handleNativeException(callNative('queryNDEFStatus'));
     } else {
       try {
-        const result = await callNative('getNdefStatus');
+        const result = await handleNativeException(callNative('getNdefStatus'));
         return {
           status: result.isWritable
             ? NdefStatus.ReadWrite
@@ -42,7 +43,7 @@ class NdefHandler {
   }
 
   async getCachedNdefMessageAndroid() {
-    return callNative('getCachedNdefMessage');
+    return handleNativeException(callNative('getCachedNdefMessage'));
   }
 }
 

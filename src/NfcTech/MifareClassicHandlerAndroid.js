@@ -1,4 +1,5 @@
 import {callNative} from '../NativeNfcManager';
+import {handleNativeException} from '../NfcError';
 
 class MifareClassicHandlerAndroid {
   constructor(nfcManager) {
@@ -10,7 +11,9 @@ class MifareClassicHandlerAndroid {
       throw new Error('key should be an Array[6] of integers (0 - 255)');
     }
 
-    return callNative('mifareClassicAuthenticateA', [sector, key]);
+    return handleNativeException(
+      callNative('mifareClassicAuthenticateA', [sector, key]),
+    );
   }
 
   async mifareClassicAuthenticateB(sector, key) {
@@ -18,27 +21,35 @@ class MifareClassicHandlerAndroid {
       throw new Error('key should be an Array[6] of integers (0 - 255)');
     }
 
-    return callNative('mifareClassicAuthenticateB', [sector, key]);
+    return handleNativeException(
+      callNative('mifareClassicAuthenticateB', [sector, key]),
+    );
   }
 
   async mifareClassicGetBlockCountInSector(sector) {
-    return callNative('mifareClassicGetBlockCountInSector', [sector]);
+    return handleNativeException(
+      callNative('mifareClassicGetBlockCountInSector', [sector]),
+    );
   }
 
   async mifareClassicGetSectorCount() {
-    return callNative('mifareClassicGetSectorCount');
+    return handleNativeException(callNative('mifareClassicGetSectorCount'));
   }
 
   async mifareClassicSectorToBlock(sector) {
-    return callNative('mifareClassicSectorToBlock', [sector]);
+    return handleNativeException(
+      callNative('mifareClassicSectorToBlock', [sector]),
+    );
   }
 
   async mifareClassicReadBlock(block) {
-    return callNative('mifareClassicReadBlock', [block]);
+    return handleNativeException(callNative('mifareClassicReadBlock', [block]));
   }
 
   async mifareClassicReadSector(sector) {
-    return callNative('mifareClassicReadSector', [sector]);
+    return handleNativeException(
+      callNative('mifareClassicReadSector', [sector]),
+    );
   }
 
   async mifareClassicWriteBlock(block, data) {
@@ -52,7 +63,9 @@ class MifareClassicHandlerAndroid {
       );
     }
 
-    return callNative('mifareClassicWriteBlock', [block, data]);
+    return handleNativeException(
+      callNative('mifareClassicWriteBlock', [block, data]),
+    );
   }
 }
 

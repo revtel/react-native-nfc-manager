@@ -1,12 +1,13 @@
 import {Platform} from 'react-native';
 import {callNative} from '../NativeNfcManager';
+import {handleNativeException} from '../NfcError';
 
 class NfcAHandler {
   async transceive(bytes) {
     if (Platform.OS === 'ios') {
-      return callNative('sendMifareCommand', [bytes]);
+      return handleNativeException(callNative('sendMifareCommand', [bytes]));
     }
-    return callNative('transceive', [bytes]);
+    return handleNativeException(callNative('transceive', [bytes]));
   }
 }
 
