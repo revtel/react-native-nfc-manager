@@ -363,7 +363,7 @@ declare module 'react-native-nfc-manager' {
     parse(errorString: string): number;
   }
 
-  namespace NfcError {
+  export namespace NfcError {
     export class UnsupportedFeature extends Error {}
     export class SecurityViolation extends Error {}
     export class InvalidParameter extends Error {}
