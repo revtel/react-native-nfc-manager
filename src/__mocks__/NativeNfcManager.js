@@ -22,6 +22,7 @@ const NfcManagerEmitter = {
 };
 
 const callNative = jest.fn((...args) => {
+  // eslint-disable-next-line no-unused-vars
   const [methodName, ...rest] = args;
   if (_nextError && (!methodName || methodName === _nextErrorMethod)) {
     const err = _nextError;

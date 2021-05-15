@@ -9,8 +9,8 @@ import {NdefHandler, NdefStatus} from './NfcTech/NdefHandler';
 import {NfcAHandler} from './NfcTech/NfcAHandler';
 import {IsoDepHandler} from './NfcTech/IsoDepHandler';
 import {
-  handleNativeException, 
-  buildNfcExceptionIOS, 
+  handleNativeException,
+  buildNfcExceptionIOS,
   UserCancel,
 } from './NfcError';
 

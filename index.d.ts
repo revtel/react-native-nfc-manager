@@ -374,7 +374,7 @@ declare module 'react-native-nfc-manager' {
     // transceive errors
     export class TagConnectionLost extends NfcErrorBase {}
     export class RetryExceeded extends NfcErrorBase {}
-    export class TagResponseNfcErrorBase extends Error {}
+    export class TagResponseError extends NfcErrorBase {}
     export class SessionInvalidated extends NfcErrorBase {}
     export class TagNotConnected extends NfcErrorBase {}
     export class PacketTooLong extends NfcErrorBase {}
