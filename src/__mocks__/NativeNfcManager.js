@@ -1,10 +1,12 @@
 let _nextError = null;
+let _nextErrorMethod = null;
 
 const NativeNfcManager = {
   MIFARE_BLOCK_SIZE: 16,
   MIFARE_ULTRALIGHT_PAGE_SIZE: 4,
-  setNextError: (err) => {
+  setNextError: (err, nativeMethodName = null) => {
     _nextError = err;
+    _nextErrorMethod = nativeMethodName;
   },
 };
 
@@ -20,9 +22,11 @@ const NfcManagerEmitter = {
 };
 
 const callNative = jest.fn((...args) => {
-  if (_nextError) {
+  const [methodName, ...rest] = args;
+  if (_nextError && (!methodName || methodName === _nextErrorMethod)) {
     const err = _nextError;
     _nextError = null;
+    _nextErrorMethod = null;
     return Promise.reject(err);
   }
 });

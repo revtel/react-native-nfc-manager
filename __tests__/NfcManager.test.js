@@ -84,7 +84,9 @@ describe('NfcManager (ios)', () => {
     NfcManager.setEventListener(NfcEvents.SessionClosed, () => {
       sessionClosed = true;
     });
-    NfcManagerEmitter._testTriggerCallback(NfcEvents.SessionClosed);
+    NfcManagerEmitter._testTriggerCallback(NfcEvents.SessionClosed, {
+      error: 'NFCError:200',
+    });
     expect(sessionClosed).toBe(true);
   });
 
@@ -107,7 +109,7 @@ describe('NfcManager (ios)', () => {
       // default can be overriden by throwOnError
       await NfcManager.cancelTechnologyRequest({throwOnError: true});
     } catch (ex) {
-      expect(ex).toEqual('fake-error-again');
+      expect(ex.message).toEqual('fake-error-again');
     }
   });
 
