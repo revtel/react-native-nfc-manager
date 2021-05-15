@@ -8,7 +8,11 @@ import {
 import {NdefHandler, NdefStatus} from './NfcTech/NdefHandler';
 import {NfcAHandler} from './NfcTech/NfcAHandler';
 import {IsoDepHandler} from './NfcTech/IsoDepHandler';
-import {handleNativeException} from './NfcError';
+import {
+  handleNativeException, 
+  buildNfcExceptionIOS, 
+  UserCancel,
+} from './NfcError';
 
 const NfcEvents = {
   DiscoverTag: 'NfcManagerDiscoverTag',
@@ -145,10 +149,11 @@ class NfcManagerBase {
     }
   };
 
-  _onSessionClosedIOS = () => {
+  _onSessionClosedIOS = (resp) => {
     const callback = this._clientListeners[NfcEvents.SessionClosed];
     if (callback) {
-      callback();
+      const error = buildNfcExceptionIOS(resp.error);
+      callback(error instanceof UserCancel ? null : error);
     }
   };
 

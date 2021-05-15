@@ -1,31 +1,32 @@
 import {Platform} from 'react-native';
 
-export class UnsupportedFeature extends Error {}
-export class SecurityViolation extends Error {}
-export class InvalidParameter extends Error {}
-export class InvalidParameterLength extends Error {}
-export class ParameterOutOfBound extends Error {}
-export class RadioDisabled extends Error {}
+export class NfcErrorBase extends Error {}
+export class UnsupportedFeature extends NfcErrorBase {}
+export class SecurityViolation extends NfcErrorBase {}
+export class InvalidParameter extends NfcErrorBase {}
+export class InvalidParameterLength extends NfcErrorBase {}
+export class ParameterOutOfBound extends NfcErrorBase {}
+export class RadioDisabled extends NfcErrorBase {}
 // transceive errors
-export class TagConnectionLost extends Error {}
-export class RetryExceeded extends Error {}
-export class TagResponseError extends Error {}
-export class SessionInvalidated extends Error {}
-export class TagNotConnected extends Error {}
-export class PacketTooLong extends Error {}
+export class TagConnectionLost extends NfcErrorBase {}
+export class RetryExceeded extends NfcErrorBase {}
+export class TagResponseNfcErrorBase extends Error {}
+export class SessionInvalidated extends NfcErrorBase {}
+export class TagNotConnected extends NfcErrorBase {}
+export class PacketTooLong extends NfcErrorBase {}
 // reader session errors
-export class UserCancel extends Error {}
-export class Timeout extends Error {}
-export class Unexpected extends Error {}
-export class SystemBusy extends Error {}
-export class FirstNdefInvalid extends Error {}
+export class UserCancel extends NfcErrorBase {}
+export class Timeout extends NfcErrorBase {}
+export class Unexpected extends NfcErrorBase {}
+export class SystemBusy extends NfcErrorBase {}
+export class FirstNdefInvalid extends NfcErrorBase {}
 // tag command configuration errors
-export class InvalidConfiguration extends Error {}
+export class InvalidConfiguration extends NfcErrorBase {}
 // ndef reader session error
-export class TagNotWritable extends Error {}
-export class TagUpdateFailure extends Error {}
-export class TagSizeTooSmall extends Error {}
-export class ZeroLengthMessage extends Error {}
+export class TagNotWritable extends NfcErrorBase {}
+export class TagUpdateFailure extends NfcErrorBase {}
+export class TagSizeTooSmall extends NfcErrorBase {}
+export class ZeroLengthMessage extends NfcErrorBase {}
 
 export const NfcErrorIOS = {
   errCodes: {
@@ -78,71 +79,67 @@ export const NfcErrorIOS = {
 };
 
 export function buildNfcExceptionIOS(error) {
-  if (typeof error === 'string') {
-    const [domainError] = error.split(',');
+  const [domainError] = error.split(',');
 
-    if (domainError) {
-      const [nfcError, nfcErrorCode] = domainError.split(':');
-      if (nfcError === 'NFCError') {
-        const code = parseInt(nfcErrorCode, 10);
-        if (code === NfcErrorIOS.errCodes.unsupportedFeature) {
-          return new UnsupportedFeature();
-        } else if (code === NfcErrorIOS.errCodes.securityViolation) {
-          return new SecurityViolation();
-        } else if (code === NfcErrorIOS.errCodes.invalidParameter) {
-          return new InvalidParameter();
-        } else if (code === NfcErrorIOS.errCodes.invalidParameterLength) {
-          return new InvalidParameterLength();
-        } else if (code === NfcErrorIOS.errCodes.parameterOutOfBound) {
-          return new ParameterOutOfBound();
-        } else if (code === NfcErrorIOS.errCodes.tagConnectionLost) {
-          return new TagConnectionLost();
-        } else if (code === NfcErrorIOS.errCodes.retryExceeded) {
-          return new RetryExceeded();
-        } else if (code === NfcErrorIOS.errCodes.tagResponseError) {
-          return new TagResponseError();
-        } else if (code === NfcErrorIOS.errCodes.sessionInvalidated) {
-          return new SessionInvalidated();
-        } else if (code === NfcErrorIOS.errCodes.tagNotConnected) {
-          return new TagNotConnected();
-        } else if (code === NfcErrorIOS.errCodes.packetTooLong) {
-          return new PacketTooLong();
-        } else if (code === NfcErrorIOS.errCodes.userCancel) {
-          return new UserCancel();
-        } else if (code === NfcErrorIOS.errCodes.timeout) {
-          return new Timeout();
-        } else if (code === NfcErrorIOS.errCodes.unexpected) {
-          return new Unexpected();
-        } else if (code === NfcErrorIOS.errCodes.systemBusy) {
-          return new SystemBusy();
-        } else if (code === NfcErrorIOS.errCodes.firstNdefInvalid) {
-          return new FirstNdefInvalid();
-        } else if (code === NfcErrorIOS.errCodes.invalidConfiguration) {
-          return new InvalidConfiguration();
-        } else if (code === NfcErrorIOS.errCodes.tagNotWritable) {
-          return new TagNotWritable();
-        } else if (code === NfcErrorIOS.errCodes.tagUpdateFailure) {
-          return new TagUpdateFailure();
-        } else if (code === NfcErrorIOS.errCodes.tagSizeTooSmall) {
-          return new TagSizeTooSmall();
-        } else if (code === NfcErrorIOS.errCodes.zeroLengthMessage) {
-          return new ZeroLengthMessage();
-        }
+  if (domainError) {
+    const [nfcError, nfcErrorCode] = domainError.split(':');
+    if (nfcError === 'NFCError') {
+      const code = parseInt(nfcErrorCode, 10);
+      if (code === NfcErrorIOS.errCodes.unsupportedFeature) {
+        return new UnsupportedFeature();
+      } else if (code === NfcErrorIOS.errCodes.securityViolation) {
+        return new SecurityViolation();
+      } else if (code === NfcErrorIOS.errCodes.invalidParameter) {
+        return new InvalidParameter();
+      } else if (code === NfcErrorIOS.errCodes.invalidParameterLength) {
+        return new InvalidParameterLength();
+      } else if (code === NfcErrorIOS.errCodes.parameterOutOfBound) {
+        return new ParameterOutOfBound();
+      } else if (code === NfcErrorIOS.errCodes.tagConnectionLost) {
+        return new TagConnectionLost();
+      } else if (code === NfcErrorIOS.errCodes.retryExceeded) {
+        return new RetryExceeded();
+      } else if (code === NfcErrorIOS.errCodes.tagResponseError) {
+        return new TagResponseError();
+      } else if (code === NfcErrorIOS.errCodes.sessionInvalidated) {
+        return new SessionInvalidated();
+      } else if (code === NfcErrorIOS.errCodes.tagNotConnected) {
+        return new TagNotConnected();
+      } else if (code === NfcErrorIOS.errCodes.packetTooLong) {
+        return new PacketTooLong();
+      } else if (code === NfcErrorIOS.errCodes.userCancel) {
+        return new UserCancel();
+      } else if (code === NfcErrorIOS.errCodes.timeout) {
+        return new Timeout();
+      } else if (code === NfcErrorIOS.errCodes.unexpected) {
+        return new Unexpected();
+      } else if (code === NfcErrorIOS.errCodes.systemBusy) {
+        return new SystemBusy();
+      } else if (code === NfcErrorIOS.errCodes.firstNdefInvalid) {
+        return new FirstNdefInvalid();
+      } else if (code === NfcErrorIOS.errCodes.invalidConfiguration) {
+        return new InvalidConfiguration();
+      } else if (code === NfcErrorIOS.errCodes.tagNotWritable) {
+        return new TagNotWritable();
+      } else if (code === NfcErrorIOS.errCodes.tagUpdateFailure) {
+        return new TagUpdateFailure();
+      } else if (code === NfcErrorIOS.errCodes.tagSizeTooSmall) {
+        return new TagSizeTooSmall();
+      } else if (code === NfcErrorIOS.errCodes.zeroLengthMessage) {
+        return new ZeroLengthMessage();
       }
     }
   }
 
-  return error;
+  return new NfcErrorBase(error);
 }
 
 export function buildNfcExceptionAndroid(error) {
-  if (typeof error === 'string') {
-    if (error === 'cancelled') {
-      return new UserCancel();
-    }
+  if (error === 'cancelled') {
+    return new UserCancel();
   }
 
-  return error;
+  return new NfcErrorBase(error);
 }
 
 export async function handleNativeException(
@@ -153,11 +150,17 @@ export async function handleNativeException(
     return await callNativePromise;
   } catch (err) {
     if (!ignoreError) {
-      if (Platform.OS === 'ios') {
-        throw buildNfcExceptionIOS(err);
-      } else if (Platform.OS === 'android') {
-        throw buildNfcExceptionAndroid(err);
+      // the error from the native side will always be a string
+      if (typeof err === 'string') {
+        if (Platform.OS === 'ios') {
+          throw buildNfcExceptionIOS(err);
+        } else if (Platform.OS === 'android') {
+          throw buildNfcExceptionAndroid(err);
+        }
       }
+
+      // unexpected condition, simply throws them out without conversion
+      throw err;
     }
   }
 }
