@@ -195,7 +195,7 @@ RCT_EXPORT_MODULE()
     NSLog(@"readerSession:didInvalidateWithError: (%@)", [error localizedDescription]);
     [self reset];
     [self sendEventWithName:@"NfcManagerSessionClosed"
-                       body:@{}];
+                       body:@{@"error": getErrorMessage(error)}];
 }
 
 - (void)tagReaderSession:(NFCTagReaderSession *)session didDetectTags:(NSArray<__kindof id<NFCTag>> *)tags
@@ -240,7 +240,7 @@ RCT_EXPORT_MODULE()
 
     [self reset];
     [self sendEventWithName:@"NfcManagerSessionClosed"
-                       body:@{}];
+                       body:@{@"error": getErrorMessage(error)}];
 }
 
 - (void)tagReaderSessionDidBecomeActive:(NFCTagReaderSession *)session

@@ -174,7 +174,7 @@ declare module 'react-native-nfc-manager' {
   }
 
   type OnDiscoverTag = (evt: TagEvent) => void;
-  type OnSessionClosed = (evt: {}) => void;
+  type OnSessionClosed = (error?: NfcError.NfcErrorBase) => void;
   type OnStateChanged = (evt: {state: string}) => void;
   type OnNfcEvents = OnDiscoverTag | OnSessionClosed | OnStateChanged;
 
@@ -364,32 +364,33 @@ declare module 'react-native-nfc-manager' {
   }
 
   export namespace NfcError {
-    export class UnsupportedFeature extends Error {}
-    export class SecurityViolation extends Error {}
-    export class InvalidParameter extends Error {}
-    export class InvalidParameterLength extends Error {}
-    export class ParameterOutOfBound extends Error {}
-    export class RadioDisabled extends Error {}
+    export class NfcErrorBase extends Error {}
+    export class UnsupportedFeature extends NfcErrorBase {}
+    export class SecurityViolation extends NfcErrorBase {}
+    export class InvalidParameter extends NfcErrorBase {}
+    export class InvalidParameterLength extends NfcErrorBase {}
+    export class ParameterOutOfBound extends NfcErrorBase {}
+    export class RadioDisabled extends NfcErrorBase {}
     // transceive errors
-    export class TagConnectionLost extends Error {}
-    export class RetryExceeded extends Error {}
-    export class TagResponseError extends Error {}
-    export class SessionInvalidated extends Error {}
-    export class TagNotConnected extends Error {}
-    export class PacketTooLong extends Error {}
+    export class TagConnectionLost extends NfcErrorBase {}
+    export class RetryExceeded extends NfcErrorBase {}
+    export class TagResponseNfcErrorBase extends Error {}
+    export class SessionInvalidated extends NfcErrorBase {}
+    export class TagNotConnected extends NfcErrorBase {}
+    export class PacketTooLong extends NfcErrorBase {}
     // reader session errors
-    export class UserCancel extends Error {}
-    export class Timeout extends Error {}
-    export class Unexpected extends Error {}
-    export class SystemBusy extends Error {}
-    export class FirstNdefInvalid extends Error {}
+    export class UserCancel extends NfcErrorBase {}
+    export class Timeout extends NfcErrorBase {}
+    export class Unexpected extends NfcErrorBase {}
+    export class SystemBusy extends NfcErrorBase {}
+    export class FirstNdefInvalid extends NfcErrorBase {}
     // tag command configuration errors
-    export class InvalidConfiguration extends Error {}
+    export class InvalidConfiguration extends NfcErrorBase {}
     // ndef reader session error
-    export class TagNotWritable extends Error {}
-    export class TagUpdateFailure extends Error {}
-    export class TagSizeTooSmall extends Error {}
-    export class ZeroLengthMessage extends Error {
+    export class TagNotWritable extends NfcErrorBase {}
+    export class TagUpdateFailure extends NfcErrorBase {}
+    export class TagSizeTooSmall extends NfcErrorBase {}
+    export class ZeroLengthMessage extends NfcErrorBase {}
   }
 }
 
