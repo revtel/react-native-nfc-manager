@@ -34,7 +34,14 @@ Please see [here](setup.md)
 
 ## Demo App
 
-Please see this project: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
+We have a full featured NFC utility app available for download.
+
+<a href='https://apps.apple.com/tw/app/nfc-rewriter/id1551243964' target='_blank'>
+<img alt="react-native-nfc-rewriter" src="./images/Apple-App-Store-Icon.png" width="250">
+</a>
+<br/>
+
+It also open sourced in this repo: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
 
 ## Latest Changes
 
