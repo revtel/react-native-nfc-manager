@@ -18,35 +18,44 @@ function withIosPermission(c, props = {}) {
   });
 }
 
-function withIosNFCEntitlement(c) {
+function addValuesToEntitlementsArray(entitlements, key, values) {
+  if (!Array.isArray(values) || !values.length) {
+    return entitlements;
+  }
+  if (!Array.isArray(entitlements[key])) {
+    entitlements[key] = [];
+  }
+  // Add the required values
+  entitlements[key].push(...values);
+
+  // Remove duplicates
+  entitlements[key] = [...new Set(entitlements[key])];
+
+  return entitlements;
+}
+
+function withIosNFCEntitlement(c, {selectIdentifiers}) {
   return withEntitlementsPlist(c, (config) => {
-    if (
-      !Array.isArray(
-        config.modResults['com.apple.developer.nfc.readersession.formats'],
-      )
-    ) {
-      config.modResults['com.apple.developer.nfc.readersession.formats'] = [];
-    }
     // Add the required formats
-    config.modResults['com.apple.developer.nfc.readersession.formats'].push(
-      'NDEF',
-      'TAG',
+    config.modResults = addValuesToEntitlementsArray(
+      config.modResults,
+      'com.apple.developer.nfc.readersession.formats',
+      ['NDEF', 'TAG'],
     );
-
-    // Remove duplicates
-    config.modResults['com.apple.developer.nfc.readersession.formats'] = [
-      ...new Set(
-        config.modResults['com.apple.developer.nfc.readersession.formats'],
-      ),
-    ];
-
+    // Add the user defined identifiers
+    config.modResults = addValuesToEntitlementsArray(
+      config.modResults,
+      // https://developer.apple.com/documentation/bundleresources/information_property_list/select-identifiers
+      'com.apple.developer.nfc.readersession.iso7816.select-identifiers',
+      selectIdentifiers || [],
+    );
     return config;
   });
 }
 
 function withNFC(config, props = {}) {
-  const {nfcPermission} = props;
-  config = withIosNFCEntitlement(config);
+  const {nfcPermission, selectIdentifiers} = props;
+  config = withIosNFCEntitlement(config, {selectIdentifiers});
   if (nfcPermission !== false) {
     config = withIosPermission(config, props);
     config = AndroidConfig.Permissions.withPermissions(config, [
