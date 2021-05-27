@@ -161,3 +161,42 @@ Please see [here](FAQ.md)
 ## Legacy (v1, v2) docs
 
 Please see [v2 branch](https://github.com/whitedogg13/react-native-nfc-manager/tree/v2)
+
+## Expo
+
+> This package cannot be used in the "Expo Go" app because [it requires custom native code](https://docs.expo.io/workflow/customizing/).
+
+After installing this npm package, add the [config plugin](https://docs.expo.io/guides/config-plugins/) to the [`plugins`](https://docs.expo.io/versions/latest/config/app/#plugins) array of your `app.json` or `app.config.js`:
+
+```json
+{
+  "expo": {
+    "plugins": ["react-native-nfc-manager"]
+  }
+}
+```
+
+Next, rebuild your app as described in the ["Adding custom native code"](https://docs.expo.io/workflow/customizing/) guide.
+
+#### Props
+
+The plugin provides props for extra customization. Every time you change the props or plugins, you'll need to rebuild (and `prebuild`) the native app. If no extra properties are added, defaults will be used.
+
+- `nfcPermission` (_string | false_): Sets the iOS `NFCReaderUsageDescription` permission message to the `Info.plist`. Setting `false` will skip adding the permission. Defaults to `Allow $(PRODUCT_NAME) to interact with nearby NFC devices`.
+
+#### Example
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-nfc-manager",
+        {
+          "nfcPermission": "Custom permission message"
+        }
+      ]
+    ]
+  }
+}
+```
