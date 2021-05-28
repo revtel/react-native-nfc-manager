@@ -13,7 +13,15 @@
 
 More info on Apple's [doc](https://developer.apple.com/documentation/bundleresources/information_property_list/nfcreaderusagedescription?language=objc)
 
-3. (optional, if using specific NFC technology) in Xcode, edit entitlement for your need, for example:
+3. in Xcode's `Signing & Capabilities` tab, make sure `Near Field Communication Tag Reading` capability had been added, like this:
+
+![xcode-add-capability](./images/xcode-capability.png "xcode capability")
+
+If thiis is the first time you toggle the capabilities, the Xcode will generate a `<your-project>.entitlement` file for you:
+
+![xcode-add-entitlement](./images/xcode-entitlement.png "xcode entitlement")
+
+4. in Xcode, review the generated entitlement. It should look like this:
 
 ![edit entitlement](./images/edit-entitlement.png "edit entitlement")
 

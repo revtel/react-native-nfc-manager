@@ -43,13 +43,6 @@ We have a full featured NFC utility app available for download.
 
 It also open sourced in this repo: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
 
-## Latest Changes
-
-`v2` to `v3` is primarily a refactor, to let long-term maintain easier. During the refactor, there're also several major enhancements:
-
-- Separate each NFC technology into its own handler, and provide `getter` from main `NfcManager` object to access them. This way we can avoid namespace corrupting due to individual tech methods.
-- Provide `compatibility layer` for common NFC tech handler, such as `NfcA` or `IsoDep`, so we don't need to do lots of if/else according to `Platform.OS`.
-
 ## Basic Usage
 
 If all you want to do is to read `NDEF` data, you can use this example:
@@ -157,10 +150,6 @@ Please see [here](index.d.ts)
 ## FAQ
 
 Please see [here](FAQ.md)
-
-## Legacy (v1, v2) docs
-
-Please see [v2 branch](https://github.com/whitedogg13/react-native-nfc-manager/tree/v2)
 
 ## Expo
 
