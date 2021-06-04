@@ -12,6 +12,7 @@ const util = require('./util');
 const textHelper = require('./ndef-text');
 const uriHelper = require('./ndef-uri');
 const wifiSimpleHelper = require('./ndef-wifi-simple');
+const stringifier = require('./stringifier');
 
 const PrimitiveRecord = {
   emptyRecord() {
@@ -115,6 +116,7 @@ const NDEF = {
 
   // other helpers
   util,
+  stringify: stringifier.stringify,
 };
 
 module.exports = NDEF;
