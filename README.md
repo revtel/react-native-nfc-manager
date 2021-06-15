@@ -32,7 +32,9 @@ For Android, it should be properly auto-linked, so you don't need to do anything
 
 Please see [here](setup.md)
 
-## Demo App
+## Alsl See
+
+### NfcOpenReWriter App
 
 We have a full featured NFC utility app available for download.
 
@@ -42,6 +44,12 @@ We have a full featured NFC utility app available for download.
 <br/>
 
 It also open sourced in this repo: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
+
+### Reconnect.js
+
+Super useful library to help you share states between `sibling` and `nested` React components.
+
+[Check it out!](https://github.com/revtel/reconnect.js)
 
 ## Basic Usage
 
