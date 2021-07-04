@@ -39,6 +39,27 @@ RCT_EXPORT_MODULE()
 @synthesize tagSession;
 @synthesize bridge = _bridge;
 
+NSArray * bgNdefRecords = nil;
+
++ (BOOL)application:(UIApplication *)application
+continueUserActivity:(NSUserActivity *)userActivity
+  restorationHandler:
+    #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= 12000) /* __IPHONE_12_0 */
+        (nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
+    #else
+        (nonnull void (^)(NSArray *_Nullable))restorationHandler {
+    #endif
+  if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+      if (@available(iOS 12.0, *)) {
+          NFCNDEFMessage * ndefMessage = userActivity.ndefMessagePayload;
+          if (ndefMessage != nil) {
+              bgNdefRecords = [NfcManager convertNdefMessage: ndefMessage];
+          }
+      }
+  }
+  return YES;
+}
+    
 - (instancetype)init
 {
     if (self = [super init]) {
@@ -86,7 +107,7 @@ RCT_EXPORT_MODULE()
   return payload;
 }
 
-- (NSArray *)dataToArray:(NSData *)data
++ (NSArray *)dataToArray:(NSData *)data
 {
     const unsigned char *dataBuffer = data ? (const unsigned char *)[data bytes] : NULL;
     
@@ -102,7 +123,7 @@ RCT_EXPORT_MODULE()
     return array;
 }
 
-- (NSDictionary*)convertNdefRecord:(NFCNDEFPayload *) record
++ (NSDictionary*)convertNdefRecord:(NFCNDEFPayload *) record
 {
     return @{
              @"id": [self dataToArray:[record identifier]],
@@ -112,7 +133,7 @@ RCT_EXPORT_MODULE()
              };
 }
 
-- (NSArray*)convertNdefMessage:(NFCNDEFMessage *)message
++ (NSArray*)convertNdefMessage:(NFCNDEFMessage *)message
 {
     NSArray * records = [message records];
     NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity: [records count]];
@@ -143,13 +164,13 @@ RCT_EXPORT_MODULE()
             id<NFCISO7816Tag> iso7816Tag = [tag asNFCISO7816Tag];
             [tagInfo setObject:getHexString(iso7816Tag.identifier) forKey:@"id"];
             [tagInfo setObject:iso7816Tag.initialSelectedAID forKey:@"initialSelectedAID"];
-            [tagInfo setObject:[self dataToArray:iso7816Tag.historicalBytes] forKey:@"historicalBytes"];
-            [tagInfo setObject:[self dataToArray:iso7816Tag.applicationData] forKey:@"applicationData"];
+            [tagInfo setObject:[NfcManager dataToArray:iso7816Tag.historicalBytes] forKey:@"historicalBytes"];
+            [tagInfo setObject:[NfcManager dataToArray:iso7816Tag.applicationData] forKey:@"applicationData"];
         } else if (tag.type == NFCTagTypeISO15693) {
             id<NFCISO15693Tag> iso15693Tag = [tag asNFCISO15693Tag];
             [tagInfo setObject:getHexString(iso15693Tag.identifier) forKey:@"id"];
             [tagInfo setObject:[NSNumber numberWithUnsignedInteger:iso15693Tag.icManufacturerCode] forKey:@"icManufacturerCode"];
-            [tagInfo setObject:[self dataToArray:iso15693Tag.icSerialNumber] forKey:@"icSerialNumber"];
+            [tagInfo setObject:[NfcManager dataToArray:iso15693Tag.icSerialNumber] forKey:@"icSerialNumber"];
         } else if (tag.type == NFCTagTypeFeliCa) {
             id<NFCFeliCaTag> felicaTag = [tag asNFCFeliCaTag];
             [tagInfo setObject:getHexString(felicaTag.currentIDm) forKey:@"idm"];
@@ -183,7 +204,7 @@ RCT_EXPORT_MODULE()
     if ([messages count] > 0) {
         // parse the first message for now
         [self sendEventWithName:@"NfcManagerDiscoverTag"
-                           body:@{@"ndefMessage": [self convertNdefMessage:messages[0]]}];
+                           body:@{@"ndefMessage": [NfcManager convertNdefMessage:messages[0]]}];
     } else {
         [self sendEventWithName:@"NfcManagerDiscoverTag"
                            body:@{@"ndefMessage": @[]}];
@@ -251,6 +272,15 @@ RCT_EXPORT_MODULE()
 + (BOOL)requiresMainQueueSetup
 {
     return YES;
+}
+    
+RCT_EXPORT_METHOD(getBackgroundNdef: (nonnull RCTResponseSenderBlock)callback)
+{
+    if (bgNdefRecords != nil) {
+        callback(@[[NSNull null], bgNdefRecords]);
+    } else {
+        callback(@[[NSNull null], [NSNull null]]);
+    }
 }
 
 RCT_EXPORT_METHOD(isSupported: (NSString *)tech callback:(nonnull RCTResponseSenderBlock)callback)
@@ -395,7 +425,7 @@ RCT_EXPORT_METHOD(getTag: (nonnull RCTResponseSenderBlock)callback)
         if (ndefTag) {
             [ndefTag readNDEFWithCompletionHandler:^(NFCNDEFMessage *ndefMessage, NSError *error) {
                 if (!error) {
-                    [rnTag setObject:[self convertNdefMessage:ndefMessage] forKey:@"ndefMessage"];
+                    [rnTag setObject:[NfcManager convertNdefMessage:ndefMessage] forKey:@"ndefMessage"];
                 }
                 callback(@[[NSNull null], rnTag]);
             }];
@@ -424,7 +454,7 @@ RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
                 if (error) {
                     callback(@[getErrorMessage(error), [NSNull null]]);
                 } else {
-                    callback(@[[NSNull null], @{@"ndefMessage": [self convertNdefMessage:ndefMessage]}]);
+                    callback(@[[NSNull null], @{@"ndefMessage": [NfcManager convertNdefMessage:ndefMessage]}]);
                 }
             }];
             return;
@@ -548,7 +578,7 @@ RCT_EXPORT_METHOD(sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTRespo
                         if (error) {
                             callback(@[getErrorMessage(error), [NSNull null]]);
                         } else {
-                            callback(@[[NSNull null], [self dataToArray:response]]);
+                            callback(@[[NSNull null], [NfcManager dataToArray:response]]);
                         }
                     }];
                     return;
@@ -579,7 +609,7 @@ RCT_EXPORT_METHOD(sendFelicaCommand:(NSArray *)bytes callback: (nonnull RCTRespo
                         if (error) {
                             callback(@[getErrorMessage(error), [NSNull null]]);
                         } else {
-                            callback(@[[NSNull null], [self dataToArray:response]]);
+                            callback(@[[NSNull null], [NfcManager dataToArray:response]]);
                         }
                     }];
                     return;
@@ -609,7 +639,7 @@ RCT_EXPORT_METHOD(sendCommandAPDUBytes:(NSArray *)bytes callback: (nonnull RCTRe
                         if (error) {
                             callback(@[getErrorMessage(error), [NSNull null]]);
                         } else {
-                            callback(@[[NSNull null], [self dataToArray:response], [NSNumber numberWithInt:sw1], [NSNumber numberWithInt:sw2]]);
+                            callback(@[[NSNull null], [NfcManager dataToArray:response], [NSNumber numberWithInt:sw1], [NSNumber numberWithInt:sw2]]);
                         }
                     }];
                     return;
@@ -650,7 +680,7 @@ RCT_EXPORT_METHOD(sendCommandAPDU:(NSDictionary *)apduData callback: (nonnull RC
                         if (error) {
                             callback(@[getErrorMessage(error), [NSNull null]]);
                         } else {
-                            callback(@[[NSNull null], [self dataToArray:response], [NSNumber numberWithInt:sw1], [NSNumber numberWithInt:sw2]]);
+                            callback(@[[NSNull null], [NfcManager dataToArray:response], [NSNumber numberWithInt:sw1], [NSNumber numberWithInt:sw2]]);
                         }
                     }];
                     return;
@@ -766,7 +796,7 @@ RCT_EXPORT_METHOD(iso15693_readSingleBlock:(NSDictionary *)options callback:(non
                 return;
             }
             
-            callback(@[[NSNull null], [self dataToArray:resp]]);
+            callback(@[[NSNull null], [NfcManager dataToArray:resp]]);
         }];
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
@@ -802,7 +832,7 @@ RCT_EXPORT_METHOD(iso15693_readMultipleBlocks:(NSDictionary *)options callback:(
             }
             NSMutableArray *blocks = [NSMutableArray arrayWithCapacity:[dataBlocks count]];
             [dataBlocks enumerateObjectsUsingBlock:^(NSData *blockData, NSUInteger idx, BOOL *stop) {
-                [blocks addObject:[self dataToArray:blockData]];
+                [blocks addObject:[NfcManager dataToArray:blockData]];
             }];
             callback(@[[NSNull null], blocks]);
         }];
@@ -1116,7 +1146,7 @@ RCT_EXPORT_METHOD(iso15693_customCommand:(NSDictionary *)options callback:(nonnu
                 return;
             }
             
-            callback(@[[NSNull null], [self dataToArray:resp]]);
+            callback(@[[NSNull null], [NfcManager dataToArray:resp]]);
         }];
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
@@ -1148,7 +1178,7 @@ RCT_EXPORT_METHOD(iso15693_extendedReadSingleBlock:(NSDictionary *)options callb
                 return;
             }
             
-            callback(@[[NSNull null], [self dataToArray:resp]]);
+            callback(@[[NSNull null], [NfcManager dataToArray:resp]]);
         }];
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);

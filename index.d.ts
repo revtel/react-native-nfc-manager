@@ -203,6 +203,7 @@ declare module 'react-native-nfc-manager' {
     /**
      * iOS only
      */
+    getBackgroundNdef: () => Promise<NdefRecord[] | null>;
     setAlertMessageIOS: (alertMessage: string) => Promise<void>;
     invalidateSessionIOS: () => Promise<void>;
     invalidateSessionWithErrorIOS: (errorMessage: string) => Promise<void>;

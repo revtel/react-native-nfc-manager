@@ -57,6 +57,9 @@ class NfcManagerIOS extends NfcManagerBase {
   // -------------------------------------
   // public only for iOS
   // -------------------------------------
+  getBackgroundNdef = () =>
+    handleNativeException(callNative('getBackgroundNdef'));
+
   setAlertMessage = (alertMessage) =>
     handleNativeException(callNative('setAlertMessage', [alertMessage]));
 
