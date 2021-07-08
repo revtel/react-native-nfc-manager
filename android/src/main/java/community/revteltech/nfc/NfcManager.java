@@ -49,6 +49,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private WriteNdefRequest writeNdefRequest = null;
     private TagTechnologyRequest techRequest = null;
     private Tag tag = null;
+    private WritableMap bgTag = null;
     // Use NFC reader mode instead of listening to a dispatch
     private Boolean isReaderModeEnabled = false;
     private int readerModeFlags = 0;
@@ -849,6 +850,8 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             }
 
             currentActivity.registerReceiver(mReceiver, filter);
+            Intent launchIntent = currentActivity.getIntent();
+            bgTag = parseNfcIntent(launchIntent);
             callback.invoke();
         } else {
             Log.d(LOG_TAG, "not support in this device");
@@ -918,6 +921,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         Intent launchIntent = currentActivity.getIntent();
         WritableMap nfcTag = parseNfcIntent(launchIntent);
         callback.invoke(null, nfcTag);
+    }
+
+    @ReactMethod
+    public void getBackgroundTag(Callback callback) {
+        callback.invoke(null, bgTag);
     }
 
     @ReactMethod
@@ -1120,6 +1128,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         WritableMap nfcTag = parseNfcIntent(intent);
         if (nfcTag != null) {
             sendEvent("NfcManagerDiscoverTag", nfcTag);
+            bgTag = nfcTag;
         }
     }
 

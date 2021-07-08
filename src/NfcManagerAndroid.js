@@ -57,6 +57,9 @@ class NfcManagerAndroid extends NfcManagerBase {
     }
   };
 
+  getBackgroundTag = () =>
+    handleNativeException(callNative('getBackgroundTag'));
+
   // -------------------------------------
   // public only for Android
   // -------------------------------------

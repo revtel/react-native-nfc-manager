@@ -191,6 +191,7 @@ declare module 'react-native-nfc-manager' {
     ): Promise<NfcTech | null>;
     cancelTechnologyRequest: (options?: CancelTechReqOpts) => Promise<void>;
     getTag: () => Promise<TagEvent | null>;
+    getBackgroundTag: () => Promise<TagEvent | null>;
     setAlertMessage: (alertMessage: string) => Promise<void>;
 
     /**

@@ -95,6 +95,8 @@ class NfcManagerBase {
 
   cancelTechnologyRequest = NotImpl;
 
+  getBackgroundTag = NotImpl;
+
   setAlertMessage = DoNothing;
 
   async writeNdefMessage(bytes) {
