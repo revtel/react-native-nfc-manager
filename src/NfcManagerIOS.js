@@ -56,10 +56,11 @@ class NfcManagerIOS extends NfcManagerBase {
 
   getBackgroundTag = async () => {
     // iOS doesn't report the full tag, only the ndefMessage part
-    return {
-      ndefMessage: await handleNativeException(callNative('getBackgroundNdef'))
-    }
+    const ndefMessage = await handleNativeException(callNative('getBackgroundNdef'));
+    return ndefMessage ? { ndefMessage } : null;
   };
+
+  clearBackgroundTag = async () => callNative('clearBackgroundNdef');
 
   // -------------------------------------
   // public only for iOS

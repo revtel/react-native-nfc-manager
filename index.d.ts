@@ -5,6 +5,7 @@
 declare module 'react-native-nfc-manager' {
   export enum NfcEvents {
     DiscoverTag = 'NfcManagerDiscoverTag',
+    DiscoverBackgroundTag = 'NfcManagerDiscoverBackgroundTag',
     SessionClosed = 'NfcManagerSessionClosed',
     StateChanged = 'NfcManagerStateChanged',
   }
@@ -192,6 +193,7 @@ declare module 'react-native-nfc-manager' {
     cancelTechnologyRequest: (options?: CancelTechReqOpts) => Promise<void>;
     getTag: () => Promise<TagEvent | null>;
     getBackgroundTag: () => Promise<TagEvent | null>;
+    clearBackgroundTag: () => Promise<void>;
     setAlertMessage: (alertMessage: string) => Promise<void>;
 
     /**

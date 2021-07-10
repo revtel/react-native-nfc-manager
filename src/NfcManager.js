@@ -16,6 +16,7 @@ import {
 
 const NfcEvents = {
   DiscoverTag: 'NfcManagerDiscoverTag',
+  DiscoverBackgroundTag: 'NfcManagerDiscoverBackgroundTag',
   SessionClosed: 'NfcManagerSessionClosed',
   StateChanged: 'NfcManagerStateChanged',
 };
@@ -97,6 +98,8 @@ class NfcManagerBase {
 
   getBackgroundTag = NotImpl;
 
+  clearBackgroundTag = NotImpl;
+
   setAlertMessage = DoNothing;
 
   async writeNdefMessage(bytes) {
@@ -151,6 +154,13 @@ class NfcManagerBase {
     }
   };
 
+  _onDiscoverBackgroundTag = (tag) => {
+    const callback = this._clientListeners[NfcEvents.DiscoverBackgroundTag];
+    if (callback) {
+      callback(tag);
+    }
+  };
+
   _onSessionClosedIOS = (resp) => {
     const callback = this._clientListeners[NfcEvents.SessionClosed];
     if (callback) {
@@ -172,6 +182,11 @@ class NfcManagerBase {
     this._subscriptions[NfcEvents.DiscoverTag] = NfcManagerEmitter.addListener(
       NfcEvents.DiscoverTag,
       this._onDiscoverTag,
+    );
+
+    this._subscriptions[NfcEvents.DiscoverBackgroundTag] = NfcManagerEmitter.addListener(
+      NfcEvents.DiscoverBackgroundTag,
+      this._onDiscoverBackgroundTag,
     );
 
     if (Platform.OS === 'ios') {
