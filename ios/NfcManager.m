@@ -39,31 +39,45 @@ RCT_EXPORT_MODULE()
 @synthesize tagSession;
 @synthesize bridge = _bridge;
 
+static NSString *const kBgNfcTagNotification = @"RNBgNfcTagNotification";
 NSArray * bgNdefRecords = nil;
 
 + (BOOL)application:(UIApplication *)application
 continueUserActivity:(NSUserActivity *)userActivity
-  restorationHandler:
-    #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= 12000) /* __IPHONE_12_0 */
-        (nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
-    #else
-        (nonnull void (^)(NSArray *_Nullable))restorationHandler {
-    #endif
-  if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
-      if (@available(iOS 12.0, *)) {
-          NFCNDEFMessage * ndefMessage = userActivity.ndefMessagePayload;
-          if (ndefMessage != nil) {
-              bgNdefRecords = [NfcManager convertNdefMessage: ndefMessage];
-          }
-      }
-  }
-  return YES;
+ restorationHandler:
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= 12000) /* __IPHONE_12_0 */
+(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
+#else
+    (nonnull void (^)(NSArray *_Nullable))restorationHandler {
+#endif
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        if (@available(iOS 12.0, *)) {
+            NFCNDEFMessage * ndefMessage = userActivity.ndefMessagePayload;
+            if (ndefMessage != nil) {
+                bgNdefRecords = [NfcManager convertNdefMessage: ndefMessage];
+                [[NSNotificationCenter defaultCenter] postNotificationName:kBgNfcTagNotification
+                                                                    object:self
+                                                                  userInfo:nil];
+            }
+        }
+    }
+    return YES;
+}
+    
+- (void)handleBgNfcTagNotification:(NSNotification *)notification
+{
+    [self sendEventWithName:@"NfcManagerDiscoverBackgroundTag"
+                       body:@{@"ndefMessage": bgNdefRecords}];
 }
     
 - (instancetype)init
 {
     if (self = [super init]) {
         NSLog(@"NfcManager created");
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleBgNfcTagNotification:)
+                                                     name:kBgNfcTagNotification
+                                                   object:nil];
     }
     
     if (@available(iOS 13.0, *)) {
@@ -93,6 +107,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 {
     return @[
              @"NfcManagerDiscoverTag",
+             @"NfcManagerDiscoverBackgroundTag",
              @"NfcManagerSessionClosed"
              ];
 }
@@ -281,6 +296,12 @@ RCT_EXPORT_METHOD(getBackgroundNdef: (nonnull RCTResponseSenderBlock)callback)
     } else {
         callback(@[[NSNull null], [NSNull null]]);
     }
+}
+
+RCT_EXPORT_METHOD(clearBackgroundNdef: (nonnull RCTResponseSenderBlock)callback)
+{
+    bgNdefRecords = nil;
+    callback(@[[NSNull null]]);
 }
 
 RCT_EXPORT_METHOD(isSupported: (NSString *)tech callback:(nonnull RCTResponseSenderBlock)callback)

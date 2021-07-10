@@ -851,6 +851,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
             currentActivity.registerReceiver(mReceiver, filter);
             Intent launchIntent = currentActivity.getIntent();
+            // we consider the launching intent to be background
             bgTag = parseNfcIntent(launchIntent);
             callback.invoke();
         } else {
@@ -926,6 +927,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     @ReactMethod
     public void getBackgroundTag(Callback callback) {
         callback.invoke(null, bgTag);
+    }
+
+    @ReactMethod
+    public void clearBackgroundTag(Callback callback) {
+        bgTag = null;
+        callback.invoke();
     }
 
     @ReactMethod
@@ -1127,8 +1134,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         Log.d(LOG_TAG, "onNewIntent " + intent);
         WritableMap nfcTag = parseNfcIntent(intent);
         if (nfcTag != null) {
-            sendEvent("NfcManagerDiscoverTag", nfcTag);
-            bgTag = nfcTag;
+            if (isForegroundEnabled) {
+                sendEvent("NfcManagerDiscoverTag", nfcTag);
+            } else {
+                sendEvent("NfcManagerDiscoverBackgroundTag", nfcTag);
+                bgTag = nfcTag;
+            }
         }
     }
 
