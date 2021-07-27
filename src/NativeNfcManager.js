@@ -8,7 +8,7 @@ function callNative(name, params = []) {
   const nativeMethod = NativeNfcManager[name];
 
   if (!nativeMethod) {
-    throw new Error(`no sucm native method: "${name}"`);
+    throw new Error(`no such native method: "${name}"`);
   }
 
   if (!Array.isArray(params)) {
