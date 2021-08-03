@@ -4,7 +4,7 @@ const {
   withEntitlementsPlist,
 } = require('@expo/config-plugins');
 
-const NFC_READER = 'Allow $(PRODUCT_NAME) to interact with nearby NFC devices';
+const NFC_READER = 'Interact with nearby NFC devices';
 
 function withIosPermission(c, props = {}) {
   const {nfcPermission} = props;
@@ -18,44 +18,73 @@ function withIosPermission(c, props = {}) {
   });
 }
 
-function addValuesToEntitlementsArray(entitlements, key, values) {
+function addValuesToArray(obj, key, values) {
   if (!Array.isArray(values) || !values.length) {
-    return entitlements;
+    return obj;
   }
-  if (!Array.isArray(entitlements[key])) {
-    entitlements[key] = [];
+  if (!Array.isArray(obj[key])) {
+    obj[key] = [];
   }
   // Add the required values
-  entitlements[key].push(...values);
+  obj[key].push(...values);
 
   // Remove duplicates
-  entitlements[key] = [...new Set(entitlements[key])];
+  obj[key] = [...new Set(obj[key])];
 
-  return entitlements;
+  // Prevent adding empty arrays to Info.plist or *.entitlements
+  if (!obj[key].length) {
+    delete obj[key];
+  }
+
+  return obj;
 }
 
-function withIosNFCEntitlement(c, {selectIdentifiers}) {
+function withIosNfcEntitlement(c) {
   return withEntitlementsPlist(c, (config) => {
     // Add the required formats
-    config.modResults = addValuesToEntitlementsArray(
+    config.modResults = addValuesToArray(
       config.modResults,
       'com.apple.developer.nfc.readersession.formats',
       ['NDEF', 'TAG'],
     );
+
+    return config;
+  });
+}
+
+function withIosNfcSelectIdentifiers(c, {selectIdentifiers}) {
+  return withInfoPlist(c, (config) => {
     // Add the user defined identifiers
-    config.modResults = addValuesToEntitlementsArray(
+    config.modResults = addValuesToArray(
       config.modResults,
       // https://developer.apple.com/documentation/bundleresources/information_property_list/select-identifiers
       'com.apple.developer.nfc.readersession.iso7816.select-identifiers',
       selectIdentifiers || [],
     );
+
     return config;
   });
 }
 
-function withNFC(config, props = {}) {
-  const {nfcPermission, selectIdentifiers} = props;
-  config = withIosNFCEntitlement(config, {selectIdentifiers});
+function withIosNfcSystemCodes(c, {systemCodes}) {
+  return withInfoPlist(c, (config) => {
+    // Add the user defined identifiers
+    config.modResults = addValuesToArray(
+      config.modResults,
+      // https://developer.apple.com/documentation/bundleresources/information_property_list/systemcodes
+      'com.apple.developer.nfc.readersession.felica.systemcodes',
+      systemCodes || [],
+    );
+
+    return config;
+  });
+}
+
+function withNfc(config, props = {}) {
+  const {nfcPermission, selectIdentifiers, systemCodes} = props;
+  config = withIosNfcEntitlement(config);
+  config = withIosNfcSelectIdentifiers(config, {selectIdentifiers});
+  config = withIosNfcSystemCodes(config, {systemCodes});
   if (nfcPermission !== false) {
     config = withIosPermission(config, props);
     config = AndroidConfig.Permissions.withPermissions(config, [
@@ -65,4 +94,4 @@ function withNFC(config, props = {}) {
   return config;
 }
 
-module.exports = withNFC;
+module.exports = withNfc;
