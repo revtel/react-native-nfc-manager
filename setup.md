@@ -17,7 +17,7 @@ More info on Apple's [doc](https://developer.apple.com/documentation/bundleresou
 
 ![xcode-add-capability](./images/xcode-capability.png "xcode capability")
 
-If thiis is the first time you toggle the capabilities, the Xcode will generate a `<your-project>.entitlement` file for you:
+If this is the first time you toggle the capabilities, the Xcode will generate a `<your-project>.entitlement` file for you:
 
 ![xcode-add-entitlement](./images/xcode-entitlement.png "xcode entitlement")
 
