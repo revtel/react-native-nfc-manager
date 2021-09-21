@@ -51,6 +51,7 @@
     "@babel/preset-react": "^7.12.10",
     "@react-native-community/eslint-config": "^2.0.0",
     "@release-it/conventional-changelog": "^2.0.1",
+    "dotenv-cli": "^4.0.0",
     "eslint": "^7.19.0",
     "jest": "^26.6.3",
     "jest-cli": "^26.6.3",
@@ -67,6 +68,6 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "test": "jest -i",
-    "release": "release-it"
+    "release": "dotenv release-it --"
   }
 }

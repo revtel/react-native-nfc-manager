@@ -38,3 +38,6 @@ yarn-error.log
 # Vim 
 .ctags
 tags
+
+# dotenv
+.env
