@@ -58,6 +58,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private static final String ERR_NOT_REGISTERED = "you should requestTagEvent first";
     private static final String ERR_MULTI_REQ = "You can only issue one request at a time";
     private static final String ERR_NO_TECH_REQ = "no tech request available";
+    private static final String ERR_NO_REFERENCE = "no reference available";
     private static final String ERR_TRANSCEIVE_FAIL = "transceive fail";
     private static final String ERR_API_NOT_SUPPORT = "unsupported tag api";
     private static final String ERR_GET_ACTIVITY_FAIL = "fail to get current activity";
@@ -160,19 +161,22 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void getTag(Callback callback) {
-        synchronized(this) {
+        synchronized (this) {
             if (techRequest != null) {
                 Tag tag = techRequest.getTagHandle();
-                WritableMap parsed = tag2React(tag);
-                if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
-                    try {
-                        Ndef ndef = Ndef.get(tag);
-                        parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
-                    } catch (Exception ex) {
-                        // bypass
+                if (tag != null) {
+                    WritableMap parsed = tag2React(tag);
+                    if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+                        try {
+                            Ndef ndef = Ndef.get(tag);
+                            parsed = ndef2React(ndef, new NdefMessage[]{ndef.getCachedNdefMessage()});
+                        } catch (Exception ex) {
+                        }
                     }
+                    callback.invoke(null, parsed);
+                } else {
+                    callback.invoke(ERR_NO_REFERENCE);
                 }
-                callback.invoke(null, parsed);
             } else {
                 callback.invoke(ERR_NO_TECH_REQ);
             }
