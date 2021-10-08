@@ -1139,6 +1139,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         WritableMap nfcTag = parseNfcIntent(intent);
         if (nfcTag != null) {
             if (isForegroundEnabled) {
+                Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+                Intent intentNew=new Intent("TagFound");
+                intentNew.putExtra("tag",tagFromIntent);
+                context.sendBroadcast(intentNew);
                 sendEvent("NfcManagerDiscoverTag", nfcTag);
             } else {
                 sendEvent("NfcManagerDiscoverBackgroundTag", nfcTag);
