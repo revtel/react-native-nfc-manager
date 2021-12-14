@@ -32,6 +32,27 @@ For Android, it should be properly auto-linked, so you don't need to do anything
 
 Please see [here](setup.md)
 
+### Android 12
+
+To support Android 12, you will need to update `compileSdkVersion` in your `android/build.gradle` like this:
+
+```
+buildscript {
+    ext {
+        ...
+        compileSdkVersion = 31
+        ...
+    }
+    ...
+}
+```
+
+The reason for this is because Android puts new limitation on [PendingIntent](https://developer.android.com/reference/android/app/PendingIntent#FLAG_MUTABLE):
+
+> Starting with Build.VERSION_CODES.S, it will be required to explicitly specify the mutability of PendingIntents
+
+The original issue is [here](https://github.com/revtel/react-native-nfc-manager/issues/469)
+
 ## Also See
 
 ### [Demo App] NfcOpenReWriter
