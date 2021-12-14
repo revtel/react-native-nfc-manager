@@ -14,7 +14,7 @@ buildscript {
 apply plugin: 'com.android.library'
 
 android {
-	compileSdkVersion safeExtGet('compileSdkVersion', 27)
+	compileSdkVersion safeExtGet('compileSdkVersion', 31)
 	defaultConfig {
 		minSdkVersion safeExtGet('minSdkVersion', 16)
     	//noinspection OldTargetApi
