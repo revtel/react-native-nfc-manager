@@ -30,7 +30,7 @@ For Android, it should be properly auto-linked, so you don't need to do anything
 
 ## Setup
 
-Please see [here](setup.md)
+⚠ Please see [here](setup.md) ⚠
 
 ### Android 12
 
@@ -76,39 +76,79 @@ It also open sourced in this repo: [React Native NFC ReWriter App](https://githu
 If all you want to do is to read `NDEF` data, you can use this example:
 
 ```javascript
-import NfcManager, {NfcEvents} from 'react-native-nfc-manager';
+import React, {useEffect, useMemo, useState} from 'react';
+import nfcManager, {
+  NfcError,
+  NfcEvents,
+  TagEvent,
+} from 'react-native-nfc-manager';
 
-// Pre-step, call this before any NFC operations
-async function initNfc() {
-  await NfcManager.start();
+interface INDEFContext {
+  latestTag?: TagEvent;
+  scanStatus: string;
 }
 
-function readNdef() {
-  const cleanUp = () => {
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
-    NfcManager.setEventListener(NfcEvents.SessionClosed, null);
-  };
+export const NDEFContext = React.createContext({} as INDEFContext);
 
-  return new Promise((resolve) => {
-    let tagFound = null;
+export const NDEFProvider: React.FC = props => {
+  const [latestTag, setLatestTag] = useState<TagEvent>();
+  const [scanStatus, setScanStatus] = useState('idle');
 
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, (tag) => {
-      tagFound = tag;
-      resolve(tagFound);
-      NfcManager.setAlertMessageIOS('NDEF tag found');
-      NfcManager.unregisterTagEvent().catch(() => 0);
-    });
+  useEffect(() => {
+    nfcManager.setEventListener(NfcEvents.DiscoverTag, tagDiscovered);
+    nfcManager.setEventListener(
+      NfcEvents.DiscoverBackgroundTag,
+      backgroundTagDiscovered,
+    );
+    nfcManager.setEventListener(NfcEvents.StateChanged, stateChanged);
+    nfcManager.setEventListener(NfcEvents.SessionClosed, sessionClosed);
+    return () => {
+      nfcManager.setEventListener(NfcEvents.DiscoverTag, null);
+      nfcManager.setEventListener(NfcEvents.DiscoverBackgroundTag, null);
+      nfcManager.setEventListener(NfcEvents.StateChanged, stateChanged);
+      nfcManager.setEventListener(NfcEvents.SessionClosed, null);
+    };
+  }, [nfcManager]);
 
-    NfcManager.setEventListener(NfcEvents.SessionClosed, () => {
-      cleanUp();
-      if (!tagFound) {
-        resolve();
+  // await this promise to only perform operations once NFC has initialized, but NFC
+  // field will be active in the background. Scans will happen
+  const nfcStartup = useMemo(() => {
+    return nfcManager.isSupported().then(isSupported => {
+      if (isSupported) {
+        return nfcManager.start();
+      } else {
+        throw new Error('NFC is not supported on this device');
       }
     });
+  }, [nfcManager]);
 
-    NfcManager.registerTagEvent();
-  });
-}
+  const tagDiscovered = (tag: TagEvent) => {
+    console.log('tag discovered', tag);
+    setLatestTag(tag);
+  };
+
+  const backgroundTagDiscovered = (tag: TagEvent) => {
+    console.log('background tag discovered', tag);
+    setLatestTag(tag);
+  };
+
+  const stateChanged = (evt: {state: string}) => {
+    console.log('state change', evt.state);
+    setScanStatus(evt.state);
+  };
+
+  const sessionClosed = (error?: NfcError.NfcErrorBase) => {
+    if (error) {
+      console.error('NFC session closed with error', error);
+    }
+  };
+
+  const value = {latestTag, scanStatus};
+
+  return (
+    <NDEFContext.Provider value={value}>{props.children}</NDEFContext.Provider>
+  );
+};
 ```
 
 Anything else, ex: write NDEF, send custom command, please read next section.
