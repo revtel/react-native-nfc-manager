@@ -32,9 +32,9 @@ For Android, it should be properly auto-linked, so you don't need to do anything
 
 Please see [here](setup.md)
 
-### Android 12
+### **Android 12**
 
-To support Android 12, you will need to update `compileSdkVersion` in your `android/build.gradle` like this:
+We start to support Android 12 from `v3.11.1`, and you will need to update `compileSdkVersion` to `31`, otherwise the build will fail:
 
 ```
 buildscript {
@@ -47,17 +47,15 @@ buildscript {
 }
 ```
 
-The reason for this is because Android puts new limitation on [PendingIntent](https://developer.android.com/reference/android/app/PendingIntent#FLAG_MUTABLE):
+The reason for this is because Android puts new limitation on [PendingIntent](https://developer.android.com/reference/android/app/PendingIntent#FLAG_MUTABLE) which says `Starting with Build.VERSION_CODES.S, it will be required to explicitly specify the mutability of PendingIntents`
 
-> Starting with Build.VERSION_CODES.S, it will be required to explicitly specify the mutability of PendingIntents
+> The original issue is [here](https://github.com/revtel/react-native-nfc-manager/issues/469)
 
-The original issue is [here](https://github.com/revtel/react-native-nfc-manager/issues/469)
+BTW, if you don't care about **Android 12** for now, you can use **`v3.11.0`** as a short term solution.
 
-## Also See
+### **[Demo App] NfcOpenReWriter**
 
-### [Demo App] NfcOpenReWriter
-
-We have a full featured NFC utility app available for download.
+We have a full featured NFC utility app using this library available for download.
 
 <a href='https://apps.apple.com/tw/app/nfc-rewriter/id1551243964' target='_blank'>
 <img alt="react-native-nfc-rewriter" src="./images/Apple-App-Store-Icon.png" width="250">
@@ -71,32 +69,84 @@ We have a full featured NFC utility app available for download.
 
 It also open sourced in this repo: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
 
-## Basic Usage
+## Usage 
 
-If all you want to do is to read `NDEF` data, you can use this example:
+The simplest (and most common) use case for this library is to read `NFC` tags containing `NDEF`, which can be achieved via the following codes:
 
 ```javascript
-import NfcManager, {NfcEvents} from 'react-native-nfc-manager';
+import React from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 
 // Pre-step, call this before any NFC operations
-async function initNfc() {
-  await NfcManager.start();
+NfcManager.start();
+
+function App() {
+  async function readNdef() {
+    try {
+      // register for the NFC tag with NDEF in it
+      await NfcManager.requestTechnology(NfcTech.Ndef);
+      // the resolved tag object will contain `ndefMessage` property
+      const tag = await NfcManager.getTag();
+      console.warn('Tag found', tag);
+    } catch (ex) {
+      console.warn('Oops!', ex);
+    } finally {
+      // stop the nfc scanning
+      NfcManager.cancelTechnologyRequest();
+    }
+  }
+
+  return (
+    <View style={styles.wrapper}>
+      <TouchableOpacity onPress={readNdef}>
+        <Text>Scan a Tag</Text>
+      </TouchableOpacity>
+    </View>
+  );
 }
 
-function readNdef() {
+const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+export default App;
+```
+
+Pleaes notice when running above codes, iOS and Android has different behaviors:
+- iOS will pop up a system scanning UI
+- Android provides **NO** system scanning UI
+
+Regarding the system scannning UI, both platforms should be able to scan your NFC tags succesfully and print out its content.
+
+### Old Style (registerTagEvent) To Scan NFC Tags
+
+There's an alterntaive style to scan NFC tags through `NfcManager.registerTagEvent`, like this:
+
+```javascript
+import NfcManager, {NfcTech} from 'react-native-nfc-manager';
+
+// The following function resolves to a NFC Tag object using old event listener approach. 
+// You can call it like this:
+//    `const nfcTag = await listenToNfcEventOnce()`
+
+function listenToNfcEventOnce() {
   const cleanUp = () => {
     NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
     NfcManager.setEventListener(NfcEvents.SessionClosed, null);
   };
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     let tagFound = null;
 
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, (tag) => {
+    NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
       tagFound = tag;
       resolve(tagFound);
-      NfcManager.setAlertMessageIOS('NDEF tag found');
-      NfcManager.unregisterTagEvent().catch(() => 0);
+      NfcManager.unregisterTagEvent();
     });
 
     NfcManager.setEventListener(NfcEvents.SessionClosed, () => {
@@ -111,120 +161,102 @@ function readNdef() {
 }
 ```
 
-Anything else, ex: write NDEF, send custom command, please read next section.
+As you can see, the above approach is more verbose and hard-to-read, so we recommend using `NfcManager.requestTechnology` instead of `NfcManager.registerTagEvent` in your application.
 
-## Advanced Usage
+## Advanced Usage Concept
 
-In high level, there're 3 steps to perform advanced NFC operations:
+In higher level, there're 4 steps to use this library:
 
-1. request your specific NFC technology
-2. select the proper NFC technology handler, which is implemented as getter in main `NfcManager` object, including:
-   - ndefHandler
-   - nfcAHandler
-   - isoDepHandler
-   - iso15693HandlerIOS
-   - mifareClassicHandlerAndroid
-   - mifareUltralightHandlerAndroid
-3. call specific methods on the NFC technology handler
-4. clean up your tech registration
+1. request your particular NFC technologies through `NfcManager.requestTechnology`, for example:
+   - `Ndef`
+   - `NfcA`
+   - `NfcB` (Android-only)
+   - `NfcF` (Android-only)
+   - `NfcV` (Android-only)
+   - `IsoDep`
+   - `MifareClassic` (Android-only)
+   - `MifareUltralight` (Android-only)
+   - `MifareIOS` (ios-only)
+   - `Iso15693IOS` (ios-only)
+   - `FelicaIOS` (ios-only)
+
+2. select the proper NFC technology handler, which is implemented as getter in main `NfcManager` object, for example:
+   - `ndefHandler` (for `Ndef` tech)
+   - `nfcAHandler` (for `NfcA` tech)
+   - `isoDepHandler` (for `IsoDep` tech)
+   - `iso15693HandlerIOS` (for `Iso15693IOS` tech)
+   - `mifareClassicHandlerAndroid` (for `mifareClassic` tech)
+   - `mifareUltralightHandlerAndroid` (for `mifareUltralight` tech)
+   - ... and so on
+
+3. call specific methods on the NFC technology handler (for example `NfcManager.ndefHandler.writeNdefMessage`). To view all available methods for some tech handler, check out the [API List]((index.d.ts))
+
+4. clean up your tech registration through `NfcManager.cancelTechnology`
+
+## Advanced Usage Example: NDEF-Writing
 
 For example, here's an example to write NDEF:
 
 ```javascript
 import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 
-// Pre-step, call this before any NFC operations
-async function initNfc() {
-  await NfcManager.start();
-}
-
 async function writeNdef({type, value}) {
   let result = false;
 
   try {
-    // Step 1
-    await NfcManager.requestTechnology(NfcTech.Ndef, {
-      alertMessage: 'Ready to write some NDEF',
-    });
+    // STEP 1
+    await NfcManager.requestTechnology(NfcTech.Ndef);
 
     const bytes = Ndef.encodeMessage([Ndef.textRecord('Hello NFC')]);
 
     if (bytes) {
-      await NfcManager.ndefHandler // Step2
-        .writeNdefMessage(bytes); // Step3
-
-      if (Platform.OS === 'ios') {
-        await NfcManager.setAlertMessageIOS('Successfully write NDEF');
-      }
+      await NfcManager
+        .ndefHandler // STEP 2
+        .writeNdefMessage(bytes); // STEP 3
+      result = true;
     }
-
-    result = true;
   } catch (ex) {
     console.warn(ex);
+  } finally {
+    // STEP 4
+    NfcManager.cancelTechnologyRequest();
   }
 
-  // Step 4
-  NfcManager.cancelTechnologyRequest().catch(() => 0);
   return result;
 }
 ```
 
-## Advanced: Mifare Ultralight usage
+## Advanced Usage Example: Mifare Ultralight
 
-Here's an example to read a Mifare Ultralight tag:
+Here's another example to read a Mifare Ultralight tag:
 
 ```javascript
-import NfcManager, {NfcTech} from 'react-native-nfc-manager';
-
-// Pre-step, call this before any NFC operations
-async function initNfc() {
-  await NfcManager.start();
-}
-
 async function readMifare() {
+  let mifarePages = [];
+
   try {
-    // 0. Request Mifare technology
+    // STEP 1
     let reqMifare = await NfcManager.requestTechnology(
       NfcTech.MifareUltralight,
     );
-    if (reqMifare !== 'MifareUltralight') {
-      throw new Error(
-        '[NFC Read] [ERR] Mifare technology could not be requested',
-      );
-    }
 
-    // 1. Get NFC Tag information
-    const nfcTag = await NfcManager.getTag();
-    console.log('[NFC Read] [INFO] Tag: ', nfcTag);
-
-    // 2. Read pages
     const readLength = 60;
-    let mifarePages = [];
     const mifarePagesRead = await Promise.all(
       [...Array(readLength).keys()].map(async (_, i) => {
-        const pageOffset = i * 4; // 4 Pages are read at once, so offset should be in steps with length 4
-        let pages = await NfcManager.mifareUltralightHandlerAndroid.mifareUltralightReadPages(
-          pageOffset,
-        );
+        const pages = await NfcManager
+          .mifareUltralightHandlerAndroid // STEP 2
+          .mifareUltralightReadPages(i * 4); // STEP 3
         mifarePages.push(pages);
-        console.log(`[NFC Read] [INFO] Mifare Page: ${pageOffset}`, pages);
-        //await wait(500); // If Mifare Chip is to slow
       }),
     );
-
-    // 3. Success
-    console.log('[NFC Read] [INFO] Success reading Mifare');
-
-    // 4. Cleanup
-    _cleanup();
   } catch (ex) {
-    console.warn('[NFC Read] [ERR] Failed Reading Mifare: ', ex);
-    _cleanup();
+    console.warn(ex);
+  } finally {
+    // STEP 4
+    NfcManager.cancelTechnologyRequest();
   }
-}
 
-function _cleanup() {
-  NfcManager.cancelTechnologyRequest().catch(() => 0);
+  return mifarePages;
 }
 ```
 
