@@ -63,7 +63,7 @@ declare module 'react-native-nfc-manager' {
     maxSize?: number;
     type?: string;
     techTypes?: string[];
-    id?: number[];
+    id?: string;
   }
 
   export interface RegisterTagEventOpts {
