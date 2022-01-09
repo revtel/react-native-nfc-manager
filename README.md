@@ -189,7 +189,7 @@ In higher level, there're 4 steps to use this library:
    - `mifareUltralightHandlerAndroid` (for `mifareUltralight` tech)
    - ... and so on
 
-3. call specific methods on the NFC technology handler (for example `NfcManager.ndefHandler.writeNdefMessage`). To view all available methods for some tech handler, check out the [API List]((index.d.ts))
+3. call specific methods on the NFC technology handler (for example `NfcManager.ndefHandler.writeNdefMessage`). To view all available methods for some tech handler, check out the [API List](index.d.ts)
 
 4. clean up your tech registration through `NfcManager.cancelTechnology`
 
