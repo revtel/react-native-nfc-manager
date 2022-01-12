@@ -85,6 +85,14 @@ function withNfc(config, props = {}) {
   config = withIosNfcEntitlement(config);
   config = withIosNfcSelectIdentifiers(config, {selectIdentifiers});
   config = withIosNfcSystemCodes(config, {systemCodes});
+
+  // We start to support Android 12 from v3.11.1, and you will need to update compileSdkVersion to 31,
+  // otherwise the build will fail:
+  config = AndroidConfig.Version.withBuildScriptExtMinimumVersion(config, {
+    name: 'compileSdkVersion',
+    minVersion: 31,
+  });
+
   if (nfcPermission !== false) {
     config = withIosPermission(config, props);
     config = AndroidConfig.Permissions.withPermissions(config, [
