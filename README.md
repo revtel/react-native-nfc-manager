@@ -69,7 +69,7 @@ We have a full featured NFC utility app using this library available for downloa
 
 It also open sourced in this repo: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
 
-## Usage 
+## Usage
 
 The simplest (and most common) use case for this library is to read `NFC` tags containing `NDEF`, which can be achieved via the following codes:
 
@@ -118,6 +118,7 @@ export default App;
 ```
 
 Pleaes notice when running above codes, iOS and Android has different behaviors:
+
 - iOS will pop up a system scanning UI
 - Android provides **NO** system scanning UI
 
@@ -130,7 +131,7 @@ There's an alterntaive style to scan NFC tags through `NfcManager.registerTagEve
 ```javascript
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 
-// The following function resolves to a NFC Tag object using old event listener approach. 
+// The following function resolves to a NFC Tag object using old event listener approach.
 // You can call it like this:
 //    `const nfcTag = await listenToNfcEventOnce()`
 
@@ -140,10 +141,10 @@ function listenToNfcEventOnce() {
     NfcManager.setEventListener(NfcEvents.SessionClosed, null);
   };
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     let tagFound = null;
 
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
+    NfcManager.setEventListener(NfcEvents.DiscoverTag, (tag) => {
       tagFound = tag;
       resolve(tagFound);
       NfcManager.unregisterTagEvent();
@@ -168,6 +169,7 @@ As you can see, the above approach is more verbose and hard-to-read, so we recom
 In higher level, there're 4 steps to use this library:
 
 1. request your particular NFC technologies through `NfcManager.requestTechnology`, for example:
+
    - `Ndef`
    - `NfcA`
    - `NfcB` (Android-only)
@@ -181,6 +183,7 @@ In higher level, there're 4 steps to use this library:
    - `FelicaIOS` (ios-only)
 
 2. select the proper NFC technology handler, which is implemented as getter in main `NfcManager` object, for example:
+
    - `ndefHandler` (for `Ndef` tech)
    - `nfcAHandler` (for `NfcA` tech)
    - `isoDepHandler` (for `IsoDep` tech)
@@ -210,8 +213,7 @@ async function writeNdef({type, value}) {
     const bytes = Ndef.encodeMessage([Ndef.textRecord('Hello NFC')]);
 
     if (bytes) {
-      await NfcManager
-        .ndefHandler // STEP 2
+      await NfcManager.ndefHandler // STEP 2
         .writeNdefMessage(bytes); // STEP 3
       result = true;
     }
@@ -243,8 +245,7 @@ async function readMifare() {
     const readLength = 60;
     const mifarePagesRead = await Promise.all(
       [...Array(readLength).keys()].map(async (_, i) => {
-        const pages = await NfcManager
-          .mifareUltralightHandlerAndroid // STEP 2
+        const pages = await NfcManager.mifareUltralightHandlerAndroid // STEP 2
           .mifareUltralightReadPages(i * 4); // STEP 3
         mifarePages.push(pages);
       }),
@@ -286,6 +287,8 @@ After installing this npm package, add the [config plugin](https://docs.expo.io/
 
 Next, rebuild your app as described in the ["Adding custom native code"](https://docs.expo.io/workflow/customizing/) guide.
 
+> Notice: This Config Plugin will ensure the minimum Android SDK version is 31.
+
 #### Props
 
 The plugin provides props for extra customization. Every time you change the props or plugins, you'll need to rebuild (and `prebuild`) the native app. If no extra properties are added, defaults will be used.
@@ -312,4 +315,3 @@ The plugin provides props for extra customization. Every time you change the pro
   }
 }
 ```
-
