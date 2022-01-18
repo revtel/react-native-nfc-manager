@@ -33,6 +33,7 @@ const NfcTech = {
   MifareIOS: 'mifare',
   Iso15693IOS: 'iso15693',
   FelicaIOS: 'felica',
+  NdefFormatable: 'NdefFormatable',
 };
 
 const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {

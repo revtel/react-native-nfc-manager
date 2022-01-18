@@ -266,6 +266,36 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         }
     }
 
+    @ReactMethod
+    public void formatNdef(ReadableArray rnArray, ReadableMap options, Callback callback) {
+        boolean readOnly = options.getBoolean("readOnly");
+
+        synchronized(this) {
+            if (techRequest != null) {
+                try {
+                    NdefFormatable ndef = (NdefFormatable)techRequest.getTechHandle();
+                    if (ndef == null) {
+                        callback.invoke(ERR_API_NOT_SUPPORT);
+                    } else {
+                        byte[] bytes = rnArrayToBytes(rnArray);
+                        NdefMessage msg = new NdefMessage(bytes);
+                        if (readOnly) {
+                            ndef.formatReadOnly(msg);
+                        } else {
+                            ndef.format(msg);
+                        }
+                        callback.invoke();
+                    }
+                } catch (Exception ex) {
+                    Log.d(LOG_TAG, ex.toString());
+                    callback.invoke(ex.toString());
+                }
+            } else {
+                callback.invoke(ERR_NO_TECH_REQ);
+            }
+        }
+    }
+
     private void mifareClassicAuthenticate(char type, int sector, ReadableArray key, Callback callback) {
         if (techRequest != null) {
             try {

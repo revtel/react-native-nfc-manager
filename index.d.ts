@@ -22,6 +22,7 @@ declare module 'react-native-nfc-manager' {
     MifareIOS = 'mifare',
     Iso15693IOS = 'iso15693',
     FelicaIOS = 'felica',
+    NdefFormatable = 'NdefFormatable',
   }
 
   export enum NdefStatus {
@@ -119,6 +120,10 @@ declare module 'react-native-nfc-manager' {
       offset: number,
       data: number[],
     ) => Promise<void>;
+  }
+
+  interface NdefFormatableHandlerAndroid {
+    formatNdef: (bytes: number[], options?: { readOnly: boolean }) => Promise<void>;
   }
 
   /** [iOS ONLY] */
@@ -236,6 +241,7 @@ declare module 'react-native-nfc-manager' {
     setTimeout(timeout: number): Promise<void>;
     mifareClassicHandlerAndroid: MifareClassicHandlerAndroid;
     mifareUltralightHandlerAndroid: MifareUltralightHandlerAndroid;
+    ndefFormatableHandlerAndroid: NdefFormatableHandlerAndroid;
   }
 
   const nfcManager: NfcManager;

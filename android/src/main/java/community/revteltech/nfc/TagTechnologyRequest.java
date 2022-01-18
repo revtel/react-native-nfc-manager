@@ -11,6 +11,7 @@ import android.nfc.tech.NfcV;
 import android.nfc.tech.NfcF;
 import android.nfc.tech.MifareClassic;
 import android.nfc.tech.MifareUltralight;
+import android.nfc.tech.NdefFormatable;
 import android.nfc.tech.IsoDep;
 import android.util.Log;
 import com.facebook.react.bridge.*;
@@ -76,6 +77,8 @@ class TagTechnologyRequest {
                 mTech = MifareClassic.get(tag);
             } else if (techType.equals("MifareUltralight")) {
                 mTech = MifareUltralight.get(tag);
+            } else if (techType.equals("NdefFormatable")) {
+                mTech = NdefFormatable.get(tag);
             }
 
             if (mTech == null) {

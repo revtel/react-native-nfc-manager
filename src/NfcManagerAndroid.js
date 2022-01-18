@@ -2,6 +2,7 @@ import {callNative} from './NativeNfcManager';
 import {NfcManagerBase} from './NfcManager';
 import {MifareClassicHandlerAndroid} from './NfcTech/MifareClassicHandlerAndroid';
 import {MifareUltralightHandlerAndroid} from './NfcTech/MifareUltralightHandlerAndroid';
+import {NdefFormatableHandlerAndroid} from './NfcTech/NdefFormatableHandlerAndroid';
 import {handleNativeException, buildNfcExceptionAndroid} from './NfcError';
 
 const NfcAdapter = {
@@ -109,6 +110,16 @@ class NfcManagerAndroid extends NfcManagerBase {
       );
     }
     return this._mifareUltralightHandlerAndroid;
+  }
+
+  // -------------------------------------
+  // (android) NfcTech.NdefFormatable API
+  // -------------------------------------
+  get ndefFormatableHandlerAndroid() {
+    if (!this._ndefFormatableHandlerAndroid) {
+      this._ndefFormatableHandlerAndroid = new NdefFormatableHandlerAndroid(this);
+    }
+    return this._ndefFormatableHandlerAndroid;
   }
 
   // -------------------------------------
