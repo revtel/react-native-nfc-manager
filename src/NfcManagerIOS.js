@@ -8,6 +8,7 @@ import {
 } from './NfcManager';
 import {
   Nfc15693RequestFlagIOS,
+  Nfc15693ResponseFlagIOS,
   Iso15693HandlerIOS,
 } from './NfcTech/Iso15693HandlerIOS';
 import {handleNativeException} from './NfcError';
@@ -145,4 +146,4 @@ class NfcManagerIOS extends NfcManagerBase {
   }
 }
 
-export {NfcManagerIOS, Nfc15693RequestFlagIOS};
+export {NfcManagerIOS, Nfc15693RequestFlagIOS, Nfc15693ResponseFlagIOS};
