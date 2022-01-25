@@ -7,6 +7,7 @@ import {
 } from './NativeNfcManager';
 import {NdefHandler, NdefStatus} from './NfcTech/NdefHandler';
 import {NfcAHandler} from './NfcTech/NfcAHandler';
+import {NfcVHandler} from './NfcTech/NfcVHandler';
 import {IsoDepHandler} from './NfcTech/IsoDepHandler';
 import {
   handleNativeException,
@@ -122,6 +123,13 @@ class NfcManagerBase {
       this._nfcAHandler = new NfcAHandler();
     }
     return this._nfcAHandler;
+  }
+
+  get nfcVHandler() {
+    if (!this._nfcVHandler) {
+      this._nfcVHandler = new NfcVHandler();
+    }
+    return this._nfcVHandler;
   }
 
   get isoDepHandler() {

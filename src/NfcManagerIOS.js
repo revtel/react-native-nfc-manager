@@ -31,6 +31,8 @@ class NfcManagerIOS extends NfcManagerBase {
     for (const t of tech) {
       if (t === NfcTech.NfcA) {
         techList.push(NfcTech.MifareIOS);
+      } else if (t === NfcTech.NfcV) {
+        techList.push(NfcTech.Iso15693IOS);
       } else {
         techList.push(t);
       }

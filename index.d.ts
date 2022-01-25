@@ -104,6 +104,10 @@ declare module 'react-native-nfc-manager' {
     transceive: (bytes: number[]) => Promise<number[]>;
   }
 
+  interface NfcVHandler {
+    transceive: (bytes: number[]) => Promise<number[]>;
+  }
+
   interface IsoDepHandler {
     transceive: (bytes: number[]) => Promise<number[]>;
   }
@@ -217,6 +221,7 @@ declare module 'react-native-nfc-manager' {
      */
     ndefHandler: NdefHandler;
     nfcAHandler: NfcAHandler;
+    nfcVHandler: NfcVHandler;
     isoDepHandler: IsoDepHandler;
 
     /**
