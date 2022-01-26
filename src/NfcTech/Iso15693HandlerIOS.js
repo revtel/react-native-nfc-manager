@@ -8,6 +8,17 @@ const Nfc15693RequestFlagIOS = {
   Select: 1 << 4,
   Address: 1 << 5,
   Option: 1 << 6,
+  CommandSpecificBit8: 1 << 7,
+};
+
+const Nfc15693ResponseFlagIOS = {
+  Error: 1 << 0,
+  ResponseBufferValid: 1 << 1,
+  FinalResponse: 1 << 2,
+  ProtocolExtension: 1 << 3,
+  BlockSecurityStatusBit5: 1 << 4,
+  BlockSecurityStatusBit6: 1 << 5,
+  WaitTimeExtension: 1 << 6
 };
 
 class Iso15693HandlerIOS {
@@ -87,6 +98,15 @@ class Iso15693HandlerIOS {
     );
   }
 
+  // https://developer.apple.com/documentation/corenfc/nfciso15693tag/3551933-sendrequestwithflag?language=objc
+  sendRequest({flags, commandCode, data}) {
+    return handleNativeException(
+      callNative('iso15693_sendRequest', [
+        {flags, commandCode, data},
+      ]),
+    );
+  }
+
   extendedReadSingleBlock({flags, blockNumber}) {
     return handleNativeException(
       callNative('iso15693_extendedReadSingleBlock', [{flags, blockNumber}]),
@@ -108,4 +128,4 @@ class Iso15693HandlerIOS {
   }
 }
 
-export {Nfc15693RequestFlagIOS, Iso15693HandlerIOS};
+export {Nfc15693RequestFlagIOS, Nfc15693ResponseFlagIOS, Iso15693HandlerIOS};

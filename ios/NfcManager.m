@@ -1174,6 +1174,39 @@ RCT_EXPORT_METHOD(iso15693_customCommand:(NSDictionary *)options callback:(nonnu
     }
 }
 
+RCT_EXPORT_METHOD(iso15693_sendRequest:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 14.0, *)) {
+        if (!tagSession || !tagSession.connectedTag) {
+            callback(@[@"Not connected", [NSNull null]]);
+            return;
+        }
+        
+        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
+        if (!tag) {
+            callback(@[@"incorrect tag type", [NSNull null]]);
+            return;
+        }
+        
+        NSInteger flags = [[options objectForKey:@"flags"] integerValue];
+        NSInteger commandCode = [[options objectForKey:@"commandCode"] integerValue];
+        NSData *data = [self arrayToData:[options mutableArrayValueForKey:@"data"]];
+        
+        [tag sendRequestWithFlag:flags
+                     commandCode:commandCode
+                            data:data
+               completionHandler:^(NFCISO15693ResponseFlag responseFlag, NSData *resp, NSError *error) {
+            if (error) {
+                callback(@[getErrorMessage(error), [NSNull null]]);
+                return;
+            }
+            callback(@[[NSNull null], [NSNumber numberWithLong:responseFlag], [NfcManager dataToArray:resp]]);
+        }];
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
 RCT_EXPORT_METHOD(iso15693_extendedReadSingleBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {

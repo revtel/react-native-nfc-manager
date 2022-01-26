@@ -48,6 +48,17 @@ declare module 'react-native-nfc-manager' {
     Select = 1 << 4,
     Address = 1 << 5,
     Option = 1 << 6,
+    CommandSpecificBit8 = 1 << 7,
+  }
+
+  export enum Nfc15693ResponseFlagIOS {
+    Error = 1 << 0,
+    ResponseBufferValid = 1 << 1,
+    FinalResponse = 1 << 2,
+    ProtocolExtension = 1 << 3,
+    BlockSecurityStatusBit5 = 1 << 4,
+    BlockSecurityStatusBit6 = 1 << 5,
+    WaitTimeExtension = 1 << 6,
   }
 
   type TNF = 0x0 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07;
@@ -91,6 +102,10 @@ declare module 'react-native-nfc-manager' {
   }
 
   interface NfcAHandler {
+    transceive: (bytes: number[]) => Promise<number[]>;
+  }
+
+  interface NfcVHandler {
     transceive: (bytes: number[]) => Promise<number[]>;
   }
 
@@ -164,6 +179,11 @@ declare module 'react-native-nfc-manager' {
       customCommandCode: number;
       customRequestParameters: number[];
     }) => Promise<number[]>;
+    sendRequest: (params: {
+      flags: number;
+      commandCode: number;
+      data: number[];
+    }) => Promise<[number, number[]]>;
     extendedReadSingleBlock: (params: {
       flags: number;
       blockNumber: number;
@@ -206,6 +226,7 @@ declare module 'react-native-nfc-manager' {
      */
     ndefHandler: NdefHandler;
     nfcAHandler: NfcAHandler;
+    nfcVHandler: NfcVHandler;
     isoDepHandler: IsoDepHandler;
 
     /**
