@@ -49,7 +49,7 @@ class MifareUtil {
 		// able of reading/writing MIFARE Classic tags. I don't know why...
 		// https://github.com/ikarus23/MifareClassicTool/issues/152
 		boolean isLenovoP2 = Build.MANUFACTURER.equals("LENOVO")
-			&& Build.MODEL.equals("Lenovo P2a42");
+				&& Build.MODEL.equals("Lenovo P2a42");
 		File device = new File("/dev/bcm2079x-i2c");
 		if (!isLenovoP2 && device.exists()) {
 			return false;
@@ -70,8 +70,8 @@ class MifareUtil {
 		File[] libs = libsFolder.listFiles();
 		for (File lib : libs) {
 			if (lib.isFile()
-				&& lib.getName().startsWith("libnfc")
-				&& lib.getName().contains("brcm")
+					&& lib.getName().startsWith("libnfc")
+					&& lib.getName().contains("brcm")
 				// Add here other non NXP NFC libraries.
 			) {
 				return false;

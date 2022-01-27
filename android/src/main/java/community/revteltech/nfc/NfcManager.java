@@ -646,27 +646,27 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     @ReactMethod
     public void connect(ReadableArray techs, Callback callback){
         synchronized(this) {
-          try {
-            techRequest = new TagTechnologyRequest(techs.toArrayList(), callback);
-            techRequest.connect(this.tag);
-            callback.invoke(null, null);
-            return;
-          } catch (Exception ex) {
-              callback.invoke(ex.toString());
-          }
+            try {
+                techRequest = new TagTechnologyRequest(techs.toArrayList(), callback);
+                techRequest.connect(this.tag);
+                callback.invoke(null, null);
+                return;
+            } catch (Exception ex) {
+                callback.invoke(ex.toString());
+            }
         }
     }
 
     @ReactMethod
     public void close(Callback callback){
         synchronized(this) {
-          try {
-            techRequest.close();
-            callback.invoke(null, null);
-            return;
-          } catch (Exception ex) {
-            callback.invoke(ex.toString());
-          }
+            try {
+                techRequest.close();
+                callback.invoke(null, null);
+                return;
+            } catch (Exception ex) {
+                callback.invoke(ex.toString());
+            }
         }
     }
 
@@ -1107,7 +1107,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
         int flag = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-          flag = PendingIntent.FLAG_MUTABLE;
+            flag = PendingIntent.FLAG_MUTABLE;
         }
         return PendingIntent.getActivity(activity, 0, intent, flag);
     }

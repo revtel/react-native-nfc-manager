@@ -39,9 +39,9 @@ public class Util {
                 // mTag.getTagService(); of the Ndef object sometimes returns null
                 // see http://issues.mroland.at/index.php?do=details&task_id=47
                 try {
-                  json.put("canMakeReadOnly", ndef.canMakeReadOnly());
+                    json.put("canMakeReadOnly", ndef.canMakeReadOnly());
                 } catch (NullPointerException e) {
-                  json.put("canMakeReadOnly", JSONObject.NULL);
+                    json.put("canMakeReadOnly", JSONObject.NULL);
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Failed to convert ndef into json: " + ndef.toString(), e);
@@ -104,16 +104,16 @@ public class Util {
     }
 
     public static String bytesToHex(byte[] bytes) {
-      char[] hexChars = new char[bytes.length * 2];
+        char[] hexChars = new char[bytes.length * 2];
 
-      for ( int j = 0; j < bytes.length; j++ ) {
-          int v = bytes[j] & 0xFF;
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
 
-          hexChars[j * 2] = hexArray[v >>> 4];
-          hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-      }
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
 
-      return new String(hexChars);
+        return new String(hexChars);
     }
 
     static byte[] jsonToByteArray(JSONArray json) throws JSONException {
