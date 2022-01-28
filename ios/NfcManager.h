@@ -30,3 +30,8 @@
         #endif
 
 @end
+
+extern NSString* _Nonnull getHexString(NSData * _Nonnull);
+extern NSString* _Nonnull getErrorMessage(NSError * _Nonnull);
+extern NSData * _Nonnull arrayToData(NSArray * _Nonnull);
+extern NSArray * _Nonnull dataToArray(NSData * _Nonnull);
