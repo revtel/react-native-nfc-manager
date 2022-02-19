@@ -15,6 +15,8 @@ const NfcAdapter = {
   FLAG_READER_NO_PLATFORM_SOUNDS: 0x100,
 };
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 class NfcManagerAndroid extends NfcManagerBase {
   constructor() {
     super();
@@ -42,12 +44,13 @@ class NfcManagerAndroid extends NfcManagerBase {
   };
 
   cancelTechnologyRequest = async (options = {}) => {
-    const {throwOnError = false} = options;
+    const {throwOnError = false, delayMsAndroid = 1000} = options;
 
     try {
       await callNative('cancelTechnologyRequest');
 
-      if (!this.cleanUpTagRegistration) {
+      if (this.cleanUpTagRegistration) {
+        await delay(delayMsAndroid);
         await this.unregisterTagEvent();
         this.cleanUpTagRegistration = false;
       }

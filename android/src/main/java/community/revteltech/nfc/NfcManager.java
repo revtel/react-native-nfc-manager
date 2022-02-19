@@ -971,11 +971,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     private void registerTagEvent(ReadableMap options, Callback callback) {
-        this.isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
-        this.readerModeFlags = options.getInt("readerModeFlags");
-        this.readerModeDelay = options.getInt("readerModeDelay");
+        isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
+        readerModeFlags = options.getInt("readerModeFlags");
+        readerModeDelay = options.getInt("readerModeDelay");
 
-        Log.d(LOG_TAG, "registerTag");
+        Log.d(LOG_TAG, "registerTagEvent");
         isForegroundEnabled = true;
 
         // capture all mime-based dispatch NDEF
@@ -1002,18 +1002,23 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     private void unregisterTagEvent(Callback callback) {
-        Log.d(LOG_TAG, "registerTag");
-        isForegroundEnabled = false;
-        intentFilters.clear();
+        Log.d(LOG_TAG, "unregisterTagEvent");
         if (isResumed) {
             enableDisableForegroundDispatch(false);
         }
+
+        intentFilters.clear();
+        isForegroundEnabled = false;
+        isReaderModeEnabled = false;
+        readerModeFlags = 0;
+        readerModeDelay = 0;
+
         callback.invoke();
     }
 
     @ReactMethod
     private void hasTagEventRegistration(Callback callback) {
-        Log.d(LOG_TAG, "isSessionAvailable");
+        Log.d(LOG_TAG, "isSessionAvailable: " + isForegroundEnabled);
         callback.invoke(null, isForegroundEnabled);
     }
 
@@ -1061,25 +1066,36 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     }
 
                     if (enable) {
-                        Log.i(LOG_TAG, "enableReaderMode");
+                        Log.i(LOG_TAG, "enableReaderMode: " + readerModeFlags);
                         Bundle readerModeExtras = new Bundle();
                         readerModeExtras.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, readerModeDelay * 1000);
                         nfcAdapter.enableReaderMode(currentActivity, new NfcAdapter.ReaderCallback() {
                             @Override
                             public void onTagDiscovered(Tag tag) {
-                                manager.tag = tag;
-                                Log.d(LOG_TAG, "readerMode onTagDiscovered");
-                                WritableMap nfcTag = null;
-                                // if the tag contains NDEF, we want to report the content
-                                if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
-                                    Ndef ndef = Ndef.get(tag);
-                                    nfcTag = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
-                                } else {
-                                    nfcTag = tag2React(tag);
-                                }
+                                synchronized (this) {
+                                    manager.tag = tag;
+                                    Log.d(LOG_TAG, "readerMode onTagDiscovered");
+                                    WritableMap nfcTag = null;
+                                    // if the tag contains NDEF, we want to report the content
+                                    if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+                                        Ndef ndef = Ndef.get(tag);
+                                        nfcTag = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+                                    } else {
+                                        nfcTag = tag2React(tag);
+                                    }
 
-                                if (nfcTag != null) {
-                                    sendEvent("NfcManagerDiscoverTag", nfcTag);
+                                    if (nfcTag != null) {
+                                        sendEvent("NfcManagerDiscoverTag", nfcTag);
+                                        if (techRequest!= null && !techRequest.isConnected()) {
+                                            boolean result = techRequest.connect(tag);
+                                            if (result) {
+                                                techRequest.getPendingCallback().invoke(null, techRequest.getTechType());
+                                            } else {
+                                                // this indicates that we get a NFC tag, but none of the user required tech is matched
+                                                techRequest.getPendingCallback().invoke(null, null);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }, readerModeFlags, readerModeExtras);
