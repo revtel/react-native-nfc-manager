@@ -88,6 +88,7 @@ declare module 'react-native-nfc-manager' {
 
   export interface CancelTechReqOpts {
     throwOnError?: boolean = false;
+    delayMsAndroid?: number = 1000;
   }
 
   interface NdefHandler {
