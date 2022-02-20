@@ -537,6 +537,99 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
+    public void mifareClassicIncrementBlock(int blockIndex, int value, Callback callback) {
+        synchronized(this) {
+            if (techRequest != null) {
+                try {
+                    MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
+                    if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+                        // Not a mifare card, fail
+                        callback.invoke("mifareClassicIncrementBlock fail: TYPE_UNKNOWN");
+                        return;
+                    } else if (blockIndex >= mifareTag.getBlockCount()) {
+                        // Check if in range
+                        String msg = String.format("mifareClassicIncrementBlock fail: invalid block %d (max %d)", blockIndex, mifareTag.getBlockCount());
+                        callback.invoke(msg);
+                        return;
+                    }
+
+                    mifareTag.increment(blockIndex, value);
+
+                    callback.invoke(null, true);
+                } catch (TagLostException ex) {
+                    callback.invoke("mifareClassicIncrementBlock fail: TAG_LOST");
+                } catch (Exception ex) {
+                    callback.invoke("mifareClassicIncrementBlock fail: " + ex.toString());
+                }
+            } else {
+                callback.invoke(ERR_NO_TECH_REQ);
+            }
+        }
+    }
+
+    @ReactMethod
+    public void mifareClassicDecrementBlock(int blockIndex, int value, Callback callback) {
+        synchronized(this) {
+            if (techRequest != null) {
+                try {
+                    MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
+                    if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+                        // Not a mifare card, fail
+                        callback.invoke("mifareClassicDecrementBlock fail: TYPE_UNKNOWN");
+                        return;
+                    } else if (blockIndex >= mifareTag.getBlockCount()) {
+                        // Check if in range
+                        String msg = String.format("mifareClassicDecrementBlock fail: invalid block %d (max %d)", blockIndex, mifareTag.getBlockCount());
+                        callback.invoke(msg);
+                        return;
+                    }
+
+                    mifareTag.decrement(blockIndex, value);
+
+                    callback.invoke(null, true);
+                } catch (TagLostException ex) {
+                    callback.invoke("mifareClassicDecrementBlock fail: TAG_LOST");
+                } catch (Exception ex) {
+                    callback.invoke("mifareClassicDecrementBlock fail: " + ex.toString());
+                }
+            } else {
+                callback.invoke(ERR_NO_TECH_REQ);
+            }
+        }
+    }
+
+    @ReactMethod
+    public void mifareClassicTransferBlock(int blockIndex, Callback callback) {
+        synchronized(this) {
+            if (techRequest != null) {
+                try {
+                    MifareClassic mifareTag = (MifareClassic) techRequest.getTechHandle();
+                    if (mifareTag == null || mifareTag.getType() == MifareClassic.TYPE_UNKNOWN) {
+                        // Not a mifare card, fail
+                        callback.invoke("mifareClassicTransferBlock fail: TYPE_UNKNOWN");
+                        return;
+                    } else if (blockIndex >= mifareTag.getBlockCount()) {
+                        // Check if in range
+                        String msg = String.format("mifareClassicTransferBlock fail: invalid block %d (max %d)", blockIndex, mifareTag.getBlockCount());
+                        callback.invoke(msg);
+                        return;
+                    }
+
+                    mifareTag.transfer(blockIndex);
+
+                    callback.invoke(null, true);
+                } catch (TagLostException ex) {
+                    callback.invoke("mifareClassicTransferBlock fail: TAG_LOST");
+                } catch (Exception ex) {
+                    callback.invoke("mifareClassicTransferBlock fail: " + ex.toString());
+                }
+            } else {
+                callback.invoke(ERR_NO_TECH_REQ);
+            }
+        }
+    }
+
+    @ReactMethod
     public void mifareUltralightReadPages(int pageOffset, Callback callback) {
         synchronized(this) {
             if (techRequest != null) {

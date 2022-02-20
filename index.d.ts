@@ -123,8 +123,23 @@ declare module 'react-native-nfc-manager' {
       block: ArrayLike<number>,
       simpliArr: any[],
     ) => Promise<void>;
+    mifareClassicIncrementBlock: (
+      block: ArrayLike<number>,
+      data: number,
+    ) => Promise<void>;
+    mifareClassicDecrementBlock: (
+      block: ArrayLike<number>,
+      data: number,
+    ) => Promise<void>;
+    mifareClassicTransferBlock: (
+      block: ArrayLike<number>,
+    ) => Promise<void>;
     mifareClassicGetSectorCount: () => Promise<number>;
     mifareClassicAuthenticateA: (
+      sector: number,
+      keys: number[],
+    ) => Promise<void>;
+    mifareClassicAuthenticateB: (
       sector: number,
       keys: number[],
     ) => Promise<void>;

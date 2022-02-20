@@ -67,6 +67,48 @@ class MifareClassicHandlerAndroid {
       callNative('mifareClassicWriteBlock', [block, data]),
     );
   }
+
+  async mifareClassicIncrementBlock(block, value) {
+    if (
+      !value ||
+      Number.isNaN(value)) {
+      throw new Error(
+        `value should be a number`,
+      );
+    }
+
+    return handleNativeException(
+      callNative('mifareClassicIncrementBlock', [block, value]),
+    );
+  }
+
+  async mifareClassicDecrementBlock(block, value) {
+    if (
+      !value ||
+      Number.isNaN(value)) {
+      throw new Error(
+        `value should be a number`,
+      );
+    }
+
+    return handleNativeException(
+      callNative('mifareClassicDecrementBlock', [block, value]),
+    );
+  }
+  async mifareClassicTransferBlock(block) {
+    if (
+      !block ||
+      Number.isNaN(block)) {
+      throw new Error(
+        `block should be a number`,
+      );
+    }
+
+    return handleNativeException(
+      callNative('mifareClassicTransferBlock', [block]),
+    );
+  }
+
 }
 
 export {MifareClassicHandlerAndroid};
