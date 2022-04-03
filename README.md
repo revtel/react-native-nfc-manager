@@ -69,6 +69,12 @@ We have a full featured NFC utility app using this library available for downloa
 
 It also open sourced in this repo: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
 
+## Learn
+
+We have published a React Native NFC course with [newline.co](https://www.newline.co/), check it out!
+- Free course (1 hour) about basic NFC setup and concept [here](https://www.youtube.com/watch?v=rAS-DvNUFck)
+- Full course (3 hours) for more (NDEF, Deep Linking, NTAG password protection, signature with UID) [here](https://www.newline.co/courses/newline-guide-to-nfcs-with-react-native)
+
 ## Usage
 
 The simplest (and most common) use case for this library is to read `NFC` tags containing `NDEF`, which can be achieved via the following codes:
