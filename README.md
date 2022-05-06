@@ -80,7 +80,6 @@ We have published a React Native NFC course with [newline.co](https://www.newlin
 The simplest (and most common) use case for this library is to read `NFC` tags containing `NDEF`, which can be achieved via the following codes:
 
 ```javascript
-import { StatusBar } from 'expo-status-bar';
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import nfcManager, { NfcEvents, NfcTech } from 'react-native-nfc-manager';
