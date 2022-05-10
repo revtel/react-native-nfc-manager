@@ -80,77 +80,59 @@ We have published a React Native NFC course with [newline.co](https://www.newlin
 The simplest (and most common) use case for this library is to read `NFC` tags containing `NDEF`, which can be achieved via the following codes:
 
 ```javascript
-import React, {useEffect, useState} from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import nfcManager, { NfcEvents, NfcTech } from 'react-native-nfc-manager';
+import React from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 
-export default function App() {
-  const [nfcData, setNfcData] = useState();
-  async function getNFCInfo() {
+// Pre-step, call this before any NFC operations
+NfcManager.start();
+
+function App() {
+  async function readNdef() {
     try {
-      nfcManager.registerTagEvent();
-      await nfcManager.requestTechnology(NfcTech.Ndef);
-      const tag = await nfcManager.getTag();
-      setNfcData(tag);
-    }
-    catch (ex){
-      console.error('something went wrong', ex)
-    }
-    finally {
-      /* Remember to call cancelTechnologyRequest() after scanning is done
-      Otherwise, you will get 'You can only issue one request at a time' error
-      */
-      nfcManager.unregisterTagEvent();
-      nfcManager.cancelTechnologyRequest();
+      // register for the NFC tag with NDEF in it
+      await NfcManager.requestTechnology(NfcTech.Ndef);
+      // the resolved tag object will contain `ndefMessage` property
+      const tag = await NfcManager.getTag();
+      console.warn('Tag found', tag);
+    } catch (ex) {
+      console.warn('Oops!', ex);
+    } finally {
+      // stop the nfc scanning
+      NfcManager.cancelTechnologyRequest();
     }
   }
 
-  // Initialize the NFC manager (This will run only once)
-  useEffect(() => {
-    nfcManager.isSupported().then(supported => {
-      if (supported) {
-        nfcManager.start();
-      } else {
-        setNfcData('NFC not supported');
-      }
-    })
-  }, [])
-
-  // Listen to NFC events (This will run every-time after nfcData changes)
-  useEffect(() => {
-    getNFCInfo();
-  }, [nfcData])
-
-  // Render the app (Display read NFC tag ID)
   return (
-    <View style={styles.container}>
-      <Text>NFC Tag ID</Text>
-      <Text>{nfcData?.id}</Text>
-      <StatusBar style="auto" />
+    <View style={styles.wrapper}>
+      <TouchableOpacity onPress={readNdef}>
+        <Text>Scan a Tag</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });
+
+export default App;
 ```
 
-Please notice when running above codes, iOS and Android has different behaviors:
+Pleaes notice when running above codes, iOS and Android has different behaviors:
 
 - iOS will pop up a system scanning UI
 - Android provides **NO** system scanning UI
 
-Regarding the system scanning UI, both platforms should be able to scan your NFC tags successfully and print out its content.
+Regarding the system scannning UI, both platforms should be able to scan your NFC tags succesfully and print out its content.
 
 ### Old Style (registerTagEvent) To Scan NFC Tags
 
-There's an alternative style to scan NFC tags through `NfcManager.registerTagEvent`, like this:
+There's an alterntaive style to scan NFC tags through `NfcManager.registerTagEvent`, like this:
 
 ```javascript
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
