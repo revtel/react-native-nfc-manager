@@ -267,6 +267,73 @@ async function readMifare() {
 }
 ```
 
+## For Those Who'd Like To Use The Library To Scan Tags Without Clicking
+
+Here's example with ```useEffect()```
+
+```javascript
+import React, {useEffect, useState} from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import nfcManager, { NfcEvents, NfcTech } from 'react-native-nfc-manager';
+
+export default function App() {
+  const [nfcData, setNfcData] = useState();
+  async function getNFCInfo() {
+    try {
+      nfcManager.registerTagEvent();
+      await nfcManager.requestTechnology(NfcTech.Ndef);
+      const tag = await nfcManager.getTag();
+      setNfcData(tag);
+    }
+    catch (ex){
+      console.error('something went wrong', ex)
+    }
+    finally {
+      /* 
+      Remember to call cancelTechnologyRequest() after scanning is done
+      Otherwise, you will get 'You can only issue one request at a time' error
+      */
+      nfcManager.unregisterTagEvent();
+      nfcManager.cancelTechnologyRequest();
+    }
+  }
+
+  // Initialize the NFC manager (This will run only once)
+  useEffect(() => {
+    nfcManager.isSupported().then(supported => {
+      if (supported) {
+        nfcManager.start();
+      } else {
+        setNfcData('NFC not supported');
+      }
+    })
+  }, [])
+
+  // Listen to NFC events (This will run every-time after nfcData changes)
+  useEffect(() => {
+    getNFCInfo();
+  }, [nfcData])
+
+  // Render the app (Display read NFC tag ID)
+  return (
+    <View style={styles.container}>
+      <Text>NFC Tag ID</Text>
+      <Text>{nfcData?.id}</Text>
+      <StatusBar style="auto" />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+```
+
 To see more examples, please see [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
 
 ## API
