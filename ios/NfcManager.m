@@ -287,7 +287,7 @@ RCT_EXPORT_METHOD(requestTechnology: (NSArray *)techs options: (NSDictionary *)o
     if (@available(iOS 13.0, *)) {
         if (tagSession == nil && session == nil) {
             tagSession = [[NFCTagReaderSession alloc]
-                         initWithPollingOption:(NFCPollingISO14443 | NFCPollingISO15693) delegate:self queue:dispatch_get_main_queue()];
+                         initWithPollingOption:(NFCPollingISO14443 | NFCPollingISO15693 | NFCPollingISO18092) delegate:self queue:dispatch_get_main_queue()];
             tagSession.alertMessage = [options objectForKey:@"alertMessage"];
             [tagSession beginSession];
             techRequestTypes = techs;
