@@ -1034,8 +1034,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             return;
         }
 
-        currentActivity.startActivity(new Intent(Settings.ACTION_NFC_SETTINGS));
-        callback.invoke();
+        try {
+            currentActivity.startActivity(new Intent(Settings.ACTION_NFC_SETTINGS));
+            callback.invoke(null, true);
+        } catch (Exception ex) {
+            callback.invoke(null, false);
+        }
     }
 
     @ReactMethod
