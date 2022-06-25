@@ -15,4 +15,8 @@ Pod::Spec.new do |s|
   s.platform = :ios, "8.0"
 
   s.dependency "React-Core"
+
+  s.xcconfig = {
+    'OTHER_LDFLAGS': '-weak_framework CoreNFC',
+  }
 end
