@@ -271,7 +271,7 @@ declare module 'react-native-nfc-manager' {
     /**
      * Android only
      */
-    goToNfcSetting(): Promise<any>;
+    goToNfcSetting(): Promise<boolean>;
     getLaunchTagEvent(): Promise<TagEvent | null>;
     transceive(bytes: number[]): Promise<number[]>;
     getMaxTransceiveLength(): Promise<number>;
