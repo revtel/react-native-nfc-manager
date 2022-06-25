@@ -286,8 +286,12 @@ RCT_EXPORT_METHOD(requestTechnology: (NSArray *)techs options: (NSDictionary *)o
 {
     if (@available(iOS 13.0, *)) {
         if (tagSession == nil && session == nil) {
+            NFCPollingOption pollFlags = NFCPollingISO14443 | NFCPollingISO15693;
+            if ([techs containsObject:@"felica"]) {
+                pollFlags |= NFCPollingISO18092;
+            }
             tagSession = [[NFCTagReaderSession alloc]
-                         initWithPollingOption:(NFCPollingISO14443 | NFCPollingISO15693) delegate:self queue:dispatch_get_main_queue()];
+                          initWithPollingOption:pollFlags delegate:self queue:dispatch_get_main_queue()];
             tagSession.alertMessage = [options objectForKey:@"alertMessage"];
             [tagSession beginSession];
             techRequestTypes = techs;
