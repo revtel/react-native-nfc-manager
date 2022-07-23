@@ -25,7 +25,7 @@
     "react-native-nfc-manager.podspec",
     "app.plugin.js"
   ],
-  "license": "Apache-2.0",
+  "license": "MIT",
   "author": {
     "name": "Richie",
     "url": "https://github.com/whitedogg13"
