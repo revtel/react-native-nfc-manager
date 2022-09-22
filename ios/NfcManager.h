@@ -17,8 +17,8 @@
 
 }
 
-@property (strong, nonatomic) NFCNDEFReaderSession *session;
-@property (strong, nonatomic) NFCTagReaderSession *tagSession;
+@property (strong, nonatomic) NFCNDEFReaderSession * _Nullable session;
+@property (strong, nonatomic) NFCTagReaderSession * _Nullable tagSession;
 
 + (BOOL)application:(nonnull UIApplication *)application
     continueUserActivity:(nonnull NSUserActivity *)userActivity
