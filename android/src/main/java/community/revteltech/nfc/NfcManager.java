@@ -117,7 +117,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             if (techRequest != null) {
                 techRequest.close();
                 try {
-                    techRequest.getPendingCallback().invoke(ERR_CANCEL);
+                    techRequest.invokePendingCallbackWithError(ERR_CANCEL);
                 } catch (RuntimeException ex) {
                     // the pending callback might already been invoked when there is an ongoing
                     // connected tag, bypass this case explicitly
@@ -1195,10 +1195,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                                         if (techRequest!= null && !techRequest.isConnected()) {
                                             boolean result = techRequest.connect(tag);
                                             if (result) {
-                                                techRequest.getPendingCallback().invoke(null, techRequest.getTechType());
+                                                techRequest.invokePendingCallback(techRequest.getTechType());
                                             } else {
                                                 // this indicates that we get a NFC tag, but none of the user required tech is matched
-                                                techRequest.getPendingCallback().invoke(null, null);
+                                                techRequest.invokePendingCallback(null);
                                             }
                                         }
                                     }
@@ -1297,10 +1297,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         WritableMap nfcTag = parseNfcIntent(intent);
         if (nfcTag != null) {
             if (isForegroundEnabled) {
-                Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                Intent intentNew=new Intent("TagFound");
-                intentNew.putExtra("tag",tagFromIntent);
-                context.sendBroadcast(intentNew);
                 sendEvent("NfcManagerDiscoverTag", nfcTag);
             } else {
                 sendEvent("NfcManagerDiscoverBackgroundTag", nfcTag);
@@ -1335,10 +1331,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 if (!techRequest.isConnected()) {
                     boolean result = techRequest.connect(tag);
                     if (result) {
-                        techRequest.getPendingCallback().invoke(null, techRequest.getTechType());
+                        techRequest.invokePendingCallback(techRequest.getTechType());
                     } else {
                         // this indicates that we get a NFC tag, but none of the user required tech is matched
-                        techRequest.getPendingCallback().invoke(null, null);
+                        techRequest.invokePendingCallback(null);
                     }
                 }
 
