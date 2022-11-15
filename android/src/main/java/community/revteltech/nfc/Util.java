@@ -44,7 +44,7 @@ public class Util {
                     json.put("canMakeReadOnly", JSONObject.NULL);
                 }
             } catch (JSONException e) {
-                Log.e(TAG, "Failed to convert ndef into json: " + ndef.toString(), e);
+                Log.e(TAG, "Failed to convert ndef into json: " + ndef, e);
             }
         }
         return json;
@@ -58,7 +58,7 @@ public class Util {
                 json.put("id", bytesToHex(tag.getId()));
                 json.put("techTypes", new JSONArray(Arrays.asList(tag.getTechList())));
             } catch (JSONException e) {
-                Log.e(TAG, "Failed to convert tag into json: " + tag.toString(), e);
+                Log.e(TAG, "Failed to convert tag into json: " + tag, e);
             }
         }
         return json;
@@ -66,32 +66,24 @@ public class Util {
 
     static String translateType(String type) {
         String translation;
-        if (type.equals(Ndef.NFC_FORUM_TYPE_1)) {
-            translation = "NFC Forum Type 1";
-        } else if (type.equals(Ndef.NFC_FORUM_TYPE_2)) {
-            translation = "NFC Forum Type 2";
-        } else if (type.equals(Ndef.NFC_FORUM_TYPE_3)) {
-            translation = "NFC Forum Type 3";
-        } else if (type.equals(Ndef.NFC_FORUM_TYPE_4)) {
-            translation = "NFC Forum Type 4";
-        } else {
-            translation = type;
+        switch (type) {
+            case Ndef.NFC_FORUM_TYPE_1:
+                translation = "NFC Forum Type 1";
+                break;
+            case Ndef.NFC_FORUM_TYPE_2:
+                translation = "NFC Forum Type 2";
+                break;
+            case Ndef.NFC_FORUM_TYPE_3:
+                translation = "NFC Forum Type 3";
+                break;
+            case Ndef.NFC_FORUM_TYPE_4:
+                translation = "NFC Forum Type 4";
+                break;
+            default:
+                translation = type;
+                break;
         }
         return translation;
-    }
-
-    static NdefRecord[] jsonToNdefRecords(String ndefMessageAsJSON) throws JSONException {
-        JSONArray jsonRecords = new JSONArray(ndefMessageAsJSON);
-        NdefRecord[] records = new NdefRecord[jsonRecords.length()];
-        for (int i = 0; i < jsonRecords.length(); i++) {
-            JSONObject record = jsonRecords.getJSONObject(i);
-            byte tnf = (byte) record.getInt("tnf");
-            byte[] type = jsonToByteArray(record.getJSONArray("type"));
-            byte[] id = jsonToByteArray(record.getJSONArray("id"));
-            byte[] payload = jsonToByteArray(record.getJSONArray("payload"));
-            records[i] = new NdefRecord(tnf, type, id, payload);
-        }
-        return records;
     }
 
     static JSONArray byteArrayToJSON(byte[] bytes) {
@@ -116,20 +108,12 @@ public class Util {
         return new String(hexChars);
     }
 
-    static byte[] jsonToByteArray(JSONArray json) throws JSONException {
-        byte[] b = new byte[json.length()];
-        for (int i = 0; i < json.length(); i++) {
-            b[i] = (byte) json.getInt(i);
-        }
-        return b;
-    }
-
     static JSONArray messageToJSON(NdefMessage message) {
         if (message == null) {
             return null;
         }
 
-        List<JSONObject> list = new ArrayList<JSONObject>();
+        List<JSONObject> list = new ArrayList<>();
 
         for (NdefRecord ndefRecord : message.getRecords()) {
             list.add(recordToJSON(ndefRecord));
@@ -147,7 +131,7 @@ public class Util {
             json.put("payload", byteArrayToJSON(record.getPayload()));
         } catch (JSONException e) {
             //Not sure why this would happen, documentation is unclear.
-            Log.e(TAG, "Failed to convert ndef record into json: " + record.toString(), e);
+            Log.e(TAG, "Failed to convert ndef record into json: " + record, e);
         }
         return json;
     }
