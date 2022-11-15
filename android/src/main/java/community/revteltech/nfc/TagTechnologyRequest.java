@@ -32,8 +32,18 @@ class TagTechnologyRequest {
         return mTechType;
     }
 
-    Callback getPendingCallback() {
-        return mJsCallback;
+    void invokePendingCallbackWithError(String err) {
+        if (mJsCallback != null) {
+            mJsCallback.invoke(err);
+            mJsCallback = null;
+        }
+    }
+
+    void invokePendingCallback(String connectedTech) {
+        if (mJsCallback != null) {
+            mJsCallback.invoke(null, connectedTech);
+            mJsCallback = null;
+        }
     }
 
     TagTechnology getTechHandle() {
