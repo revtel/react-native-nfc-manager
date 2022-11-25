@@ -4,29 +4,6 @@
 #import "React/RCTEventDispatcher.h"
 #import "React/RCTLog.h"
 
-NSString* getHexString(NSData *data) {
-    NSUInteger capacity = data.length * 2;
-    NSMutableString *sbuf = [NSMutableString stringWithCapacity:capacity];
-    const unsigned char *buf = data.bytes;
-    NSInteger i;
-    for (i=0; i<data.length; ++i) {
-        [sbuf appendFormat:@"%02lX", (unsigned long)buf[i]];
-    }
-    return sbuf;
-}
-
-NSString* getErrorMessage(NSError *error) {
-     NSDictionary *userInfo = [error userInfo];
-     NSError *underlyingError = [userInfo objectForKey:NSUnderlyingErrorKey];
-    if (underlyingError != nil) {
-        return [NSString stringWithFormat:@"%@:%ld,%@:%ld",
-                [error domain], (long)[error code],
-                [underlyingError domain], (long)[underlyingError code]];
-    }
-    return [NSString stringWithFormat:@"%@:%ld",
-            [error domain], (long)[error code]];
-}
-
 @implementation NfcManager {
     NSDictionary *nfcTechTypes;
     NSArray *techRequestTypes;
@@ -37,7 +14,6 @@ RCT_EXPORT_MODULE()
 
 @synthesize session;
 @synthesize tagSession;
-@synthesize bridge = _bridge;
 
 static NSString *const kBgNfcTagNotification = @"RNBgNfcTagNotification";
 NSArray * bgNdefRecords = nil;
@@ -112,38 +88,12 @@ continueUserActivity:(NSUserActivity *)userActivity
              ];
 }
 
-- (NSData *)arrayToData: (NSArray *) array
-{
-  Byte bytes[[array count]];
-  for (int i = 0; i < [array count]; i++) {
-    bytes[i] = [[array objectAtIndex:i] integerValue];
-  }
-  NSData *payload = [[NSData alloc] initWithBytes:bytes length:[array count]];
-  return payload;
-}
-
-+ (NSArray *)dataToArray:(NSData *)data
-{
-    const unsigned char *dataBuffer = data ? (const unsigned char *)[data bytes] : NULL;
-    
-    if (!dataBuffer)
-        return @[];
-    
-    NSUInteger          dataLength  = [data length];
-    NSMutableArray     *array  = [NSMutableArray arrayWithCapacity:dataLength];
-    
-    for (int i = 0; i < dataLength; ++i)
-        [array addObject:[NSNumber numberWithInteger:dataBuffer[i]]];
-    
-    return array;
-}
-
 + (NSDictionary*)convertNdefRecord:(NFCNDEFPayload *) record
 {
     return @{
-             @"id": [self dataToArray:[record identifier]],
-             @"payload": [self dataToArray: [record payload]],
-             @"type": [self dataToArray:[record type]],
+             @"id": dataToArray([record identifier]),
+             @"payload": dataToArray([record payload]),
+             @"type": dataToArray([record type]),
              @"tnf": [NSNumber numberWithInt:[record typeNameFormat]]
              };
 }
@@ -179,13 +129,13 @@ continueUserActivity:(NSUserActivity *)userActivity
             id<NFCISO7816Tag> iso7816Tag = [tag asNFCISO7816Tag];
             [tagInfo setObject:getHexString(iso7816Tag.identifier) forKey:@"id"];
             [tagInfo setObject:iso7816Tag.initialSelectedAID forKey:@"initialSelectedAID"];
-            [tagInfo setObject:[NfcManager dataToArray:iso7816Tag.historicalBytes] forKey:@"historicalBytes"];
-            [tagInfo setObject:[NfcManager dataToArray:iso7816Tag.applicationData] forKey:@"applicationData"];
+            [tagInfo setObject:dataToArray(iso7816Tag.historicalBytes) forKey:@"historicalBytes"];
+            [tagInfo setObject:dataToArray(iso7816Tag.applicationData) forKey:@"applicationData"];
         } else if (tag.type == NFCTagTypeISO15693) {
             id<NFCISO15693Tag> iso15693Tag = [tag asNFCISO15693Tag];
             [tagInfo setObject:getHexString(iso15693Tag.identifier) forKey:@"id"];
             [tagInfo setObject:[NSNumber numberWithUnsignedInteger:iso15693Tag.icManufacturerCode] forKey:@"icManufacturerCode"];
-            [tagInfo setObject:[NfcManager dataToArray:iso15693Tag.icSerialNumber] forKey:@"icSerialNumber"];
+            [tagInfo setObject:dataToArray(iso15693Tag.icSerialNumber) forKey:@"icSerialNumber"];
         } else if (tag.type == NFCTagTypeFeliCa) {
             id<NFCFeliCaTag> felicaTag = [tag asNFCFeliCaTag];
             [tagInfo setObject:getHexString(felicaTag.currentIDm) forKey:@"idm"];
@@ -196,18 +146,17 @@ continueUserActivity:(NSUserActivity *)userActivity
     return tagInfo;
 }
 
-- (id<NFCNDEFTag>)getNDEFTagHandle:(id<NFCTag>)tag {
+- (id<NFCNDEFTag>)getNDEFTagHandle:(id<NFCTag>)tag
+    API_AVAILABLE(ios(13.0)) {
     // all following types inherite from NFCNDEFTag
-    if (@available(iOS 13.0, *)) {
-        if (tag.type == NFCTagTypeMiFare) {
-            return [tag asNFCMiFareTag];
-        } else if (tag.type == NFCTagTypeISO7816Compatible) {
-            return [tag asNFCISO7816Tag];
-        } else if (tag.type == NFCTagTypeISO15693) {
-            return [tag asNFCISO15693Tag];
-        } else if (tag.type == NFCTagTypeFeliCa) {
-            return [tag asNFCFeliCaTag];
-        }
+    if (tag.type == NFCTagTypeMiFare) {
+        return [tag asNFCMiFareTag];
+    } else if (tag.type == NFCTagTypeISO7816Compatible) {
+        return [tag asNFCISO7816Tag];
+    } else if (tag.type == NFCTagTypeISO15693) {
+        return [tag asNFCISO15693Tag];
+    } else if (tag.type == NFCTagTypeFeliCa) {
+        return [tag asNFCFeliCaTag];
     }
 
     return nil;
@@ -235,31 +184,29 @@ continueUserActivity:(NSUserActivity *)userActivity
 }
 
 - (void)tagReaderSession:(NFCTagReaderSession *)session didDetectTags:(NSArray<__kindof id<NFCTag>> *)tags
-{
+    API_AVAILABLE(ios(13.0)) {
     NSLog(@"NFCTag didDetectTags");
-    if (@available(iOS 13.0, *)) {
-        if (techRequestCallback != nil) {
-            for (id<NFCTag> tag in tags) {
-                NSString * tagType = [self getRNTechName:tag];
-                
-                for (NSString* requestType in techRequestTypes) {
-                    // here we treat Ndef is a special case, because all specific tech types
-                    // inherites from NFCNDEFTag, so we simply allow it to connect
-                    if ([tagType isEqualToString:requestType] || [requestType isEqualToString:@"Ndef"]) {
-                        RCTResponseSenderBlock pendingCallback = techRequestCallback;
-                        techRequestCallback = nil;
+    if (techRequestCallback != nil) {
+        for (id<NFCTag> tag in tags) {
+            NSString * tagType = [self getRNTechName:tag];
+            
+            for (NSString* requestType in techRequestTypes) {
+                // here we treat Ndef is a special case, because all specific tech types
+                // inherites from NFCNDEFTag, so we simply allow it to connect
+                if ([tagType isEqualToString:requestType] || [requestType isEqualToString:@"Ndef"]) {
+                    RCTResponseSenderBlock pendingCallback = techRequestCallback;
+                    techRequestCallback = nil;
 
-                        [tagSession connectToTag:tag
-                               completionHandler:^(NSError *error) {
-                            if (error != nil) {
-                                pendingCallback(@[getErrorMessage(error)]);
-                                return;
-                            }
-                            
-                            pendingCallback(@[[NSNull null], requestType]);
-                        }];
-                        return;
-                    }
+                    [tagSession connectToTag:tag
+                           completionHandler:^(NSError *error) {
+                        if (error != nil) {
+                            pendingCallback(@[getErrorMessage(error)]);
+                            return;
+                        }
+                        
+                        pendingCallback(@[[NSNull null], requestType]);
+                    }];
+                    return;
                 }
             }
         }
@@ -267,7 +214,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 }
 
 - (void)tagReaderSession:(NFCTagReaderSession *)session didInvalidateWithError:(NSError *)error
-{
+    API_AVAILABLE(ios(13.0)) {
     NSLog(@"NFCTag didInvalidateWithError");
     if (techRequestCallback) {
         techRequestCallback(@[getErrorMessage(error)]);
@@ -280,7 +227,7 @@ continueUserActivity:(NSUserActivity *)userActivity
 }
 
 - (void)tagReaderSessionDidBecomeActive:(NFCTagReaderSession *)session
-{
+    API_AVAILABLE(ios(13.0)) {
     NSLog(@"NFCTag didBecomeActive");
 }
 
@@ -339,8 +286,12 @@ RCT_EXPORT_METHOD(requestTechnology: (NSArray *)techs options: (NSDictionary *)o
 {
     if (@available(iOS 13.0, *)) {
         if (tagSession == nil && session == nil) {
+            NFCPollingOption pollFlags = NFCPollingISO14443 | NFCPollingISO15693;
+            if ([techs containsObject:@"felica"]) {
+                pollFlags |= NFCPollingISO18092;
+            }
             tagSession = [[NFCTagReaderSession alloc]
-                         initWithPollingOption:(NFCPollingISO14443 | NFCPollingISO15693) delegate:self queue:dispatch_get_main_queue()];
+                          initWithPollingOption:pollFlags delegate:self queue:dispatch_get_main_queue()];
             tagSession.alertMessage = [options objectForKey:@"alertMessage"];
             [tagSession beginSession];
             techRequestTypes = techs;
@@ -499,7 +450,7 @@ RCT_EXPORT_METHOD(writeNdefMessage:(NSArray*)bytes callback:(nonnull RCTResponse
         }
         
         if (ndefTag) {
-            NSData *data = [self arrayToData:bytes];
+            NSData *data = arrayToData(bytes);
             NFCNDEFMessage *ndefMsg = [NFCNDEFMessage ndefMessageWithData:data];
             if (!ndefMsg) {
                 callback(@[@"invalid ndef msg"]);
@@ -568,8 +519,8 @@ RCT_EXPORT_METHOD(queryNDEFStatus:(nonnull RCTResponseSenderBlock)callback)
                 } else {
                     callback(@[[NSNull null],
                                @{
-                                   @"status": [[NSNumber alloc] initWithInt:status],
-                                   @"capacity": [[NSNumber alloc] initWithInt:capacity]
+                                   @"status": [[NSNumber alloc] initWithInt:(int)status],
+                                   @"capacity": [[NSNumber alloc] initWithInt:(int)capacity]
                                }
                              ]);
                 }
@@ -578,141 +529,6 @@ RCT_EXPORT_METHOD(queryNDEFStatus:(nonnull RCTResponseSenderBlock)callback)
         }
         
         callback(@[@"No ndef available", [NSNull null]]);
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-
-
-RCT_EXPORT_METHOD(sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (tagSession != nil) {
-            if (tagSession.connectedTag) {
-                id<NFCMiFareTag> mifareTag = [tagSession.connectedTag asNFCMiFareTag];
-                NSData *data = [self arrayToData:bytes];
-                NSLog(@"input bytes: %@", getHexString(data));
-                if (mifareTag) {
-                    [mifareTag sendMiFareCommand:data
-                               completionHandler:^(NSData *response, NSError *error) {
-                        if (error) {
-                            callback(@[getErrorMessage(error), [NSNull null]]);
-                        } else {
-                            callback(@[[NSNull null], [NfcManager dataToArray:response]]);
-                        }
-                    }];
-                    return;
-                } else {
-                    callback(@[@"not a mifare tag", [NSNull null]]);
-                }
-            }
-            callback(@[@"Not connected", [NSNull null]]);
-        } else {
-            callback(@[@"Not even registered", [NSNull null]]);
-        }
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(sendFelicaCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (tagSession != nil) {
-            if (tagSession.connectedTag) {
-                id<NFCFeliCaTag> felicaTag = [tagSession.connectedTag asNFCFeliCaTag];
-                NSData *data = [self arrayToData:bytes];
-                NSLog(@"input bytes: %@", getHexString(data));
-                if (felicaTag) {
-                    [felicaTag sendFeliCaCommandPacket:data
-                               completionHandler:^(NSData *response, NSError *error) {
-                        if (error) {
-                            callback(@[getErrorMessage(error), [NSNull null]]);
-                        } else {
-                            callback(@[[NSNull null], [NfcManager dataToArray:response]]);
-                        }
-                    }];
-                    return;
-                } else {
-                    callback(@[@"not a felica tag", [NSNull null]]);
-                }
-            }
-            callback(@[@"Not connected", [NSNull null]]);
-        } else {
-            callback(@[@"Not even registered", [NSNull null]]);
-        }
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(sendCommandAPDUBytes:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (tagSession != nil) {
-            if (tagSession.connectedTag) {
-                id<NFCISO7816Tag> iso7816Tag = [tagSession.connectedTag asNFCISO7816Tag];
-                NSData *data = [self arrayToData:bytes];
-                NFCISO7816APDU *apdu = [[NFCISO7816APDU alloc] initWithData:data];
-                if (iso7816Tag) {
-                    [iso7816Tag sendCommandAPDU:apdu completionHandler:^(NSData* response, uint8_t sw1, uint8_t sw2, NSError* error) {
-                        if (error) {
-                            callback(@[getErrorMessage(error), [NSNull null]]);
-                        } else {
-                            callback(@[[NSNull null], [NfcManager dataToArray:response], [NSNumber numberWithInt:sw1], [NSNumber numberWithInt:sw2]]);
-                        }
-                    }];
-                    return;
-                } else {
-                    callback(@[@"not an iso7816 tag", [NSNull null]]);
-                }
-            }
-            callback(@[@"Not connected", [NSNull null]]);
-        } else {
-            callback(@[@"Not even registered", [NSNull null]]);
-        }
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(sendCommandAPDU:(NSDictionary *)apduData callback: (nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (tagSession != nil) {
-            if (tagSession.connectedTag) {
-                id<NFCISO7816Tag> iso7816Tag = [tagSession.connectedTag asNFCISO7816Tag];
-                NSNumber *cla = [apduData objectForKey:@"cla"];
-                NSNumber *ins = [apduData objectForKey:@"ins"];
-                NSNumber *p1 = [apduData objectForKey:@"p1"];
-                NSNumber *p2 = [apduData objectForKey:@"p2"];
-                NSArray *dataArray = [apduData objectForKey:@"data"];
-                NSData *data = [self arrayToData:dataArray];
-                NSNumber *le = [apduData objectForKey:@"le"];
-                
-                /*
-                NFCISO7816APDU *apdu = [[NFCISO7816APDU alloc] initWithInstructionClass:0 instructionCode:0x84 p1Parameter:0 p2Parameter:0 data:[[NSData alloc] init] expectedResponseLength:8]
-                 */
-                
-                NFCISO7816APDU *apdu = [[NFCISO7816APDU alloc] initWithInstructionClass:[cla unsignedCharValue] instructionCode:[ins unsignedCharValue] p1Parameter:[p1 unsignedCharValue] p2Parameter:[p2 unsignedCharValue] data:data expectedResponseLength:[le integerValue]];
-                if (iso7816Tag) {
-                    [iso7816Tag sendCommandAPDU:apdu completionHandler:^(NSData* response, uint8_t sw1, uint8_t sw2, NSError* error) {
-                        if (error) {
-                            callback(@[getErrorMessage(error), [NSNull null]]);
-                        } else {
-                            callback(@[[NSNull null], [NfcManager dataToArray:response], [NSNumber numberWithInt:sw1], [NSNumber numberWithInt:sw2]]);
-                        }
-                    }];
-                    return;
-                } else {
-                    callback(@[@"not an iso7816 tag", [NSNull null]]);
-                }
-            }
-            callback(@[@"Not connected", [NSNull null]]);
-        } else {
-            callback(@[@"Not even registered", [NSNull null]]);
-        }
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
     }
@@ -748,525 +564,6 @@ RCT_EXPORT_METHOD(isTagSessionAvailable:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 11.0, *)) {
         callback(@[[NSNull null], tagSession != nil ? @YES : @NO]);
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-// ---------------------------
-// iso15693
-// ---------------------------
-RCT_EXPORT_METHOD(iso15693_getSystemInfo:(nonnull NSNumber *)flags callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag rFlag = [flags unsignedIntValue];
-        
-        [tag getSystemInfoWithRequestFlag:rFlag completionHandler:
-         ^(NSInteger dsfid, NSInteger afi, NSInteger blockSize, NSInteger blockCount, NSInteger icReference, NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[[NSNull null], @{
-                           @"dsfid": @(dsfid),
-                           @"afi": @(afi),
-                           @"blockSize": @(blockSize),
-                           @"blockCount": @(blockCount),
-                           @"icReference": @(icReference)
-            }]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_readSingleBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint8_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
-        
-        [tag readSingleBlockWithRequestFlags:flags
-                                 blockNumber:blockNumber
-                           completionHandler:^(NSData *resp, NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[[NSNull null], [NfcManager dataToArray:resp]]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_readMultipleBlocks:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        NSRange blockRange = NSMakeRange(
-            [[options objectForKey:@"blockNumber"] unsignedIntValue],
-            [[options objectForKey:@"blockCount"] unsignedIntValue]
-        );
-
-        [tag readMultipleBlocksWithRequestFlags:flags
-                                 blockRange:blockRange
-                           completionHandler:^(NSArray<NSData *> *dataBlocks, NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            NSMutableArray *blocks = [NSMutableArray arrayWithCapacity:[dataBlocks count]];
-            [dataBlocks enumerateObjectsUsingBlock:^(NSData *blockData, NSUInteger idx, BOOL *stop) {
-                [blocks addObject:[NfcManager dataToArray:blockData]];
-            }];
-            callback(@[[NSNull null], blocks]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_writeSingleBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint8_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
-        NSData *dataBlock = [self arrayToData:[options mutableArrayValueForKey:@"dataBlock"]];
-        
-        [tag writeSingleBlockWithRequestFlags:flags
-                                  blockNumber:blockNumber
-                                    dataBlock:dataBlock
-                           completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_lockBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint8_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
-        
-        [tag lockBlockWithRequestFlags:flags
-                                  blockNumber:blockNumber
-                           completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_writeAFI:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint8_t afi = [[options objectForKey:@"afi"] unsignedIntValue];
-        
-        [tag writeAFIWithRequestFlag:flags
-                                 afi:afi
-                   completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_lockAFI:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        
-        [tag lockAFIWithRequestFlag:flags
-                  completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_writeDSFID:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint8_t dsfid = [[options objectForKey:@"dsfid"] unsignedIntValue];
-        
-        [tag writeDSFIDWithRequestFlag:flags
-                                 dsfid:dsfid
-                   completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_lockDSFID:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        
-        // notice thie method name, DSFID -> DFSID, seems to be a typo in Core NFC
-        [tag lockDFSIDWithRequestFlag:flags
-                  completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_resetToReady:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        
-        [tag resetToReadyWithRequestFlags:flags
-                  completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_select:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        
-        [tag selectWithRequestFlags:flags
-                  completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_stayQuiet:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        [tag stayQuietWithCompletionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_customCommand:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        NSInteger customCommandCode = [[options objectForKey:@"customCommandCode"] integerValue];
-        NSData *customRequestParameters = [self arrayToData:[options mutableArrayValueForKey:@"customRequestParameters"]];
-        
-        [tag customCommandWithRequestFlag:flags
-                        customCommandCode: customCommandCode
-                  customRequestParameters: customRequestParameters
-                   completionHandler:^(NSData *resp, NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[[NSNull null], [NfcManager dataToArray:resp]]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_extendedReadSingleBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint16_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
-        
-        [tag extendedReadSingleBlockWithRequestFlags:flags
-                                         blockNumber:blockNumber
-                                   completionHandler:^(NSData *resp, NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[[NSNull null], [NfcManager dataToArray:resp]]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_extendedWriteSingleBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint16_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
-        NSData *dataBlock = [self arrayToData:[options mutableArrayValueForKey:@"dataBlock"]];
-        
-        [tag extendedWriteSingleBlockWithRequestFlags:flags
-                                  blockNumber:blockNumber
-                                    dataBlock: dataBlock
-                           completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
-    } else {
-        callback(@[@"Not support in this device", [NSNull null]]);
-    }
-}
-
-RCT_EXPORT_METHOD(iso15693_extendedLockBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
-{
-    if (@available(iOS 13.0, *)) {
-        if (!tagSession || !tagSession.connectedTag) {
-            callback(@[@"Not connected", [NSNull null]]);
-            return;
-        }
-        
-        id<NFCISO15693Tag> tag = [tagSession.connectedTag asNFCISO15693Tag];
-        if (!tag) {
-            callback(@[@"incorrect tag type", [NSNull null]]);
-            return;
-        }
-
-        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
-        uint16_t blockNumber = [[options objectForKey:@"blockNumber"] unsignedIntValue];
-        
-        [tag extendedLockBlockWithRequestFlags:flags
-                                  blockNumber:blockNumber
-                           completionHandler:^(NSError *error) {
-            if (error) {
-                callback(@[getErrorMessage(error), [NSNull null]]);
-                return;
-            }
-            
-            callback(@[]);
-        }];
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
     }
