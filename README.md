@@ -302,6 +302,7 @@ The plugin provides props for extra customization. Every time you change the pro
 - `nfcPermission` (_string | false_): Sets the iOS `NFCReaderUsageDescription` permission message to the `Info.plist`. Setting `false` will skip adding the permission. Defaults to `Allow $(PRODUCT_NAME) to interact with nearby NFC devices` (Info.plist).
 - `selectIdentifiers` (_string[]_): Sets the iOS [`com.apple.developer.nfc.readersession.iso7816.select-identifiers`](https://developer.apple.com/documentation/bundleresources/information_property_list/select-identifiers) to a list of supported application IDs (Info.plist).
 - `systemCodes` (_string[]_): Sets the iOS [`com.apple.developer.nfc.readersession.felica.systemcodes`](https://developer.apple.com/documentation/bundleresources/information_property_list/systemcodes) to a user provided list of FeliCa™ system codes that the app supports (Info.plist). Each system code must be a discrete value. The wild card value (`0xFF`) isn't allowed.
+- `includeNdefEntitlement` (true | false): When explicitly set to false, removes the NDEF entitlement as a workaround to [asset validation invalid entitlement bug](https://stackoverflow.com/questions/58131299/xcode-testflight-validate-error-itms-90778-ndef-is-disallowed).
 
 #### Example
 
@@ -314,7 +315,8 @@ The plugin provides props for extra customization. Every time you change the pro
         {
           "nfcPermission": "Custom permission message",
           "selectIdentifiers": ["A0000002471001"],
-          "systemCodes": ["8008"]
+          "systemCodes": ["8008"],
+          "includeNdefEntitlement": false,
         }
       ]
     ]
