@@ -44,7 +44,7 @@ function withIosNfcEntitlement(c, {includeNdefEntitlement}) {
     // Add the required formats
     let entitlements = ['NDEF', 'TAG']
     if (includeNdefEntitlement === false) {
-      entitlements.remove('NDEF')
+      entitlements = ['TAG']
     }
     config.modResults = addValuesToArray(
       config.modResults,
