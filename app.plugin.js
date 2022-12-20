@@ -39,13 +39,17 @@ function addValuesToArray(obj, key, values) {
   return obj;
 }
 
-function withIosNfcEntitlement(c) {
+function withIosNfcEntitlement(c, {includeNdefEntitlement}) {
   return withEntitlementsPlist(c, (config) => {
     // Add the required formats
+    let entitlements = ['NDEF', 'TAG']
+    if (includeNdefEntitlement === false) {
+      entitlements.remove('NDEF')
+    }
     config.modResults = addValuesToArray(
       config.modResults,
       'com.apple.developer.nfc.readersession.formats',
-      ['NDEF', 'TAG'],
+      entitlements,
     );
 
     return config;
@@ -81,8 +85,8 @@ function withIosNfcSystemCodes(c, {systemCodes}) {
 }
 
 function withNfc(config, props = {}) {
-  const {nfcPermission, selectIdentifiers, systemCodes} = props;
-  config = withIosNfcEntitlement(config);
+  const {nfcPermission, selectIdentifiers, systemCodes, includeNdefEntitlement} = props;
+  config = withIosNfcEntitlement(config, {includeNdefEntitlement});
   config = withIosNfcSelectIdentifiers(config, {selectIdentifiers});
   config = withIosNfcSystemCodes(config, {systemCodes});
 
