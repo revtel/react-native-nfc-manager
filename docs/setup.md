@@ -47,3 +47,24 @@ Simple add `uses-permission` into your `AndroidManifest.xml`:
 ```xml
  <uses-permission android:name="android.permission.NFC" />
 ```
+
+### **Android 12**
+
+We start to support Android 12 from `v3.11.1`, and you will need to update `compileSdkVersion` to `31`, otherwise the build will fail:
+
+```
+buildscript {
+    ext {
+        ...
+        compileSdkVersion = 31
+        ...
+    }
+    ...
+}
+```
+
+The reason for this is because Android puts new limitation on [PendingIntent](https://developer.android.com/reference/android/app/PendingIntent#FLAG_MUTABLE) which says `Starting with Build.VERSION_CODES.S, it will be required to explicitly specify the mutability of PendingIntents`
+
+> The original issue is [here](https://github.com/revtel/react-native-nfc-manager/issues/469)
+
+If you don't care about **Android 12** for now, you can use **`v3.11.0`** as a short term solution.
