@@ -10,29 +10,92 @@ Contributions are welcome!
 
 Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltech](https://github.com/revtel)
 
-## Install
 
-### javascript part
+## Table of Contents
+
+1. [Installation](#installation)
+2. [Getting Started](#gettingstarted)
+3. [Setup](#setup)
+4. [Documentation](#docs)
+5. [Nfc compatibility](#nfccompatibility)
+6. [Usage Concept](#usageconcept)
+7. [API](#api)
+8. [App demo](#appdemo)
+9. [Learn](#learn)
+
+## Installation
+
+<a name="installation"></a>
 
 ```shell
 npm i --save react-native-nfc-manager
 ```
-
-### native part
+### iOS
 
 This library use native-modules, so you will need to do `pod install` for iOS:
 
 ```shell
 cd ios && pod install && cd ..
 ```
+### Android
 
-For Android, it should be properly auto-linked, so you don't need to do anything.
+It should be properly auto-linked, so you don't need to do anything.
 
 ## Setup
 
-Please see [here](setup.md)
+<a name="setup"></a>
 
-### **Android 12**
+### iOS
+
+1. In [apple developer site](https://developer.apple.com/), enable capability for NFC
+
+![enable capability](./images/enable-capability.png "enable capability")
+
+2. in Xcode, add `NFCReaderUsageDescription` into your `info.plist`, for example:
+
+```
+<key>NFCReaderUsageDescription</key>
+<string>We need to use NFC</string>
+```
+
+More info on Apple's [doc](https://developer.apple.com/documentation/bundleresources/information_property_list/nfcreaderusagedescription?language=objc)
+
+Additionally, if writing ISO7816 tags add application identifiers (aid) into your `info.plist` as needed like this.
+```
+<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+<array>
+  <string>D2760000850100</string>
+  <string>D2760000850101</string>
+</array>
+```
+
+More info on Apple's [doc](https://developer.apple.com/documentation/corenfc/nfciso7816tag)
+
+An incomplete list of aid's can be found here. [Application identifier](https://www.eftlab.com/knowledge-base/211-emv-aid-rid-pix/)
+
+3. in Xcode's `Signing & Capabilities` tab, make sure `Near Field Communication Tag Reading` capability had been added, like this:
+
+![xcode-add-capability](./images/xcode-capability.png "xcode capability")
+
+If this is the first time you toggle the capabilities, the Xcode will generate a `<your-project>.entitlement` file for you:
+
+![xcode-add-entitlement](./images/xcode-entitlement.png "xcode entitlement")
+
+4. in Xcode, review the generated entitlement. It should look like this:
+
+![edit entitlement](./images/edit-entitlement.png "edit entitlement")
+
+More info on Apple's [doc](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_nfc_readersession_formats?language=objc)
+
+### Android
+
+Simple add `uses-permission` into your `AndroidManifest.xml`:
+
+```xml
+ <uses-permission android:name="android.permission.NFC" />
+```
+
+#### **Support Android 12**
 
 We start to support Android 12 from `v3.11.1`, and you will need to update `compileSdkVersion` to `31`, otherwise the build will fail:
 
@@ -51,31 +114,12 @@ The reason for this is because Android puts new limitation on [PendingIntent](ht
 
 > The original issue is [here](https://github.com/revtel/react-native-nfc-manager/issues/469)
 
-BTW, if you don't care about **Android 12** for now, you can use **`v3.11.0`** as a short term solution.
+If you don't care about **Android 12** for now, you can use **`v3.11.0`** as a short term solution.
 
-### **[Demo App] NfcOpenReWriter**
 
-We have a full featured NFC utility app using this library available for download.
+## Getting Started
 
-<a href='https://apps.apple.com/tw/app/nfc-rewriter/id1551243964' target='_blank'>
-<img alt="react-native-nfc-rewriter" src="./images/Apple-App-Store-Icon.png" width="250">
-</a>
-
-</br>
-
-<a href='https://play.google.com/store/apps/details?id=com.washow.nfcopenrewriter' target='_blank'>
-<img alt="react-native-nfc-rewriter" src="./images/google-play-icon.jpeg" width="250">
-</a>
-
-It also open sourced in this repo: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
-
-## Learn
-
-We have published a React Native NFC course with [newline.co](https://www.newline.co/), check it out!
-- Free course (1 hour) about basic NFC setup and concept [here](https://www.youtube.com/watch?v=rAS-DvNUFck)
-- Full course (3 hours) for more (NDEF, Deep Linking, NTAG password protection, signature with UID) [here](https://www.newline.co/courses/newline-guide-to-nfcs-with-react-native)
-
-## Usage
+<a name="gettingstarted"></a>
 
 The simplest (and most common) use case for this library is to read `NFC` tags containing `NDEF`, which can be achieved via the following codes:
 
@@ -123,203 +167,109 @@ const styles = StyleSheet.create({
 export default App;
 ```
 
-Pleaes notice when running above codes, iOS and Android has different behaviors:
 
-- iOS will pop up a system scanning UI
-- Android provides **NO** system scanning UI
 
-Regarding the system scannning UI, both platforms should be able to scan your NFC tags succesfully and print out its content.
+## DOCUMENTATION
 
-### Old Style (registerTagEvent) To Scan NFC Tags
+<a name="docs"></a>
 
-There's an alterntaive style to scan NFC tags through `NfcManager.registerTagEvent`, like this:
+Check the full documentation that contains setup,examples, faq and more  [here](docs/readme.md)
 
-```javascript
-import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 
-// The following function resolves to a NFC Tag object using old event listener approach.
-// You can call it like this:
-//    `const nfcTag = await listenToNfcEventOnce()`
+## Nfc Compatibility
 
-function listenToNfcEventOnce() {
-  const cleanUp = () => {
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
-    NfcManager.setEventListener(NfcEvents.SessionClosed, null);
-  };
+<a name="nfccompatibility"></a>
 
-  return new Promise((resolve) => {
-    let tagFound = null;
+|NFC Technologies   | Android | iOS  |
+|---                |---      |---   |
+| `Ndef`            | ✅      | ✅   |
+| `NfcA`            | ✅      | ✅   |
+| `IsoDep`          | ✅      | ✅   |
+| `NfcB`            | ✅      | ❌   |
+| `NfcF`            | ✅      | ❌   |
+| `NfcV`            | ✅      | ❌   |
+| `MifareClassic`   | ✅      | ❌   |
+| `MifareUltralight`| ✅      | ❌   |
+| `MifareIOS`       | ❌      | ✅   |
+| `Iso15693IOS`     | ❌      | ✅   |
+| `FelicaIOS`       | ❌      | ✅   |
 
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, (tag) => {
-      tagFound = tag;
-      resolve(tagFound);
-      NfcManager.unregisterTagEvent();
-    });
+## Usage concept
 
-    NfcManager.setEventListener(NfcEvents.SessionClosed, () => {
-      cleanUp();
-      if (!tagFound) {
-        resolve();
-      }
-    });
-
-    NfcManager.registerTagEvent();
-  });
-}
-```
-
-As you can see, the above approach is more verbose and hard-to-read, so we recommend using `NfcManager.requestTechnology` instead of `NfcManager.registerTagEvent` in your application.
-
-## Advanced Usage Concept
+<a name="usageconcept"></a>
 
 In higher level, there're 4 steps to use this library:
 
-1. request your particular NFC technologies through `NfcManager.requestTechnology`, for example:
+0. (Recommended but not necessary) Before all next steps, use `NfcManager.start()` to start listen a tag.
 
-   - `Ndef`
-   - `NfcA`
-   - `NfcB` (Android-only)
-   - `NfcF` (Android-only)
-   - `NfcV` (Android-only)
-   - `IsoDep`
-   - `MifareClassic` (Android-only)
-   - `MifareUltralight` (Android-only)
-   - `MifareIOS` (ios-only)
-   - `Iso15693IOS` (ios-only)
-   - `FelicaIOS` (ios-only)
 
-2. select the proper NFC technology handler, which is implemented as getter in main `NfcManager` object, for example:
-
-   - `ndefHandler` (for `Ndef` tech)
-   - `nfcAHandler` (for `NfcA` tech)
-   - `isoDepHandler` (for `IsoDep` tech)
-   - `iso15693HandlerIOS` (for `Iso15693IOS` tech)
-   - `mifareClassicHandlerAndroid` (for `mifareClassic` tech)
-   - `mifareUltralightHandlerAndroid` (for `mifareUltralight` tech)
-   - ... and so on
-
-3. call specific methods on the NFC technology handler (for example `NfcManager.ndefHandler.writeNdefMessage`). To view all available methods for some tech handler, check out the [API List](index.d.ts)
-
-4. clean up your tech registration through `NfcManager.cancelTechnology`
-
-## Advanced Usage Example: NDEF-Writing
-
-For example, here's an example to write NDEF:
+1. Request your particular NFC technologies through `NfcManager.requestTechnology`. Let's request `Ndef` techonogy.
 
 ```javascript
-import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
-
-async function writeNdef({type, value}) {
-  let result = false;
-
-  try {
-    // STEP 1
-    await NfcManager.requestTechnology(NfcTech.Ndef);
-
-    const bytes = Ndef.encodeMessage([Ndef.textRecord('Hello NFC')]);
-
-    if (bytes) {
-      await NfcManager.ndefHandler // STEP 2
-        .writeNdefMessage(bytes); // STEP 3
-      result = true;
-    }
-  } catch (ex) {
-    console.warn(ex);
-  } finally {
-    // STEP 4
-    NfcManager.cancelTechnologyRequest();
-  }
-
-  return result;
-}
+NfcManager.requestTechnology(NfcTech.Ndef);
 ```
 
-## Advanced Usage Example: Mifare Ultralight
-
-Here's another example to read a Mifare Ultralight tag:
+2. Select the proper NFC technology handler, which is implemented as getter in main `NfcManager` object.
 
 ```javascript
-async function readMifare() {
-  let mifarePages = [];
-
-  try {
-    // STEP 1
-    let reqMifare = await NfcManager.requestTechnology(
-      NfcTech.MifareUltralight,
-    );
-
-    const readLength = 60;
-    const mifarePagesRead = await Promise.all(
-      [...Array(readLength).keys()].map(async (_, i) => {
-        const pages = await NfcManager.mifareUltralightHandlerAndroid // STEP 2
-          .mifareUltralightReadPages(i * 4); // STEP 3
-        mifarePages.push(pages);
-      }),
-    );
-  } catch (ex) {
-    console.warn(ex);
-  } finally {
-    // STEP 4
-    NfcManager.cancelTechnologyRequest();
-  }
-
-  return mifarePages;
-}
+NfcManager.ndefHandler
 ```
 
-To see more examples, please see [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
+3. Call specific methods on the NFC technology handler.
+
+```javascript
+NfcManager.ndefHandler.getNdefMessage()
+```
+
+4. Clean up your tech registration through:
+
+```javascript
+NfcManager.cancelTechnologyRequest()
+```
+
 
 ## API
 
-Please see [here](index.d.ts)
+<a name="api"></a>
 
-## FAQ
+The following table shows the handler for each technology, so if you need to use a technology, go to [index.d.ts](index.d.ts) and search for it.
 
-Please see [here](FAQ.md)
+|NFC Technologies   | Handlers |
+|---                |---      |
+| `Ndef`            | `NdefHandler` |
+| `NfcA`            | `NfcAHandler` |
+| `IsoDep`          | `IsoDepHandler` |
+| `NfcB`            | - |
+| `NfcF`            | - |
+| `NfcV`            | `NfcVHandler` |
+| `MifareClassic`   | `MifareClassicHandlerAndroid` |
+| `MifareUltralight`| `MifareUltralightHandlerAndroid` |
+| `MifareIOS`       | - |
+| `Iso15693IOS`     | `Iso15693HandlerIOS` |
+| `FelicaIOS`       | - |
 
-## Expo
 
-> This package cannot be used in the "Expo Go" app because [it requires custom native code](https://docs.expo.io/workflow/customizing/).
+## App Demo - NfcOpenReWriter
 
-After installing this npm package, add the [config plugin](https://docs.expo.io/guides/config-plugins/) to the [`plugins`](https://docs.expo.io/versions/latest/config/app/#plugins) array of your `app.json` or `app.config.js`:
+<a name="appdemo"></a>
 
-```json
-{
-  "expo": {
-    "plugins": ["react-native-nfc-manager"]
-  }
-}
-```
+We have a full featured NFC utility app using this library available for download. The source code is here: [**React Native NFC ReWriter App**](https://github.com/revtel/react-native-nfc-rewriter)
 
-Next, rebuild your app as described in the ["Adding custom native code"](https://docs.expo.io/workflow/customizing/) guide.
+<a href='https://apps.apple.com/tw/app/nfc-rewriter/id1551243964' target='_blank'>
+<img alt="react-native-nfc-rewriter" src="./images/Apple-App-Store-Icon.png" width="250">
+</a>
 
-> Notice: This Config Plugin will ensure the minimum Android SDK version is 31.
+</br>
 
-#### Props
+<a href='https://play.google.com/store/apps/details?id=com.washow.nfcopenrewriter' target='_blank'>
+<img alt="react-native-nfc-rewriter" src="./images/google-play-icon.jpeg" width="250">
+</a>
 
-The plugin provides props for extra customization. Every time you change the props or plugins, you'll need to rebuild (and `prebuild`) the native app. If no extra properties are added, defaults will be used.
+## Learn
 
-- `nfcPermission` (_string | false_): Sets the iOS `NFCReaderUsageDescription` permission message to the `Info.plist`. Setting `false` will skip adding the permission. Defaults to `Allow $(PRODUCT_NAME) to interact with nearby NFC devices` (Info.plist).
-- `selectIdentifiers` (_string[]_): Sets the iOS [`com.apple.developer.nfc.readersession.iso7816.select-identifiers`](https://developer.apple.com/documentation/bundleresources/information_property_list/select-identifiers) to a list of supported application IDs (Info.plist).
-- `systemCodes` (_string[]_): Sets the iOS [`com.apple.developer.nfc.readersession.felica.systemcodes`](https://developer.apple.com/documentation/bundleresources/information_property_list/systemcodes) to a user provided list of FeliCa™ system codes that the app supports (Info.plist). Each system code must be a discrete value. The wild card value (`0xFF`) isn't allowed.
-- `includeNdefEntitlement` (true | false): When explicitly set to false, removes the NDEF entitlement as a workaround to [asset validation invalid entitlement bug](https://stackoverflow.com/questions/58131299/xcode-testflight-validate-error-itms-90778-ndef-is-disallowed).
+<a name="learn"></a>
 
-#### Example
+We have published a React Native NFC course with [newline.co](https://www.newline.co/), check it out!
+- Free course (1 hour) about basic NFC setup and concept [here](https://www.youtube.com/watch?v=rAS-DvNUFck)
+- Full course (3 hours) for more (NDEF, Deep Linking, NTAG password protection, signature with UID) [here](https://www.newline.co/courses/newline-guide-to-nfcs-with-react-native)
 
-```json
-{
-  "expo": {
-    "plugins": [
-      [
-        "react-native-nfc-manager",
-        {
-          "nfcPermission": "Custom permission message",
-          "selectIdentifiers": ["A0000002471001"],
-          "systemCodes": ["8008"],
-          "includeNdefEntitlement": false,
-        }
-      ]
-    ]
-  }
-}
-```
