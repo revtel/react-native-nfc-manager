@@ -10,6 +10,7 @@ Contributions are welcome!
 
 Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltech](https://github.com/revtel)
 
+> Special thanks to [javix64](https://github.com/javix64) for restructuring the documentation!
 
 ## Table of Contents
 
@@ -173,8 +174,7 @@ export default App;
 
 <a name="docs"></a>
 
-Check the full documentation that contains setup,examples, faq and more  [here](docs/readme.md)
-
+Check the full documentation that contains `examples`, `faq` and other topics like `Expo` in our [Wiki](https://github.com/revtel/react-native-nfc-manager/wiki)
 
 ## Nfc Compatibility
 
