@@ -195,15 +195,17 @@ continueUserActivity:(NSUserActivity *)userActivity
                 // inherites from NFCNDEFTag, so we simply allow it to connect
                 if ([tagType isEqualToString:requestType] || [requestType isEqualToString:@"Ndef"]) {
                     RCTResponseSenderBlock pendingCallback = techRequestCallback;
-                    techRequestCallback = nil;
 
                     [tagSession connectToTag:tag
                            completionHandler:^(NSError *error) {
                         if (error != nil) {
-                            pendingCallback(@[getErrorMessage(error)]);
+                            NSLog(@"NFCTag restarting polling");
+                            [self->tagSession restartPolling];
                             return;
                         }
                         
+                        self->techRequestCallback = nil;
+
                         pendingCallback(@[[NSNull null], requestType]);
                     }];
                     return;
