@@ -72,6 +72,22 @@ Additionally, if writing ISO7816 tags add application identifiers (aid) into you
 
 More info on Apple's [doc](https://developer.apple.com/documentation/corenfc/nfciso7816tag)
 
+**Note:** If you are using `NfcTech.FelicaIOS`, you must also add the following code to your `Info.plist` file, otherwise the library will crash:
+
+```xml
+<key>com.apple.developer.nfc.readersession.felica.systemcodes</key>
+<array>
+  <string>8005</string>
+  <string>8008</string>
+  <string>0003</string>
+  <string>fe00</string>
+  <string>90b7</string>
+  <string>927a</string>
+  <string>12FC</string>
+  <string>86a7</string>
+</array>
+```
+
 An incomplete list of aid's can be found here. [Application identifier](https://www.eftlab.com/knowledge-base/211-emv-aid-rid-pix/)
 
 3. in Xcode's `Signing & Capabilities` tab, make sure `Near Field Communication Tag Reading` capability had been added, like this:
