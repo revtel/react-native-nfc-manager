@@ -251,6 +251,9 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     } else {
                         byte[] bytes = rnArrayToBytes(rnArray);
                         ndef.writeNdefMessage(new NdefMessage(bytes));
+                        ndef.close();
+                        //reconnection is needed in order to be able to read the written ndef 
+                        ndef.connect();
                         callback.invoke();
                     }
                 } catch (Exception ex) {
