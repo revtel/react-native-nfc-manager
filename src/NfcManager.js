@@ -104,8 +104,8 @@ class NfcManagerBase {
 
   setAlertMessage = DoNothing;
 
-  async writeNdefMessage(bytes) {
-    return handleNativeException(callNative('writeNdefMessage', [bytes]));
+  async writeNdefMessage(bytes, options = {}) {
+    return handleNativeException(callNative('writeNdefMessage', [bytes, options]));
   }
 
   async getNdefMessage() {

@@ -241,8 +241,10 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    public void writeNdefMessage(ReadableArray rnArray, Callback callback) {
+    public void writeNdefMessage(ReadableArray rnArray, ReadableMap options, Callback callback) {
         synchronized(this) {
+            boolean reconnectAfterWrite = options.getBoolean("reconnectAfterWrite");
+            
             if (techRequest != null) {
                 try {
                     Ndef ndef = (Ndef)techRequest.getTechHandle();
@@ -251,9 +253,11 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                     } else {
                         byte[] bytes = rnArrayToBytes(rnArray);
                         ndef.writeNdefMessage(new NdefMessage(bytes));
-                        ndef.close();
-                        //reconnection is needed in order to be able to read the written ndef 
-                        ndef.connect();
+                        if (reconnectAfterWrite) {
+                            ndef.close();
+                            //reconnection is needed in order to be able to read the written ndef 
+                            ndef.connect();
+                        }
                         callback.invoke();
                     }
                 } catch (Exception ex) {
