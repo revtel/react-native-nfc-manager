@@ -77,8 +77,9 @@ class NfcManagerAndroid extends NfcManagerBase {
   getLaunchTagEvent = () =>
     handleNativeException(callNative('getLaunchTagEvent'));
 
-  setNdefPushMessage = (bytes) =>
-    handleNativeException(callNative('setNdefPushMessage', [bytes]));
+  setNdefPushMessage = (bytes) => {
+    return Promise.reject('this api is deprecated');
+  }
 
   setTimeout = (timeout) =>
     handleNativeException(callNative('setTimeout', [timeout]));
