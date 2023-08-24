@@ -949,34 +949,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    public void setNdefPushMessage(ReadableArray rnArray, Callback callback) {
-        synchronized(this) {
-            if (techRequest == null && writeNdefRequest == null) {
-                try {
-                    Activity currentActivity = getCurrentActivity();
-                    if (currentActivity == null) {
-                        throw new RuntimeException("cannot get current activity");
-                    }
-
-                    NdefMessage msgToPush = null;
-                    if (rnArray != null) {
-                        msgToPush = new NdefMessage(rnArrayToBytes(rnArray));
-                    }
-
-                    NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
-                    nfcAdapter.setNdefPushMessage(msgToPush, currentActivity);
-                    callback.invoke();
-                } catch (Exception ex) {
-                    Log.d(LOG_TAG, ex.toString());
-                    callback.invoke(ex.toString());
-                }
-            } else {
-                callback.invoke(ERR_MULTI_REQ);
-            }
-        }
-    }
-
-    @ReactMethod
     public void start(Callback callback) {
         NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
         if (nfcAdapter != null) {
