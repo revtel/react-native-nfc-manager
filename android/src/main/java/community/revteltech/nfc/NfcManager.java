@@ -1300,6 +1300,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         // Parcelable[] messages = intent.getParcelableArrayExtra((NfcAdapter.EXTRA_NDEF_MESSAGES));
 
         synchronized(this) {
+            this.tag = tag;
             if (writeNdefRequest != null) {
                 writeNdef(
                         tag,
