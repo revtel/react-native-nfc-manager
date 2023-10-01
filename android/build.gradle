@@ -15,6 +15,13 @@ apply plugin: 'com.android.library'
 
 android {
 	compileSdkVersion safeExtGet('compileSdkVersion', 31)
+
+	def agpVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
+
+	if (agpVersion.tokenize('.')[0].toInteger() >= 7) {
+			namespace "community.revteltech.nfc"
+  }
+
 	defaultConfig {
 		minSdkVersion safeExtGet('minSdkVersion', 16)
     	//noinspection OldTargetApi
