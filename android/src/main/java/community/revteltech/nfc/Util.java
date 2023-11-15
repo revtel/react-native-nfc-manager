@@ -42,7 +42,10 @@ public class Util {
                     json.put("canMakeReadOnly", ndef.canMakeReadOnly());
                 } catch (NullPointerException e) {
                     json.put("canMakeReadOnly", JSONObject.NULL);
-                }
+                } catch (SecurityException e) {
+                    Log.e(TAG, "Failed due to out of date tag", e);
+                    json.put("canMakeReadOnly", JSONObject.NULL)
+                }   
             } catch (JSONException e) {
                 Log.e(TAG, "Failed to convert ndef into json: " + ndef, e);
             }
