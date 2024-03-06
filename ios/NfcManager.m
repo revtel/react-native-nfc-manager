@@ -306,6 +306,21 @@ RCT_EXPORT_METHOD(requestTechnology: (NSArray *)techs options: (NSDictionary *)o
     }
 }
 
+RCT_EXPORT_METHOD(restartTechnologyRequest:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 13.0, *)) {
+        if (tagSession != nil) {
+            NSLog(@"NfcManager restarting polling");
+            [self->tagSession restartPolling];
+            techRequestCallback = callback;
+        } else {
+            callback(@[@"No active registration", [NSNull null]]);
+        }
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
 RCT_EXPORT_METHOD(cancelTechnologyRequest:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 13.0, *)) {

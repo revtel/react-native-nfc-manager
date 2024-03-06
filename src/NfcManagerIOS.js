@@ -49,6 +49,12 @@ class NfcManagerIOS extends NfcManagerBase {
     );
   };
 
+  restartTechnologyRequestIOS = async () => {
+    return handleNativeException(
+        callNative('restartTechnologyRequest'),
+    );
+  };
+
   cancelTechnologyRequest = async (options = {}) => {
     const {throwOnError = false} = options;
     return handleNativeException(

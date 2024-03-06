@@ -266,6 +266,7 @@ declare module 'react-native-nfc-manager' {
             le: number;
           },
     ) => Promise<{response: number[]; sw1: number; sw2: number}>;
+    restartTechnologyRequestIOS: () => Promise<NfcTech | null>;
     iso15693HandlerIOS: Iso15693HandlerIOS;
 
     /**
