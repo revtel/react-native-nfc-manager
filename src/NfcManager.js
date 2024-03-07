@@ -96,6 +96,8 @@ class NfcManagerBase {
 
   requestTechnology = NotImpl;
 
+  restartTechnologyRequestIOS = NotImpl;
+
   cancelTechnologyRequest = NotImpl;
 
   getBackgroundTag = NotImpl;
