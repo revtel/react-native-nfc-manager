@@ -39,13 +39,17 @@ function addValuesToArray(obj, key, values) {
   return obj;
 }
 
-function withIosNfcEntitlement(c) {
+function withIosNfcEntitlement(c, {includeNdefEntitlement}) {
   return withEntitlementsPlist(c, (config) => {
     // Add the required formats
+    let entitlements = ['NDEF', 'TAG']
+    if (includeNdefEntitlement === false) {
+      entitlements = ['TAG']
+    }
     config.modResults = addValuesToArray(
       config.modResults,
       'com.apple.developer.nfc.readersession.formats',
-      ['NDEF', 'TAG'],
+      entitlements,
     );
 
     return config;
@@ -81,10 +85,18 @@ function withIosNfcSystemCodes(c, {systemCodes}) {
 }
 
 function withNfc(config, props = {}) {
-  const {nfcPermission, selectIdentifiers, systemCodes} = props;
-  config = withIosNfcEntitlement(config);
+  const {nfcPermission, selectIdentifiers, systemCodes, includeNdefEntitlement} = props;
+  config = withIosNfcEntitlement(config, {includeNdefEntitlement});
   config = withIosNfcSelectIdentifiers(config, {selectIdentifiers});
   config = withIosNfcSystemCodes(config, {systemCodes});
+
+  // We start to support Android 12 from v3.11.1, and you will need to update compileSdkVersion to 31,
+  // otherwise the build will fail:
+  config = AndroidConfig.Version.withBuildScriptExtMinimumVersion(config, {
+    name: 'compileSdkVersion',
+    minVersion: 31,
+  });
+
   if (nfcPermission !== false) {
     config = withIosPermission(config, props);
     config = AndroidConfig.Permissions.withPermissions(config, [

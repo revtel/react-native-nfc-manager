@@ -7,6 +7,7 @@ import {
 } from './NativeNfcManager';
 import {NdefHandler, NdefStatus} from './NfcTech/NdefHandler';
 import {NfcAHandler} from './NfcTech/NfcAHandler';
+import {NfcVHandler} from './NfcTech/NfcVHandler';
 import {IsoDepHandler} from './NfcTech/IsoDepHandler';
 import {
   handleNativeException,
@@ -33,6 +34,7 @@ const NfcTech = {
   MifareIOS: 'mifare',
   Iso15693IOS: 'iso15693',
   FelicaIOS: 'felica',
+  NdefFormatable: 'NdefFormatable',
 };
 
 const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
@@ -94,6 +96,8 @@ class NfcManagerBase {
 
   requestTechnology = NotImpl;
 
+  restartTechnologyRequestIOS = NotImpl;
+
   cancelTechnologyRequest = NotImpl;
 
   getBackgroundTag = NotImpl;
@@ -102,8 +106,8 @@ class NfcManagerBase {
 
   setAlertMessage = DoNothing;
 
-  async writeNdefMessage(bytes) {
-    return handleNativeException(callNative('writeNdefMessage', [bytes]));
+  async writeNdefMessage(bytes, options = {}) {
+    return handleNativeException(callNative('writeNdefMessage', [bytes, options]));
   }
 
   async getNdefMessage() {
@@ -122,6 +126,13 @@ class NfcManagerBase {
       this._nfcAHandler = new NfcAHandler();
     }
     return this._nfcAHandler;
+  }
+
+  get nfcVHandler() {
+    if (!this._nfcVHandler) {
+      this._nfcVHandler = new NfcVHandler();
+    }
+    return this._nfcVHandler;
   }
 
   get isoDepHandler() {

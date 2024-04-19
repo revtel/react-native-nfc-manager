@@ -95,6 +95,8 @@ export function buildNfcExceptionIOS(error) {
         return new InvalidParameterLength();
       } else if (code === NfcErrorIOS.errCodes.parameterOutOfBound) {
         return new ParameterOutOfBound();
+      } else if (code === NfcErrorIOS.errCodes.radioDisabled) {
+        return new RadioDisabled();
       } else if (code === NfcErrorIOS.errCodes.tagConnectionLost) {
         return new TagConnectionLost();
       } else if (code === NfcErrorIOS.errCodes.retryExceeded) {
