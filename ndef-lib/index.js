@@ -87,8 +87,8 @@ const ExtraTypeRecord = {
   androidApplicationRecord(packageName, id = []) {
     return PrimitiveRecord.externalTypeRecord(
       'android.com:pkg',
-      packageName,
       id,
+      packageName,
     );
   },
 

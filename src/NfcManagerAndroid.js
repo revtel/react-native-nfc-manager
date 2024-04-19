@@ -2,7 +2,6 @@ import {callNative} from './NativeNfcManager';
 import {NfcManagerBase} from './NfcManager';
 import {MifareClassicHandlerAndroid} from './NfcTech/MifareClassicHandlerAndroid';
 import {MifareUltralightHandlerAndroid} from './NfcTech/MifareUltralightHandlerAndroid';
-import {NdefFormatableHandlerAndroid} from './NfcTech/NdefFormatableHandlerAndroid';
 import {handleNativeException, buildNfcExceptionAndroid} from './NfcError';
 
 const NfcAdapter = {
@@ -14,8 +13,6 @@ const NfcAdapter = {
   FLAG_READER_SKIP_NDEF_CHECK: 0x80,
   FLAG_READER_NO_PLATFORM_SOUNDS: 0x100,
 };
-
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 class NfcManagerAndroid extends NfcManagerBase {
   constructor() {
@@ -44,13 +41,12 @@ class NfcManagerAndroid extends NfcManagerBase {
   };
 
   cancelTechnologyRequest = async (options = {}) => {
-    const {throwOnError = false, delayMsAndroid = 1000} = options;
+    const {throwOnError = false} = options;
 
     try {
       await callNative('cancelTechnologyRequest');
 
-      if (this.cleanUpTagRegistration) {
-        await delay(delayMsAndroid);
+      if (!this.cleanUpTagRegistration) {
         await this.unregisterTagEvent();
         this.cleanUpTagRegistration = false;
       }
@@ -77,9 +73,8 @@ class NfcManagerAndroid extends NfcManagerBase {
   getLaunchTagEvent = () =>
     handleNativeException(callNative('getLaunchTagEvent'));
 
-  setNdefPushMessage = (bytes) => {
-    return Promise.reject('this api is deprecated');
-  }
+  setNdefPushMessage = (bytes) =>
+    handleNativeException(callNative('setNdefPushMessage', [bytes]));
 
   setTimeout = (timeout) =>
     handleNativeException(callNative('setTimeout', [timeout]));
@@ -114,16 +109,6 @@ class NfcManagerAndroid extends NfcManagerBase {
       );
     }
     return this._mifareUltralightHandlerAndroid;
-  }
-
-  // -------------------------------------
-  // (android) NfcTech.NdefFormatable API
-  // -------------------------------------
-  get ndefFormatableHandlerAndroid() {
-    if (!this._ndefFormatableHandlerAndroid) {
-      this._ndefFormatableHandlerAndroid = new NdefFormatableHandlerAndroid(this);
-    }
-    return this._ndefFormatableHandlerAndroid;
   }
 
   // -------------------------------------

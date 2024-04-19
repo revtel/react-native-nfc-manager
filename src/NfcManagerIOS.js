@@ -8,7 +8,6 @@ import {
 } from './NfcManager';
 import {
   Nfc15693RequestFlagIOS,
-  Nfc15693ResponseFlagIOS,
   Iso15693HandlerIOS,
 } from './NfcTech/Iso15693HandlerIOS';
 import {handleNativeException} from './NfcError';
@@ -31,8 +30,6 @@ class NfcManagerIOS extends NfcManagerBase {
     for (const t of tech) {
       if (t === NfcTech.NfcA) {
         techList.push(NfcTech.MifareIOS);
-      } else if (t === NfcTech.NfcV) {
-        techList.push(NfcTech.Iso15693IOS);
       } else {
         techList.push(t);
       }
@@ -46,12 +43,6 @@ class NfcManagerIOS extends NfcManagerBase {
           ...options,
         },
       ]),
-    );
-  };
-
-  restartTechnologyRequestIOS = async () => {
-    return handleNativeException(
-        callNative('restartTechnologyRequest'),
     );
   };
 
@@ -154,4 +145,4 @@ class NfcManagerIOS extends NfcManagerBase {
   }
 }
 
-export {NfcManagerIOS, Nfc15693RequestFlagIOS, Nfc15693ResponseFlagIOS};
+export {NfcManagerIOS, Nfc15693RequestFlagIOS};

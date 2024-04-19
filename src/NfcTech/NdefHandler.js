@@ -9,16 +9,8 @@ const NdefStatus = {
 };
 
 class NdefHandler {
-  async writeNdefMessage(bytes, options) {
-  
-    const defaultOptions = { reconnectAfterWrite: false };
-    return handleNativeException(
-        callNative('writeNdefMessage', [
-            bytes, 
-            {...defaultOptions, ...options}
-        ])
-    );
-  
+  async writeNdefMessage(bytes) {
+    return handleNativeException(callNative('writeNdefMessage', [bytes]));
   }
 
   async getNdefMessage() {

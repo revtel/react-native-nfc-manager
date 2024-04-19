@@ -4,7 +4,6 @@ import {NfcEvents, NfcTech, NdefStatus} from './NfcManager';
 import {NfcAdapter, NfcManagerAndroid} from './NfcManagerAndroid';
 import {
   Nfc15693RequestFlagIOS,
-  Nfc15693ResponseFlagIOS,
   NfcManagerIOS,
 } from './NfcManagerIOS';
 import * as NfcError from './NfcError';
@@ -27,7 +26,6 @@ export {
   NfcEvents,
   NfcAdapter,
   Nfc15693RequestFlagIOS,
-  Nfc15693ResponseFlagIOS,
   Ndef,
   NdefStatus,
   NfcError,

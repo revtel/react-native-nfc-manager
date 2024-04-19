@@ -22,7 +22,6 @@ declare module 'react-native-nfc-manager' {
     MifareIOS = 'mifare',
     Iso15693IOS = 'iso15693',
     FelicaIOS = 'felica',
-    NdefFormatable = 'NdefFormatable',
   }
 
   export enum NdefStatus {
@@ -48,17 +47,6 @@ declare module 'react-native-nfc-manager' {
     Select = 1 << 4,
     Address = 1 << 5,
     Option = 1 << 6,
-    CommandSpecificBit8 = 1 << 7,
-  }
-
-  export enum Nfc15693ResponseFlagIOS {
-    Error = 1 << 0,
-    ResponseBufferValid = 1 << 1,
-    FinalResponse = 1 << 2,
-    ProtocolExtension = 1 << 3,
-    BlockSecurityStatusBit5 = 1 << 4,
-    BlockSecurityStatusBit6 = 1 << 5,
-    WaitTimeExtension = 1 << 6,
   }
 
   type TNF = 0x0 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07;
@@ -75,7 +63,7 @@ declare module 'react-native-nfc-manager' {
     maxSize?: number;
     type?: string;
     techTypes?: string[];
-    id?: string;
+    id?: number[];
   }
 
   export interface RegisterTagEventOpts {
@@ -88,11 +76,10 @@ declare module 'react-native-nfc-manager' {
 
   export interface CancelTechReqOpts {
     throwOnError?: boolean = false;
-    delayMsAndroid?: number = 1000;
   }
 
   interface NdefHandler {
-    writeNdefMessage: (bytes: number[] , options?: { reconnectAfterWrite: boolean }) => Promise<void>;
+    writeNdefMessage: (bytes: number[]) => Promise<void>;
     getNdefMessage: () => Promise<TagEvent | null>;
     makeReadOnly: () => Promise<void>;
     getNdefStatus: () => Promise<{
@@ -103,10 +90,6 @@ declare module 'react-native-nfc-manager' {
   }
 
   interface NfcAHandler {
-    transceive: (bytes: number[]) => Promise<number[]>;
-  }
-
-  interface NfcVHandler {
     transceive: (bytes: number[]) => Promise<number[]>;
   }
 
@@ -123,23 +106,8 @@ declare module 'react-native-nfc-manager' {
       block: ArrayLike<number>,
       simpliArr: any[],
     ) => Promise<void>;
-    mifareClassicIncrementBlock: (
-      block: ArrayLike<number>,
-      data: number,
-    ) => Promise<void>;
-    mifareClassicDecrementBlock: (
-      block: ArrayLike<number>,
-      data: number,
-    ) => Promise<void>;
-    mifareClassicTransferBlock: (
-      block: ArrayLike<number>,
-    ) => Promise<void>;
     mifareClassicGetSectorCount: () => Promise<number>;
     mifareClassicAuthenticateA: (
-      sector: number,
-      keys: number[],
-    ) => Promise<void>;
-    mifareClassicAuthenticateB: (
       sector: number,
       keys: number[],
     ) => Promise<void>;
@@ -151,10 +119,6 @@ declare module 'react-native-nfc-manager' {
       offset: number,
       data: number[],
     ) => Promise<void>;
-  }
-
-  interface NdefFormatableHandlerAndroid {
-    formatNdef: (bytes: number[], options?: { readOnly: boolean }) => Promise<void>;
   }
 
   /** [iOS ONLY] */
@@ -195,11 +159,6 @@ declare module 'react-native-nfc-manager' {
       customCommandCode: number;
       customRequestParameters: number[];
     }) => Promise<number[]>;
-    sendRequest: (params: {
-      flags: number;
-      commandCode: number;
-      data: number[];
-    }) => Promise<[number, number[]]>;
     extendedReadSingleBlock: (params: {
       flags: number;
       blockNumber: number;
@@ -242,7 +201,6 @@ declare module 'react-native-nfc-manager' {
      */
     ndefHandler: NdefHandler;
     nfcAHandler: NfcAHandler;
-    nfcVHandler: NfcVHandler;
     isoDepHandler: IsoDepHandler;
 
     /**
@@ -266,20 +224,18 @@ declare module 'react-native-nfc-manager' {
             le: number;
           },
     ) => Promise<{response: number[]; sw1: number; sw2: number}>;
-    restartTechnologyRequestIOS: () => Promise<NfcTech | null>;
     iso15693HandlerIOS: Iso15693HandlerIOS;
 
     /**
      * Android only
      */
-    goToNfcSetting(): Promise<boolean>;
+    goToNfcSetting(): Promise<any>;
     getLaunchTagEvent(): Promise<TagEvent | null>;
     transceive(bytes: number[]): Promise<number[]>;
     getMaxTransceiveLength(): Promise<number>;
     setTimeout(timeout: number): Promise<void>;
     mifareClassicHandlerAndroid: MifareClassicHandlerAndroid;
     mifareUltralightHandlerAndroid: MifareUltralightHandlerAndroid;
-    ndefFormatableHandlerAndroid: NdefFormatableHandlerAndroid;
   }
 
   const nfcManager: NfcManager;
