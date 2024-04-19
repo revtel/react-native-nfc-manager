@@ -38,11 +38,11 @@ public class Util {
                 // Workaround for bug in ICS (Android 4.0 and 4.0.1) where
                 // mTag.getTagService(); of the Ndef object sometimes returns null
                 // see http://issues.mroland.at/index.php?do=details&task_id=47
-                // try {
-                //   json.put("canMakeReadOnly", ndef.canMakeReadOnly());
-                // } catch (NullPointerException e) {
-                //   json.put("canMakeReadOnly", JSONObject.NULL);
-                // }
+                try {
+                  json.put("canMakeReadOnly", ndef.canMakeReadOnly());
+                } catch (NullPointerException e) {
+                  json.put("canMakeReadOnly", JSONObject.NULL);
+                }
             } catch (JSONException e) {
                 Log.e(TAG, "Failed to convert ndef into json: " + ndef.toString(), e);
             }

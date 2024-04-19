@@ -8,7 +8,7 @@ Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com
 
 Contributions are welcome!
 
-Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltech](https://github.com/revtel)
+> We also have a slack channel, you're welcome to chat with us for any issue or idea! [join us here](https://join.slack.com/t/reactnativenf-ewh2625/shared_invite/zt-puz9y22v-3rkORO6_zQe4FmaWm6ku_w)
 
 ## Install
 
@@ -41,14 +41,15 @@ We have a full featured NFC utility app available for download.
 <a href='https://apps.apple.com/tw/app/nfc-rewriter/id1551243964' target='_blank'>
 <img alt="react-native-nfc-rewriter" src="./images/Apple-App-Store-Icon.png" width="250">
 </a>
-
-</br>
-
-<a href='https://play.google.com/store/apps/details?id=com.washow.nfcopenrewriter' target='_blank'>
-<img alt="react-native-nfc-rewriter" src="./images/google-play-icon.jpeg" width="250">
-</a>
+<br/>
 
 It also open sourced in this repo: [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
+
+### [Bonus] Reconnect.js
+
+Super useful library to help you share states between `sibling` and `nested` React components.
+
+[Check it out!](https://github.com/revtel/reconnect.js)
 
 ## Basic Usage
 
@@ -148,65 +149,6 @@ async function writeNdef({type, value}) {
 }
 ```
 
-## Advanced: Mifare Ultralight usage
-
-Here's an example to read a Mifare Ultralight tag:
-
-```javascript
-import NfcManager, {NfcTech} from 'react-native-nfc-manager';
-
-// Pre-step, call this before any NFC operations
-async function initNfc() {
-  await NfcManager.start();
-}
-
-async function readMifare() {
-  try {
-    // 0. Request Mifare technology
-    let reqMifare = await NfcManager.requestTechnology(
-      NfcTech.MifareUltralight,
-    );
-    if (reqMifare !== 'MifareUltralight') {
-      throw new Error(
-        '[NFC Read] [ERR] Mifare technology could not be requested',
-      );
-    }
-
-    // 1. Get NFC Tag information
-    const nfcTag = await NfcManager.getTag();
-    console.log('[NFC Read] [INFO] Tag: ', nfcTag);
-
-    // 2. Read pages
-    const readLength = 60;
-    let mifarePages = [];
-    const mifarePagesRead = await Promise.all(
-      [...Array(readLength).keys()].map(async (_, i) => {
-        const pageOffset = i * 4; // 4 Pages are read at once, so offset should be in steps with length 4
-        let pages = await NfcManager.mifareUltralightHandlerAndroid.mifareUltralightReadPages(
-          pageOffset,
-        );
-        mifarePages.push(pages);
-        console.log(`[NFC Read] [INFO] Mifare Page: ${pageOffset}`, pages);
-        //await wait(500); // If Mifare Chip is to slow
-      }),
-    );
-
-    // 3. Success
-    console.log('[NFC Read] [INFO] Success reading Mifare');
-
-    // 4. Cleanup
-    _cleanup();
-  } catch (ex) {
-    console.warn('[NFC Read] [ERR] Failed Reading Mifare: ', ex);
-    _cleanup();
-  }
-}
-
-function _cleanup() {
-  NfcManager.cancelTechnologyRequest().catch(() => 0);
-}
-```
-
 To see more examples, please see [React Native NFC ReWriter App](https://github.com/revtel/react-native-nfc-rewriter)
 
 ## API
@@ -259,4 +201,3 @@ The plugin provides props for extra customization. Every time you change the pro
   }
 }
 ```
-

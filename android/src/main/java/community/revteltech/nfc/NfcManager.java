@@ -58,7 +58,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private static final String ERR_NOT_REGISTERED = "you should requestTagEvent first";
     private static final String ERR_MULTI_REQ = "You can only issue one request at a time";
     private static final String ERR_NO_TECH_REQ = "no tech request available";
-    private static final String ERR_NO_REFERENCE = "no reference available";
     private static final String ERR_TRANSCEIVE_FAIL = "transceive fail";
     private static final String ERR_API_NOT_SUPPORT = "unsupported tag api";
     private static final String ERR_GET_ACTIVITY_FAIL = "fail to get current activity";
@@ -161,22 +160,19 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
 
     @ReactMethod
     public void getTag(Callback callback) {
-        synchronized (this) {
+        synchronized(this) {
             if (techRequest != null) {
                 Tag tag = techRequest.getTagHandle();
-                if (tag != null) {
-                    WritableMap parsed = tag2React(tag);
-                    if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
-                        try {
-                            Ndef ndef = Ndef.get(tag);
-                            parsed = ndef2React(ndef, new NdefMessage[]{ndef.getCachedNdefMessage()});
-                        } catch (Exception ex) {
-                        }
+                WritableMap parsed = tag2React(tag);
+                if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+                    try {
+                        Ndef ndef = Ndef.get(tag);
+                        parsed = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+                    } catch (Exception ex) {
+                        // bypass
                     }
-                    callback.invoke(null, parsed);
-                } else {
-                    callback.invoke(ERR_NO_REFERENCE);
                 }
+                callback.invoke(null, parsed);
             } else {
                 callback.invoke(ERR_NO_TECH_REQ);
             }
@@ -1064,8 +1060,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         Activity activity = getCurrentActivity();
         Intent intent = new Intent(activity, activity.getClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        //return PendingIntent.getActivity(activity, 0, intent, 0);
-        return PendingIntent.getActivity(activity, 0, intent, PendingIntent.FLAG_MUTABLE);
+        return PendingIntent.getActivity(activity, 0, intent, 0);
     }
 
     private IntentFilter[] getIntentFilters() {
@@ -1140,10 +1135,6 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         WritableMap nfcTag = parseNfcIntent(intent);
         if (nfcTag != null) {
             if (isForegroundEnabled) {
-                Tag tagFromIntent = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                Intent intentNew=new Intent("TagFound");
-                intentNew.putExtra("tag",tagFromIntent);
-                context.sendBroadcast(intentNew);
                 sendEvent("NfcManagerDiscoverTag", nfcTag);
             } else {
                 sendEvent("NfcManagerDiscoverBackgroundTag", nfcTag);
