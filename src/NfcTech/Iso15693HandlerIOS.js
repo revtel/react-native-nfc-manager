@@ -42,6 +42,14 @@ class Iso15693HandlerIOS {
     );
   }
 
+  extendedReadMultipleBlocks({flags, blockNumber, blockCount}) {
+    return handleNativeException(
+      callNative('iso15693_extendedReadMultipleBlocks', [
+        {flags, blockNumber, blockCount},
+      ]),
+    );
+  }
+  
   writeSingleBlock({flags, blockNumber, dataBlock}) {
     return handleNativeException(
       callNative('iso15693_writeSingleBlock', [

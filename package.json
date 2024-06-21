@@ -1,6 +1,6 @@
 {
-  "name": "react-native-nfc-manager",
-  "version": "3.15.0",
+  "name": "@psusundrem/react-native-nfc-manager",
+  "version": "3.15.1",
   "description": "A NFC module for react native.",
   "main": "src/index.js",
   "repository": {
