@@ -49,11 +49,19 @@ class Iso15693HandlerIOS {
       ]),
     );
   }
-  
+
   writeSingleBlock({flags, blockNumber, dataBlock}) {
     return handleNativeException(
       callNative('iso15693_writeSingleBlock', [
         {flags, blockNumber, dataBlock},
+      ]),
+    );
+  }
+
+  writeMultipleBlocks({flags, blockNumber, blockCount, dataBlocks}) {
+    return handleNativeException(
+      callNative('iso15693_writeMultipleBlocks', [
+        {flags, blockNumber, blockCount, dataBlocks},
       ]),
     );
   }
@@ -125,6 +133,14 @@ class Iso15693HandlerIOS {
     return handleNativeException(
       callNative('iso15693_extendedWriteSingleBlock', [
         {flags, blockNumber, dataBlock},
+      ]),
+    );
+  }
+
+  extendedWriteMultipleBlocks({flags, blockNumber, blockCount, dataBlocks}) {
+    return handleNativeException(
+      callNative('iso15693_extendedWriteMultipleBlocks', [
+        {flags, blockNumber, blockCount, dataBlocks},
       ]),
     );
   }
