@@ -68,6 +68,6 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "test": "jest -i",
-    "release": "dotenv release-it --"
+    "release": "dotenv -- release-it --"
   }
 }
