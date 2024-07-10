@@ -115,6 +115,45 @@ RCT_EXPORT_METHOD(iso15693_readMultipleBlocks:(NSDictionary *)options callback:(
     }
 }
 
+// New method to support extendedReadMultipleBlocks
+RCT_EXPORT_METHOD(iso15693_extendedReadMultipleBlocks:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 14.0, *)) {
+        if (![self tagSession] || ![self tagSession].connectedTag) {
+            callback(@[@"Not connected", [NSNull null]]);
+            return;
+        }
+
+        id<NFCISO15693Tag> tag = [[self tagSession].connectedTag asNFCISO15693Tag];
+        if (!tag) {
+            callback(@[@"incorrect tag type", [NSNull null]]);
+            return;
+        }
+
+        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
+        NSRange blockRange = NSMakeRange(
+            [[options objectForKey:@"blockNumber"] unsignedIntValue],
+            [[options objectForKey:@"blockCount"] unsignedIntValue]
+        );
+
+        [tag extendedReadMultipleBlocksWithRequestFlags:flags
+                                 blockRange:blockRange
+                           completionHandler:^(NSArray<NSData *> *dataBlocks, NSError *error) {
+            if (error) {
+                callback(@[getErrorMessage(error), [NSNull null]]);
+                return;
+            }
+            NSMutableArray *blocks = [NSMutableArray arrayWithCapacity:[dataBlocks count]];
+            [dataBlocks enumerateObjectsUsingBlock:^(NSData *blockData, NSUInteger idx, BOOL *stop) {
+                [blocks addObject:dataToArray(blockData)];
+            }];
+            callback(@[[NSNull null], blocks]);
+        }];
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
 RCT_EXPORT_METHOD(iso15693_writeSingleBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
 {
     if (@available(iOS 14.0, *)) {
@@ -143,6 +182,46 @@ RCT_EXPORT_METHOD(iso15693_writeSingleBlock:(NSDictionary *)options callback:(no
             }
             
             callback(@[]);
+        }];
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
+RCT_EXPORT_METHOD(iso15693_writeMultipleBlocks:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 14.0, *)) {
+        if (![self tagSession] || ![self tagSession].connectedTag) {
+            callback(@[@"Not connected", [NSNull null]]);
+            return;
+        }
+        
+        id<NFCISO15693Tag> tag = [[self tagSession].connectedTag asNFCISO15693Tag];
+        if (!tag) {
+            callback(@[@"incorrect tag type", [NSNull null]]);
+            return;
+        }
+
+        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
+        NSRange blockRange = NSMakeRange(
+            [[options objectForKey:@"blockNumber"] unsignedIntValue],
+            [[options objectForKey:@"blockCount"] unsignedIntValue]
+        );
+        NSMutableArray<NSData *> *dataBlocks = [NSMutableArray array];
+        NSArray *dataBlockArrays = [options objectForKey:@"dataBlocks"];
+        for (NSArray *block in dataBlockArrays) {
+            [dataBlocks addObject:arrayToData(block)];
+        }
+
+        [tag writeMultipleBlocksWithRequestFlags:flags
+                                       blockRange:blockRange
+                                       dataBlocks:dataBlocks
+                                completionHandler:^(NSError *error) {
+            if (error) {
+                callback(@[getErrorMessage(error), [NSNull null]]);
+                return;
+            }
+            callback(@[[NSNull null]]);
         }];
     } else {
         callback(@[@"Not support in this device", [NSNull null]]);
@@ -515,6 +594,47 @@ RCT_EXPORT_METHOD(iso15693_extendedWriteSingleBlock:(NSDictionary *)options call
                                   blockNumber:blockNumber
                                     dataBlock: dataBlock
                            completionHandler:^(NSError *error) {
+            if (error) {
+                callback(@[getErrorMessage(error), [NSNull null]]);
+                return;
+            }
+            
+            callback(@[]);
+        }];
+    } else {
+        callback(@[@"Not support in this device", [NSNull null]]);
+    }
+}
+
+RCT_EXPORT_METHOD(iso15693_extendedWriteMultipleBlocks:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
+{
+    if (@available(iOS 14.0, *)) {
+        if (![self tagSession] || ![self tagSession].connectedTag) {
+            callback(@[@"Not connected", [NSNull null]]);
+            return;
+        }
+        
+        id<NFCISO15693Tag> tag = [[self tagSession].connectedTag asNFCISO15693Tag];
+        if (!tag) {
+            callback(@[@"incorrect tag type", [NSNull null]]);
+            return;
+        }
+
+        RequestFlag flags = [[options objectForKey:@"flags"] unsignedIntValue];
+        NSRange blockRange = NSMakeRange(
+            [[options objectForKey:@"blockNumber"] unsignedIntValue],
+            [[options objectForKey:@"blockCount"] unsignedIntValue]
+        );
+        NSMutableArray<NSData *> *dataBlocks = [NSMutableArray array];
+        NSArray *dataBlockArrays = [options objectForKey:@"dataBlocks"];
+        for (NSArray *block in dataBlockArrays) {
+            [dataBlocks addObject:arrayToData(block)];
+        }
+
+        [tag extendedWriteMultipleBlocksWithRequestFlags:flags
+                                              blockRange:blockRange
+                                              dataBlocks:dataBlocks
+                                       completionHandler:^(NSError *error) {
             if (error) {
                 callback(@[getErrorMessage(error), [NSNull null]]);
                 return;
