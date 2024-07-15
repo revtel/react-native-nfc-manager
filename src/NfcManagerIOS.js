@@ -91,6 +91,12 @@ class NfcManagerIOS extends NfcManagerBase {
       callNative('invalidateSessionWithError', [errorMessage]),
     );
 
+  isSessionAvailableIOS = async () => 
+    handleNativeException(callNative('isSessionAvailable'));
+  
+  isTagSessionAvailableIOS = async () =>
+    handleNativeException(callNative('isTagSessionAvailable'));
+
   // -------------------------------------
   // (iOS) NfcTech.MifareIOS API
   // -------------------------------------
