@@ -204,6 +204,11 @@ declare module 'react-native-nfc-manager' {
       flags: number;
       blockNumber: number;
     }) => Promise<number[]>;
+    extendedReadMultipleBlocks: (params: {
+      flags: number;
+      blockNumber: number;
+      blockCount: number;
+    }) => Promise<number[][]>;
     extendedWriteSingleBlock: (params: {
       flags: number;
       blockNumber: number;
