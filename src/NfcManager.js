@@ -45,6 +45,8 @@ const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
   readerModeDelay: 10,
 };
 
+const DEFAULT_EMULATION_EVENT_OPTIONS = {};
+
 function NotImpl() {
   throw new Error('not implemented');
 }
@@ -106,8 +108,21 @@ class NfcManagerBase {
 
   setAlertMessage = DoNothing;
 
+  async startTagEmulation(payload, options = {}) {
+    const optionsWithDefault = {
+      ...DEFAULT_EMULATION_EVENT_OPTIONS,
+      ...options,
+    };
+
+    return handleNativeException(
+      callNative('startTagEmulation', [payload, optionsWithDefault]),
+    );
+  }
+
   async writeNdefMessage(bytes, options = {}) {
-    return handleNativeException(callNative('writeNdefMessage', [bytes, options]));
+    return handleNativeException(
+      callNative('writeNdefMessage', [bytes, options]),
+    );
   }
 
   async getNdefMessage() {
@@ -195,27 +210,26 @@ class NfcManagerBase {
       this._onDiscoverTag,
     );
 
-    this._subscriptions[NfcEvents.DiscoverBackgroundTag] = NfcManagerEmitter.addListener(
-      NfcEvents.DiscoverBackgroundTag,
-      this._onDiscoverBackgroundTag,
-    );
+    this._subscriptions[NfcEvents.DiscoverBackgroundTag] =
+      NfcManagerEmitter.addListener(
+        NfcEvents.DiscoverBackgroundTag,
+        this._onDiscoverBackgroundTag,
+      );
 
     if (Platform.OS === 'ios') {
-      this._subscriptions[
-        NfcEvents.SessionClosed
-      ] = NfcManagerEmitter.addListener(
-        NfcEvents.SessionClosed,
-        this._onSessionClosedIOS,
-      );
+      this._subscriptions[NfcEvents.SessionClosed] =
+        NfcManagerEmitter.addListener(
+          NfcEvents.SessionClosed,
+          this._onSessionClosedIOS,
+        );
     }
 
     if (Platform.OS === 'android') {
-      this._subscriptions[
-        NfcEvents.StateChanged
-      ] = NfcManagerEmitter.addListener(
-        NfcEvents.StateChanged,
-        this._onStateChangedAndroid,
-      );
+      this._subscriptions[NfcEvents.StateChanged] =
+        NfcManagerEmitter.addListener(
+          NfcEvents.StateChanged,
+          this._onStateChangedAndroid,
+        );
     }
   };
 }

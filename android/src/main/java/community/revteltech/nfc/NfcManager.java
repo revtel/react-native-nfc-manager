@@ -3,6 +3,7 @@ package community.revteltech.nfc;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -18,6 +19,7 @@ import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import android.app.PendingIntent;
 import android.content.IntentFilter.MalformedMimeTypeException;
+import android.nfc.cardemulation.CardEmulation;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
@@ -36,9 +38,11 @@ import android.nfc.tech.MifareUltralight;
 import android.os.Parcelable;
 import android.os.Bundle;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.util.*;
 
 class NfcManager extends ReactContextBaseJavaModule implements ActivityEventListener, LifecycleEventListener {
@@ -1112,6 +1116,29 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
+    private void startTagEmulation(ReadableArray rnArray, ReadableMap options, Callback callback) {
+//        isReaderModeEnabled = options.getBoolean("data");
+//        readerModeFlags = options.getInt("readerModeFlags");
+//        readerModeDelay = options.getInt("readerModeDelay");
+
+        Activity activity = getCurrentActivity();
+        assert activity != null;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            CardEmulation cardEmulation = CardEmulation.getInstance(NfcAdapter.getDefaultAdapter(activity.getApplicationContext()));
+            ComponentName hceComponentName = new ComponentName(context, NfcHostApduService.class);
+            cardEmulation.setPreferredService(activity, hceComponentName);
+        }
+
+        Intent intent = new Intent(activity, NfcHostApduService.class);
+        activity.stopService(intent);
+        intent.putExtra("ndefPayload", rnArrayToBytes(rnArray));
+        activity.startService(intent);
+
+        callback.invoke();
+    }
+
+    @ReactMethod
     public void addListener(String eventName) {
         // Keep: Required for RN built in Event Emitter Calls.
     }
@@ -1160,27 +1187,29 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                                 synchronized (this) {
                                     manager.tag = tag;
                                     Log.d(LOG_TAG, "readerMode onTagDiscovered");
-                                    WritableMap nfcTag;
+                                    WritableMap nfcTag = null;
+
                                     // if the tag contains NDEF, we want to report the content
                                     if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
                                         Ndef ndef = Ndef.get(tag);
-                                        nfcTag = ndef2React(ndef, new NdefMessage[] { ndef.getCachedNdefMessage() });
+                                        nfcTag = ndef2React(ndef, new NdefMessage[]{ndef.getCachedNdefMessage()});
+                                        try {
+                                            ndef.close();
+                                        } catch (IOException e) {
+                                            Log.e(LOG_TAG, e.toString());
+                                        }
                                     } else {
+//                                        NdefMessage message = tryResolveNdefFromApdu(tag);
+//                                        if (message != null) {
+//                                            nfcTag = tagWithNdef2React(tag, message);
+//                                        }
+                                    }
+
+                                    if (nfcTag == null) {
                                         nfcTag = tag2React(tag);
                                     }
 
-                                    if (nfcTag != null) {
-                                        sendEvent("NfcManagerDiscoverTag", nfcTag);
-                                        if (techRequest!= null && !techRequest.isConnected()) {
-                                            boolean result = techRequest.connect(tag);
-                                            if (result) {
-                                                techRequest.invokePendingCallback(techRequest.getTechType());
-                                            } else {
-                                                // this indicates that we get a NFC tag, but none of the user required tech is matched
-                                                techRequest.invokePendingCallback(null);
-                                            }
-                                        }
-                                    }
+                                    sendEvent("NfcManagerDiscoverTag", nfcTag);
                                 }
                             }
                         }, readerModeFlags, readerModeExtras);
@@ -1343,7 +1372,16 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 }
                 break;
             case NfcAdapter.ACTION_TAG_DISCOVERED:
-                parsed = tag2React(tag);
+//                synchronized(this) {
+//                    NdefMessage message = tryResolveNdefFromApdu(tag);
+//                    if (message != null) {
+//                        parsed = tagWithNdef2React(tag, message);
+//                    }
+//                }
+
+                if (parsed == null) {
+                    parsed = tag2React(tag);
+                }
                 break;
         }
 
@@ -1353,6 +1391,25 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private WritableMap tag2React(Tag tag) {
         try {
             JSONObject json = Util.tagToJSON(tag);
+            return JsonConvert.jsonToReact(json);
+        } catch (JSONException ex) {
+            return null;
+        }
+    }
+
+    private WritableMap tagWithNdef2React(Tag tag, NdefMessage message) {
+        try {
+            JSONObject json = Util.tagToJSON(tag);
+            if (tag != null) {
+                json.put("id", Util.bytesToHex(tag.getId()));
+                json.put("techTypes", new JSONArray(Arrays.asList(tag.getTechList())));
+            }
+
+//            json.put("type", translateType(ndef.getType()));
+//            json.put("maxSize", ndef.getMaxSize());
+//            json.put("isWritable", ndef.isWritable());
+            json.put("ndefMessage", Util.messageToJSON(message));
+
             return JsonConvert.jsonToReact(json);
         } catch (JSONException ex) {
             return null;
@@ -1440,6 +1497,121 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
                 callback.invoke(ex.toString());
             }
         }
+    }
+
+    private @Nullable NdefMessage tryResolveNdefFromApdu(Tag tag) {
+        if (techRequest == null) {
+            ArrayList<Object> technologies = new ArrayList<>();
+            for (String tech : tag.getTechList()) {
+                technologies.add(tech.replace("android.nfc.tech.", ""));
+            }
+            techRequest = new TagTechnologyRequest(technologies, null);
+            techRequest.connect(tag);
+        }
+
+        if (!techRequest.isConnected()) {
+            return null;
+        }
+
+        Log.i(LOG_TAG, "READ_NDEF_FROM_APDU");
+
+        byte[] applicationIdentifier = techRequest.getTagHandle().getId();
+        Log.i(LOG_TAG, "\tTAG_TYPE: " + Util.bytesToHex(applicationIdentifier));
+        Log.i(LOG_TAG, "\tAPPLICATION_ID: " + techRequest.getTechType());
+
+        byte[] apduSelectCommand = ApduUtil.buildApduSelect(applicationIdentifier);
+
+        byte[] result;
+
+        Log.i(LOG_TAG, "\tAPP_IDENTIFIER: " + Util.bytesToHex(applicationIdentifier));
+
+        // Step 1: select APDU with the application identifier
+        result = transceive(techRequest, apduSelectCommand);
+        Log.i(LOG_TAG, "\tSELECT_APDU");
+        Log.i(LOG_TAG, "\t\tCOMMAND " + Util.bytesToHex(apduSelectCommand));
+        Log.i(LOG_TAG, "\t\tRESULT " + Util.bytesToHex(result));
+        if (!Arrays.equals(result, ApduUtil.A_OKAY)) {
+            return null;
+        }
+
+        // Step 2: select the capability container
+        Log.i(LOG_TAG, "\tSELECT_CAPABILITY_CONTAINER");
+        result = transceive(techRequest, ApduUtil.SELECT_CAPABILITY_CONTAINER);
+        Log.i(LOG_TAG, "\t\tCOMMAND " + Util.bytesToHex( ApduUtil.SELECT_CAPABILITY_CONTAINER));
+        Log.i(LOG_TAG, "\t\tRESULT " + Util.bytesToHex(result));
+        if (!Arrays.equals(result, ApduUtil.A_OKAY)) {
+            return null;
+        }
+
+        // Step 3: Read capability container
+        result = transceive(techRequest, ApduUtil.READ_CAPABILITY_CONTAINER);
+        Log.i(LOG_TAG, "\tREAD_CAPABILITY_CONTAINER");
+        if (result.length != 17 || result[15] != ApduUtil.A_OKAY[0] || result[16] != ApduUtil.A_OKAY[1]) {
+            return null;
+        }
+
+        byte[] ndefFileId = new byte[] {
+                result[9],
+                result[10],
+        };
+        byte[] ndefFileSize = new byte[] {
+                result[11],
+                result[12],
+        };
+
+        // Step 4: Select the NDEF file
+        Log.i(LOG_TAG, "\tSELECT_NDEF");
+        byte[] ndefSelectCommand = ApduUtil.buildSelectNdefFile(ndefFileId);
+        if (!Arrays.equals(result, ApduUtil.A_OKAY)) {
+            return null;
+        }
+
+        Log.i(LOG_TAG, "\tRESOLVED_NDEF_TAG");
+        return null;
+    }
+
+    private static byte[] transceive(TagTechnologyRequest techRequest, byte[] bytes) {
+        String tech = techRequest.getTechType();
+        TagTechnology baseTechHandle = techRequest.getTechHandle();
+
+        try {
+            // TagTechnology is the base class for each tech (ex, NfcA, NfcB, IsoDep ...)
+            // but it doesn't provide transceive in its interface, so we need to explicitly cast it
+            switch (tech) {
+                case "NfcA": {
+                    NfcA techHandle = (NfcA) baseTechHandle;
+                    return techHandle.transceive(bytes);
+                }
+                case "NfcB": {
+                    NfcB techHandle = (NfcB) baseTechHandle;
+                    return techHandle.transceive(bytes);
+                }
+                case "NfcF": {
+                    NfcF techHandle = (NfcF) baseTechHandle;
+                    return techHandle.transceive(bytes);
+                }
+                case "NfcV": {
+                    NfcV techHandle = (NfcV) baseTechHandle;
+                    return techHandle.transceive(bytes);
+                }
+                case "IsoDep": {
+                    IsoDep techHandle = (IsoDep) baseTechHandle;
+                    return techHandle.transceive(bytes);
+                }
+                case "MifareClassic": {
+                    MifareClassic techHandle = (MifareClassic) baseTechHandle;
+                    return techHandle.transceive(bytes);
+                }
+                case "MifareUltralight": {
+                    MifareUltralight techHandle = (MifareUltralight) baseTechHandle;
+                    return techHandle.transceive(bytes);
+                }
+            }
+        } catch(Exception ex) {
+            Log.e(LOG_TAG, ex.toString());
+        }
+
+        return ApduUtil.A_ERROR;
     }
 
     private static byte[] rnArrayToBytes(ReadableArray rArray) {

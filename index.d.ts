@@ -92,7 +92,10 @@ declare module 'react-native-nfc-manager' {
   }
 
   interface NdefHandler {
-    writeNdefMessage: (bytes: number[] , options?: { reconnectAfterWrite: boolean }) => Promise<void>;
+    writeNdefMessage: (
+      bytes: number[],
+      options?: {reconnectAfterWrite: boolean},
+    ) => Promise<void>;
     getNdefMessage: () => Promise<TagEvent | null>;
     makeReadOnly: () => Promise<void>;
     getNdefStatus: () => Promise<{
@@ -131,9 +134,7 @@ declare module 'react-native-nfc-manager' {
       block: ArrayLike<number>,
       data: number,
     ) => Promise<void>;
-    mifareClassicTransferBlock: (
-      block: ArrayLike<number>,
-    ) => Promise<void>;
+    mifareClassicTransferBlock: (block: ArrayLike<number>) => Promise<void>;
     mifareClassicGetSectorCount: () => Promise<number>;
     mifareClassicAuthenticateA: (
       sector: number,
@@ -154,14 +155,15 @@ declare module 'react-native-nfc-manager' {
   }
 
   interface NdefFormatableHandlerAndroid {
-    formatNdef: (bytes: number[], options?: { readOnly: boolean }) => Promise<void>;
+    formatNdef: (
+      bytes: number[],
+      options?: {readOnly: boolean},
+    ) => Promise<void>;
   }
 
   /** [iOS ONLY] */
   interface Iso15693HandlerIOS {
-    getSystemInfo: (
-      requestFloags: number,
-    ) => Promise<{
+    getSystemInfo: (requestFloags: number) => Promise<{
       dsfid: number;
       afi: number;
       blockSize: number;
@@ -241,6 +243,7 @@ declare module 'react-native-nfc-manager' {
     getBackgroundTag: () => Promise<TagEvent | null>;
     clearBackgroundTag: () => Promise<void>;
     setAlertMessage: (alertMessage: string) => Promise<void>;
+    startTagEmulation: (bytes: number[], options?: {}) => Promise<void>;
 
     /**
      * common tech handler getters for both iOS / Android
@@ -418,7 +421,7 @@ declare module 'react-native-nfc-manager' {
       firstNdefInvalid: 204;
     };
     parse(errorString: string): number;
-  }
+  };
 
   export namespace NfcError {
     export class NfcErrorBase extends Error {}
