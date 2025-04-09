@@ -88,7 +88,7 @@ More info on Apple's [doc](https://developer.apple.com/documentation/corenfc/nfc
 </array>
 ```
 
-An incomplete list of aid's can be found here. [Application identifier](https://www.eftlab.com/knowledge-base/211-emv-aid-rid-pix/)
+An incomplete list of aid's can be found here. [Application identifier](https://www.eftlab.com/knowledge-base/complete-list-of-application-identifiers-aid)
 
 3. in Xcode's `Signing & Capabilities` tab, make sure `Near Field Communication Tag Reading` capability had been added, like this:
 
