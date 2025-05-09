@@ -31,10 +31,10 @@ class NdefHandler {
 
   async getNdefStatus() {
     if (Platform.OS === 'ios') {
-      return handleNativeException(callNative('queryNDEFStatus'));
+      return handleNativeException(callNative('queryNdefStatus'));
     } else {
       try {
-        const result = await handleNativeException(callNative('getNdefStatus'));
+        const result = await handleNativeException(callNative('queryNdefStatus'));
         return {
           status: result.isWritable
             ? NdefStatus.ReadWrite

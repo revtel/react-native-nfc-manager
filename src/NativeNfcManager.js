@@ -1,7 +1,11 @@
 'use strict';
 import {NativeModules, NativeEventEmitter} from 'react-native';
 
-const NativeNfcManager = NativeModules.NfcManager;
+const isTurboModuleEnabled = global?.__turboModuleProxy != null;
+const NativeNfcManager = isTurboModuleEnabled
+  ? require('../specs/NativeNfcManager').default
+  : NativeModules.NfcManager;
+
 const NfcManagerEmitter = new NativeEventEmitter(NativeNfcManager);
 
 function callNative(name, params = []) {

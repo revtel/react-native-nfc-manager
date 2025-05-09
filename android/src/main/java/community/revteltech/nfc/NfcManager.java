@@ -41,7 +41,7 @@ import org.json.JSONException;
 
 import java.util.*;
 
-class NfcManager extends ReactContextBaseJavaModule implements ActivityEventListener, LifecycleEventListener {
+class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, LifecycleEventListener {
     private static final String LOG_TAG = "ReactNativeNfcManager";
     private final List<IntentFilter> intentFilters = new ArrayList<>();
     private final ArrayList<String[]> techLists = new ArrayList<>();
@@ -94,6 +94,12 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         return "NfcManager";
     }
 
+    @ReactMethod
+    @Override
+    public void echo(String value, Callback callback) {
+        callback.invoke(null, value);
+    }
+
     @Override
     public Map<String, Object> getConstants() {
         final Map<String, Object> constants = new HashMap<>();
@@ -129,7 +135,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    public void requestTechnology(ReadableArray techs, Callback callback) {
+    public void requestTechnology(ReadableArray techs, ReadableMap options, Callback callback) {
         synchronized(this) {
             if (!isForegroundEnabled) {
                 callback.invoke(ERR_NOT_REGISTERED);
@@ -217,7 +223,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    public void getNdefStatus(Callback callback) {
+    public void queryNdefStatus(Callback callback) {
         synchronized(this) {
             if (techRequest != null) {
                 WritableMap writableMap = Arguments.createMap();
@@ -1059,7 +1065,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    private void registerTagEvent(ReadableMap options, Callback callback) {
+    public void registerTagEvent(ReadableMap options, Callback callback) {
         isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
         readerModeFlags = options.getInt("readerModeFlags");
         readerModeDelay = options.getInt("readerModeDelay");
@@ -1090,7 +1096,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    private void unregisterTagEvent(Callback callback) {
+    public void unregisterTagEvent(Callback callback) {
         Log.d(LOG_TAG, "unregisterTagEvent");
         if (isResumed) {
             enableDisableForegroundDispatch(false);
@@ -1106,7 +1112,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     }
 
     @ReactMethod
-    private void hasTagEventRegistration(Callback callback) {
+    public void hasTagEventRegistration(Callback callback) {
         Log.d(LOG_TAG, "isSessionAvailable: " + isForegroundEnabled);
         callback.invoke(null, isForegroundEnabled);
     }

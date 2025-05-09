@@ -13,9 +13,17 @@
 #import <UIKit/UIUserActivity.h>
 #endif
 
+#ifdef RCT_NEW_ARCH_ENABLED
+#import <NativeNfcManagerSpec/NativeNfcManagerSpec.h>
+// @interface NfcManager : NSObject <NativeNfcManagerSpec, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate> {
+@interface NfcManager : RCTEventEmitter <NativeNfcManagerSpec, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate> {
+
+}
+#else
 @interface NfcManager : RCTEventEmitter <RCTBridgeModule, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate> {
 
 }
+#endif
 
 @property (strong, nonatomic) NFCNDEFReaderSession * _Nullable session;
 @property (strong, nonatomic) NFCTagReaderSession * _Nullable tagSession;

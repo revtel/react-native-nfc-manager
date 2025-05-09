@@ -11,12 +11,15 @@ Pod::Spec.new do |s|
   s.authors = package[:author]
   s.summary = package[:description]
   s.source = { git: package[:repository][:url] }
-  s.source_files = "ios/**/*.{h,m}"
+  # s.source_files = "ios/**/*.{h,m}"
+  s.source_files    = "ios/**/*.{h,m,mm,swift}"
   s.platform = :ios, "8.0"
 
-  s.dependency "React-Core"
+  # s.dependency "React-Core"
 
   s.xcconfig = {
     'OTHER_LDFLAGS': '-weak_framework CoreNFC',
   }
+
+  install_modules_dependencies(s)
 end

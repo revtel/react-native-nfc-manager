@@ -37,7 +37,7 @@ class NfcManagerAndroid extends NfcManagerBase {
         this.cleanUpTagRegistration = true;
       }
 
-      return await callNative('requestTechnology', [tech]);
+      return await callNative('requestTechnology', [tech, options]);
     } catch (ex) {
       throw buildNfcExceptionAndroid(ex);
     }

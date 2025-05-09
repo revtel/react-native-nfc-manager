@@ -253,7 +253,7 @@ RCT_EXPORT_METHOD(clearBackgroundNdef: (nonnull RCTResponseSenderBlock)callback)
     callback(@[[NSNull null]]);
 }
 
-RCT_EXPORT_METHOD(isSupported: (NSString *)tech callback:(nonnull RCTResponseSenderBlock)callback)
+- (void)isSupported: (NSString *)tech callback:(nonnull RCTResponseSenderBlock)callback
 {
     if ([tech isEqualToString:@""] || [tech isEqualToString:@"Ndef"]) {
         if (@available(iOS 11.0, *)) {
@@ -270,7 +270,7 @@ RCT_EXPORT_METHOD(isSupported: (NSString *)tech callback:(nonnull RCTResponseSen
     callback(@[[NSNull null], @NO]);
 }
 
-RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
+- (void)start: (nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 11.0, *)) {
         if (NFCNDEFReaderSession.readingAvailable) {
@@ -284,7 +284,7 @@ RCT_EXPORT_METHOD(start: (nonnull RCTResponseSenderBlock)callback)
     callback(@[@"Not support in this device", [NSNull null]]);
 }
 
-RCT_EXPORT_METHOD(requestTechnology: (NSArray *)techs options: (NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
+-(void)requestTechnology: (NSArray *)techs options: (NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if (tagSession == nil && session == nil) {
@@ -321,7 +321,7 @@ RCT_EXPORT_METHOD(restartTechnologyRequest:(nonnull RCTResponseSenderBlock)callb
     }
 }
 
-RCT_EXPORT_METHOD(cancelTechnologyRequest:(nonnull RCTResponseSenderBlock)callback)
+- (void)cancelTechnologyRequest:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if (tagSession != nil) {
@@ -402,7 +402,7 @@ RCT_EXPORT_METHOD(invalidateSessionWithError:(NSString *)errorMessage callback:(
     }
 }
 
-RCT_EXPORT_METHOD(getTag: (nonnull RCTResponseSenderBlock)callback)
+- (void)getTag: (nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         NSMutableDictionary* rnTag = @{}.mutableCopy;
@@ -524,7 +524,7 @@ RCT_EXPORT_METHOD(makeReadOnly:(nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(queryNDEFStatus:(nonnull RCTResponseSenderBlock)callback)
+- (void)queryNdefStatus:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         id<NFCNDEFTag> ndefTag = nil;
@@ -591,6 +591,16 @@ RCT_EXPORT_METHOD(isTagSessionAvailable:(nonnull RCTResponseSenderBlock)callback
         callback(@[@"Not support in this device", [NSNull null]]);
     }
 }
+    
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
+  return std::make_shared<facebook::react::NativeNfcManagerSpecJSI>(params);
+}
+#endif
 
+- (void)echo:(NSString *)value callback:(RCTResponseSenderBlock)callback {
+  callback(@[[NSNull null], value]);
+}
+    
 @end
   

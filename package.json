@@ -75,5 +75,13 @@
     "lint:fix": "eslint --fix .",
     "test": "jest -i",
     "release": "dotenv -- release-it --"
+  },
+  "codegenConfig": {
+    "name": "NativeNfcManagerSpec",
+    "type": "modules",
+    "jsSrcsDir": "specs",
+    "android": {
+      "javaPackageName": "community.revteltech.nfc"
+    }
   }
 }

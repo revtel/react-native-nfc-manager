@@ -10,7 +10,7 @@
 NSString* getHexString(NSData *data) {
     NSUInteger capacity = data.length * 2;
     NSMutableString *sbuf = [NSMutableString stringWithCapacity:capacity];
-    const unsigned char *buf = data.bytes;
+    const unsigned char *buf = (const unsigned char *)data.bytes;
     NSInteger i;
     for (i=0; i<data.length; ++i) {
         [sbuf appendFormat:@"%02lX", (unsigned long)buf[i]];
