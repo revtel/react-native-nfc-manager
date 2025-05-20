@@ -9,7 +9,7 @@
 
 @implementation NfcManager (Felica)
 
-RCT_EXPORT_METHOD(sendFelicaCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
+- (void)sendFelicaCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if ([self tagSession] != nil) {

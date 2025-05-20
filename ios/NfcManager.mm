@@ -238,16 +238,17 @@ continueUserActivity:(NSUserActivity *)userActivity
     return YES;
 }
     
-RCT_EXPORT_METHOD(getBackgroundNdef: (nonnull RCTResponseSenderBlock)callback)
+- (void)getBackgroundTag: (nonnull RCTResponseSenderBlock)callback
 {
     if (bgNdefRecords != nil) {
-        callback(@[[NSNull null], bgNdefRecords]);
+        // iOS doesn't report the full tag, only the ndefMessage part
+        callback(@[[NSNull null], @{@"ndefMessage": bgNdefRecords}]);
     } else {
         callback(@[[NSNull null], [NSNull null]]);
     }
 }
 
-RCT_EXPORT_METHOD(clearBackgroundNdef: (nonnull RCTResponseSenderBlock)callback)
+- (void)clearBackgroundTag: (nonnull RCTResponseSenderBlock)callback
 {
     bgNdefRecords = nil;
     callback(@[[NSNull null]]);
@@ -306,7 +307,7 @@ RCT_EXPORT_METHOD(clearBackgroundNdef: (nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(restartTechnologyRequest:(nonnull RCTResponseSenderBlock)callback)
+- (void)restartTechnologyRequest:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if (tagSession != nil) {
@@ -336,7 +337,7 @@ RCT_EXPORT_METHOD(restartTechnologyRequest:(nonnull RCTResponseSenderBlock)callb
     }
 }
 
-RCT_EXPORT_METHOD(registerTagEvent:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
+- (void)registerTagEvent:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 11.0, *)) {
         if (session == nil && tagSession == nil) {
@@ -353,7 +354,7 @@ RCT_EXPORT_METHOD(registerTagEvent:(NSDictionary *)options callback:(nonnull RCT
     }
 }
 
-RCT_EXPORT_METHOD(unregisterTagEvent:(nonnull RCTResponseSenderBlock)callback)
+- (void)unregisterTagEvent:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 11.0, *)) {
         if (session != nil) {
@@ -368,7 +369,7 @@ RCT_EXPORT_METHOD(unregisterTagEvent:(nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(invalidateSession:(nonnull RCTResponseSenderBlock)callback)
+- (void)invalidateSession:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if (session != nil) {
@@ -385,7 +386,7 @@ RCT_EXPORT_METHOD(invalidateSession:(nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(invalidateSessionWithError:(NSString *)errorMessage callback:(nonnull RCTResponseSenderBlock)callback)
+- (void)invalidateSessionWithError:(NSString *)errorMessage callback:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if (session != nil) {
@@ -433,7 +434,7 @@ RCT_EXPORT_METHOD(invalidateSessionWithError:(NSString *)errorMessage callback:(
     }
 }
 
-RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
+- (void)getNdefMessage: (nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         id<NFCNDEFTag> ndefTag = nil;
@@ -461,7 +462,7 @@ RCT_EXPORT_METHOD(getNdefMessage: (nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(writeNdefMessage:(NSArray*)bytes options:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback)
+- (void)writeNdefMessage:(NSArray*)bytes options:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         id<NFCNDEFTag> ndefTag = nil;
@@ -496,7 +497,7 @@ RCT_EXPORT_METHOD(writeNdefMessage:(NSArray*)bytes options:(NSDictionary *)optio
     }
 }
 
-RCT_EXPORT_METHOD(makeReadOnly:(nonnull RCTResponseSenderBlock)callback)
+- (void)makeReadOnly:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         id<NFCNDEFTag> ndefTag = nil;
@@ -557,7 +558,7 @@ RCT_EXPORT_METHOD(makeReadOnly:(nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(setAlertMessage: (NSString *)alertMessage callback:(nonnull RCTResponseSenderBlock)callback)
+- (void)setAlertMessage: (NSString *)alertMessage callback:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 11.0, *)) {
         if (session != nil) {
@@ -574,7 +575,7 @@ RCT_EXPORT_METHOD(setAlertMessage: (NSString *)alertMessage callback:(nonnull RC
     }
 }
 
-RCT_EXPORT_METHOD(isSessionAvailable:(nonnull RCTResponseSenderBlock)callback)
+- (void)isSessionAvailable:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 11.0, *)) {
         callback(@[[NSNull null], session != nil ? @YES : @NO]);
@@ -583,7 +584,7 @@ RCT_EXPORT_METHOD(isSessionAvailable:(nonnull RCTResponseSenderBlock)callback)
     }
 }
 
-RCT_EXPORT_METHOD(isTagSessionAvailable:(nonnull RCTResponseSenderBlock)callback)
+- (void)isTagSessionAvailable:(nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 11.0, *)) {
         callback(@[[NSNull null], tagSession != nil ? @YES : @NO]);
@@ -600,6 +601,14 @@ RCT_EXPORT_METHOD(isTagSessionAvailable:(nonnull RCTResponseSenderBlock)callback
 
 - (void)echo:(NSString *)value callback:(RCTResponseSenderBlock)callback {
   callback(@[[NSNull null], value]);
+}
+    
+- (void)hasTagEventRegistration:(RCTResponseSenderBlock)callback {
+    // bypass, Android's interface
+}
+    
+- (void)isEnabled:(RCTResponseSenderBlock)callback {
+    // bypass, Android's interface
 }
     
 @end

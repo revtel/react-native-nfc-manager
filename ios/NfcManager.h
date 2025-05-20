@@ -16,7 +16,7 @@
 #ifdef RCT_NEW_ARCH_ENABLED
 #import <NativeNfcManagerSpec/NativeNfcManagerSpec.h>
 // @interface NfcManager : NSObject <NativeNfcManagerSpec, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate> {
-@interface NfcManager : RCTEventEmitter <NativeNfcManagerSpec, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate> {
+@interface NfcManager : RCTEventEmitter <NativeNfcManagerSpec, RCTBridgeModule, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate> {
 
 }
 #else

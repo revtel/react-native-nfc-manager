@@ -9,7 +9,7 @@
 
 @implementation NfcManager (IsoDep)
 
-RCT_EXPORT_METHOD(sendCommandAPDUBytes:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
+- (void)sendCommandAPDUBytes:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if ([self tagSession] != nil) {
@@ -39,7 +39,7 @@ RCT_EXPORT_METHOD(sendCommandAPDUBytes:(NSArray *)bytes callback: (nonnull RCTRe
     }
 }
 
-RCT_EXPORT_METHOD(sendCommandAPDU:(NSDictionary *)apduData callback: (nonnull RCTResponseSenderBlock)callback)
+- (void)sendCommandAPDU:(NSDictionary *)apduData callback: (nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if ([self tagSession] != nil) {

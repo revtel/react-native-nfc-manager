@@ -9,7 +9,7 @@
 
 @implementation NfcManager (Mifare)
 
-RCT_EXPORT_METHOD(sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback)
+- (void)sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTResponseSenderBlock)callback
 {
     if (@available(iOS 13.0, *)) {
         if ([self tagSession] != nil) {
