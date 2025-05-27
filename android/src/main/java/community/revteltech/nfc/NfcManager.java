@@ -798,7 +798,7 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     public void connect(ReadableArray techs, Callback callback){
         synchronized(this) {
             try {
-                techRequest = new TagTechnologyRequest(techs.toArrayList(), callback);
+                techRequest = new TagTechnologyRequest(techs.toArrayList(), null);
                 techRequest.connect(this.tag);
                 callback.invoke(null, null);
             } catch (Exception ex) {
