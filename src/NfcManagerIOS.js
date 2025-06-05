@@ -93,8 +93,8 @@ class NfcManagerIOS extends NfcManagerBase {
 
   isSessionAvailableIOS = async () => 
     handleNativeException(callNative('isSessionAvailable'));
-  
-  isTagSessionAvailableIOS = async () =>
+
+  isTagSessionAvailableIOS = async () => 
     handleNativeException(callNative('isTagSessionAvailable'));
 
   // -------------------------------------
@@ -158,6 +158,19 @@ class NfcManagerIOS extends NfcManagerBase {
     }
     return this._iso15693HandlerIOS;
   }
+
+  // -------------------------------------
+  // HCE (Host Card Emulation) API - Not supported on iOS
+  // -------------------------------------
+  isHceSupported = () => Promise.resolve(false);
+
+  isHceEnabled = () => Promise.resolve(false);
+
+  setSimpleUrl = () =>
+    Promise.reject(new Error('HCE is not supported on iOS'));
+
+  clearContent = () =>
+    Promise.reject(new Error('HCE is not supported on iOS'));
 }
 
 export {NfcManagerIOS, Nfc15693RequestFlagIOS, Nfc15693ResponseFlagIOS};

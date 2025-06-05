@@ -218,6 +218,12 @@ class NfcManagerBase {
       );
     }
   };
+
+  setSimpleUrl = NotImpl;
+
+  clearContent = NotImpl;
+
+  setVCard = NotImpl;
 }
 
 export {

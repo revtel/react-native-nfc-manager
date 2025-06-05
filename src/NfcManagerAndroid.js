@@ -95,6 +95,49 @@ class NfcManagerAndroid extends NfcManagerBase {
     handleNativeException(callNative('getMaxTransceiveLength'));
 
   // -------------------------------------
+  // HCE (Host Card Emulation) API
+  // -------------------------------------
+  isHceSupported = () =>
+    handleNativeException(callNative('isHceSupported'));
+
+  startHCE = async () => {
+    try {
+      // First check if HCE is supported
+      const isSupported = await this.isHceSupported();
+      if (!isSupported) {
+        throw new Error('HCE is not supported on this device');
+      }
+
+      // Then start the HCE service
+      const result = await handleNativeException(callNative('startHCE'));
+      return result;
+    } catch (error) {
+      console.error('Error starting HCE:', error);
+      throw error;
+    }
+  };
+
+  stopHCE = async () => {
+    try {
+      const result = await handleNativeException(callNative('stopHCE'));
+      return result;
+    } catch (error) {
+      console.error('Error stopping HCE:', error);
+      throw error;
+    }
+  };
+
+  setSimpleUrl = (url) =>
+    handleNativeException(callNative('setSimpleUrl', [url]));
+
+  // ios is not able to read the vcard direclty without using an app
+  setVCard = (vcard) =>
+    handleNativeException(callNative('setVCard', [vcard]));
+
+  clearContent = () =>
+    handleNativeException(callNative('clearContent'));
+
+  // -------------------------------------
   // (android) NfcTech.MifareClassic API
   // -------------------------------------
   get mifareClassicHandlerAndroid() {
@@ -131,6 +174,9 @@ class NfcManagerAndroid extends NfcManagerBase {
   // -------------------------------------
   _hasTagEventRegistrationAndroid = () =>
     handleNativeException(callNative('hasTagEventRegistration'));
+
+  setVCard = (vcfString) =>
+    handleNativeException(callNative('setVCard', [vcfString]));
 }
 
 export {NfcAdapter, NfcManagerAndroid};

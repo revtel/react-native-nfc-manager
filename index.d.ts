@@ -289,6 +289,19 @@ declare module 'react-native-nfc-manager' {
     mifareClassicHandlerAndroid: MifareClassicHandlerAndroid;
     mifareUltralightHandlerAndroid: MifareUltralightHandlerAndroid;
     ndefFormatableHandlerAndroid: NdefFormatableHandlerAndroid;
+
+    /**
+     * Android HCE (Host Card Emulation) API
+     */
+    isHceSupported(): Promise<boolean>;
+    startHCE(): Promise<string>;
+    stopHCE(): Promise<string>;
+    setSimpleUrl(url: string): Promise<void>;
+    clearContent(): Promise<void>;
+    /**
+     * Set a vCard (VCF) string to be shared via HCE. Android only.
+     */
+    setVCard(vcf: string): Promise<void>;
   }
 
   const nfcManager: NfcManager;

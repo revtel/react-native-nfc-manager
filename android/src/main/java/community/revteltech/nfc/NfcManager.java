@@ -3,11 +3,15 @@ package community.revteltech.nfc;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.nfc.NfcAdapter;
+import android.nfc.cardemulation.CardEmulation;
+import androidx.core.content.ContextCompat;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +24,6 @@ import android.app.PendingIntent;
 import android.content.IntentFilter.MalformedMimeTypeException;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
-import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.TagLostException;
 import android.nfc.tech.TagTechnology;
@@ -65,6 +68,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
     private static final String ERR_API_NOT_SUPPORT = "unsupported tag api";
     private static final String ERR_GET_ACTIVITY_FAIL = "fail to get current activity";
     private static final String ERR_NO_NFC_SUPPORT = "no nfc support";
+    private final NfcAdapter nfcAdapter;
 
     static class WriteNdefRequest {
         NdefMessage message;
@@ -86,6 +90,7 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         reactContext.addActivityEventListener(this);
         reactContext.addLifecycleEventListener(this);
         Log.d(LOG_TAG, "NfcManager created");
+        this.nfcAdapter = NfcAdapter.getDefaultAdapter(reactContext);
     }
 
     @NonNull
@@ -1459,6 +1464,123 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
             value.pushInt((aByte & 0xFF));
         }
         return value;
+    }
+
+    @ReactMethod
+    public void isHceSupported(Callback callback) {
+        try {
+            if (nfcAdapter == null) {
+                callback.invoke(null, false);
+                return;
+            }
+            
+            boolean isSupported = context.getPackageManager().hasSystemFeature("android.hardware.nfc.hce");
+            callback.invoke(null, isSupported && nfcAdapter.isEnabled());
+        } catch (Exception e) {
+            callback.invoke("ERR_HCE_SUPPORT");
+        }
+    }
+
+    @ReactMethod
+    public void startHCE(Callback callback) {
+        try {
+            if (nfcAdapter == null) {
+                callback.invoke("ERR_NO_NFC_SUPPORT");
+                return;
+            }
+
+            boolean isSupported = context.getPackageManager().hasSystemFeature("android.hardware.nfc.hce");
+            if (!isSupported) {
+                callback.invoke("ERR_HCE_NOT_SUPPORTED");
+                return;
+            }
+
+            if (!nfcAdapter.isEnabled()) {
+                callback.invoke("ERR_NFC_NOT_ENABLED");
+                return;
+            }
+
+            // Check if service is already running
+            if (HceService.isRunning()) {
+                callback.invoke(null, "HCE_ALREADY_RUNNING");
+                return;
+            }
+
+            Intent serviceIntent = new Intent(context, HceService.class);
+            serviceIntent.setAction(HceService.ACTION_APDU_RECEIVED);
+            context.startService(serviceIntent);
+
+            callback.invoke(null, "HCE_STARTED");
+            
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error starting HCE: " + e.getMessage(), e);
+            callback.invoke("ERR_START_HCE");
+        }
+    }
+
+    @ReactMethod
+    public void stopHCE(Callback callback) {
+        try {
+            // Stop the service completely
+            Intent serviceIntent = new Intent(context, HceService.class);
+            boolean stopped = context.stopService(serviceIntent);
+            
+            Log.d(LOG_TAG, "HCE Service stopped: " + stopped);
+            callback.invoke(null, "HCE_STOPPED");
+            
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error stopping HCE: " + e.getMessage(), e);
+            callback.invoke("ERR_STOP_HCE");
+        }
+    }
+
+    @ReactMethod
+    public void setSimpleUrl(String url, Callback callback) {
+        try {
+            if (url == null || url.isEmpty()) {
+                callback.invoke("ERR_INVALID_URL");
+                return;
+            }
+
+            Intent intent = new Intent(context, HceService.class);
+            intent.putExtra(HceService.EXTRA_SIMPLE_URL, url);
+            context.startService(intent);
+            callback.invoke(null, true);
+        } catch (Exception e) {
+            callback.invoke("ERR_SET_SIMPLE_URL");
+        }
+    }
+
+    @ReactMethod
+    public void clearContent(Callback callback) {
+        try {
+            // Force clear all static data immediately
+            HceService.clearAllData();
+            
+            // Stop the service completely to ensure no data persists
+            Intent serviceIntent = new Intent(context, HceService.class);
+            context.stopService(serviceIntent);
+            
+            callback.invoke(null, true);
+        } catch (Exception e) {
+            callback.invoke("ERR_CLEAR_CONTENT");
+        }
+    }
+
+    @ReactMethod
+    public void setVCard(String vcf, Callback callback) {
+        try {
+            if (vcf == null || vcf.isEmpty()) {
+                callback.invoke("ERR_INVALID_VCF");
+                return;
+            }
+            Intent intent = new Intent(context, HceService.class);
+            intent.putExtra(HceService.EXTRA_CONTACT_VCF, vcf);
+            context.startService(intent);
+            callback.invoke(null, true);
+        } catch (Exception e) {
+            callback.invoke("ERR_SET_CONTACT_VCF");
+        }
     }
 }
 

@@ -23,6 +23,7 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 7. [API](#api)
 8. [App demo](#appdemo)
 9. [Learn](#learn)
+10. [HCE (Host Card Emulation) Usage](#hce)
 
 ## Installation
 
@@ -289,3 +290,37 @@ We have published a React Native NFC course with [newline.co](https://www.newlin
 - Free course (1 hour) about basic NFC setup and concept [here](https://www.youtube.com/watch?v=rAS-DvNUFck)
 - Full course (3 hours) for more (NDEF, Deep Linking, NTAG password protection, signature with UID) [here](https://www.newline.co/courses/newline-guide-to-nfcs-with-react-native)
 
+
+## HCE (Host Card Emulation) Usage
+
+Here's how to properly use the HCE functionality:
+
+### Basic HCE Setup
+
+```javascript
+import NfcManager, {NfcTech} from 'react-native-nfc-manager';
+
+// Check if HCE is supported
+const isSupported = await NfcManager.isHceSupported();
+if (!isSupported) {
+  console.log('HCE is not supported on this device');
+  return;
+}
+
+// Check if HCE is running
+const isRunning = await NfcManager.isHceRunning();
+if (isRunning) {
+  console.log('HCE is already running');
+  return;
+}
+
+// Start HCE
+const result = await NfcManager.startHCE();
+console.log('HCE started:', result);
+
+// Set URL to share
+await NfcManager.setSimpleUrl('https://example.com');
+
+// Clear content when done
+await NfcManager.clearContent();
+```
