@@ -1460,5 +1460,70 @@ class NfcManager extends ReactContextBaseJavaModule implements ActivityEventList
         }
         return value;
     }
+
+    @ReactMethod
+    public void isHceSupported(Callback callback) {
+        Log.d(LOG_TAG, "isHceSupported");
+        Activity currentActivity = getCurrentActivity();
+        if (currentActivity == null) {
+            callback.invoke(ERR_GET_ACTIVITY_FAIL);
+            return;
+        }
+
+        PackageManager pm = currentActivity.getPackageManager();
+        boolean hceSupported = pm.hasSystemFeature(PackageManager.FEATURE_NFC_HOST_CARD_EMULATION);
+        callback.invoke(null, hceSupported);
+    }
+
+    @ReactMethod
+    public void isHceEnabled(Callback callback) {
+        Log.d(LOG_TAG, "isHceEnabled");
+        Activity currentActivity = getCurrentActivity();
+        if (currentActivity == null) {
+            callback.invoke(ERR_GET_ACTIVITY_FAIL);
+            return;
+        }
+
+        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
+        if (nfcAdapter != null) {
+            boolean hceEnabled = nfcAdapter.isEnabled() && 
+                currentActivity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC_HOST_CARD_EMULATION);
+            callback.invoke(null, hceEnabled);
+        } else {
+            callback.invoke(null, false);
+        }
+    }
+
+    @ReactMethod
+    public void getHceAidList(Callback callback) {
+        Log.d(LOG_TAG, "getHceAidList");
+        Activity currentActivity = getCurrentActivity();
+        if (currentActivity == null) {
+            callback.invoke(ERR_GET_ACTIVITY_FAIL);
+            return;
+        }
+
+        try {
+            NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
+            if (nfcAdapter != null) {
+                CardEmulation cardEmulation = CardEmulation.getInstance(nfcAdapter);
+                ComponentName componentName = new ComponentName(currentActivity, HceService.class);
+                List<String> aidList = cardEmulation.getAidListForService(componentName, CardEmulation.CATEGORY_PAYMENT);
+                
+                WritableArray result = Arguments.createArray();
+                if (aidList != null) {
+                    for (String aid : aidList) {
+                        result.pushString(aid);
+                    }
+                }
+                callback.invoke(null, result);
+            } else {
+                callback.invoke(null, Arguments.createArray());
+            }
+        } catch (Exception ex) {
+            Log.d(LOG_TAG, "getHceAidList fail: " + ex);
+            callback.invoke(ex.toString());
+        }
+    }
 }
 

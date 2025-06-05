@@ -1,14 +1,14 @@
 'use strict';
-import {Platform} from 'react-native';
+import { Platform } from 'react-native';
 import {
   NativeNfcManager,
   NfcManagerEmitter,
   callNative,
 } from './NativeNfcManager';
-import {NdefHandler, NdefStatus} from './NfcTech/NdefHandler';
-import {NfcAHandler} from './NfcTech/NfcAHandler';
-import {NfcVHandler} from './NfcTech/NfcVHandler';
-import {IsoDepHandler} from './NfcTech/IsoDepHandler';
+import { NdefHandler, NdefStatus } from './NfcTech/NdefHandler';
+import { NfcAHandler } from './NfcTech/NfcAHandler';
+import { NfcVHandler } from './NfcTech/NfcVHandler';
+import { IsoDepHandler } from './NfcTech/IsoDepHandler';
 import {
   handleNativeException,
   buildNfcExceptionIOS,
@@ -217,6 +217,42 @@ class NfcManagerBase {
         this._onStateChangedAndroid,
       );
     }
+  };
+
+  isHceSupported = () => {
+    return new Promise((resolve, reject) => {
+      NfcManager.isHceSupported((err, isSupported) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(isSupported);
+        }
+      });
+    });
+  };
+
+  isHceEnabled = () => {
+    return new Promise((resolve, reject) => {
+      NfcManager.isHceEnabled((err, isEnabled) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(isEnabled);
+        }
+      });
+    });
+  };
+
+  getHceAidList = () => {
+    return new Promise((resolve, reject) => {
+      NfcManager.getHceAidList((err, aidList) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(aidList);
+        }
+      });
+    });
   };
 }
 

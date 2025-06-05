@@ -289,6 +289,24 @@ declare module 'react-native-nfc-manager' {
     mifareClassicHandlerAndroid: MifareClassicHandlerAndroid;
     mifareUltralightHandlerAndroid: MifareUltralightHandlerAndroid;
     ndefFormatableHandlerAndroid: NdefFormatableHandlerAndroid;
+
+    /**
+     * Check if the device supports Host Card Emulation (HCE)
+     * @returns Promise<boolean>
+     */
+    isHceSupported(): Promise<boolean>;
+
+    /**
+     * Check if Host Card Emulation (HCE) is enabled on the device
+     * @returns Promise<boolean>
+     */
+    isHceEnabled(): Promise<boolean>;
+
+    /**
+     * Get the list of AIDs (Application IDs) registered for HCE
+     * @returns Promise<string[]>
+     */
+    getHceAidList(): Promise<string[]>;
   }
 
   const nfcManager: NfcManager;
