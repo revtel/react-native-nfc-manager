@@ -93,30 +93,8 @@ public class HceService extends HostApduService {
 
             Log.d(TAG, "Preparing NDEF with URL: " + simpleUrl);
             
-            // Create URI record with explicit type and payload
-            byte[] uriBytes = simpleUrl.getBytes(StandardCharsets.UTF_8);
-            byte[] payload;
-            
-            if (simpleUrl.startsWith("https://")) {
-                payload = new byte[uriBytes.length - 8 + 1];
-                payload[0] = 0x04; // https:// prefix code
-                System.arraycopy(uriBytes, 8, payload, 1, uriBytes.length - 8);
-            } else if (simpleUrl.startsWith("http://")) {
-                payload = new byte[uriBytes.length - 7 + 1];
-                payload[0] = 0x03; // http:// prefix code
-                System.arraycopy(uriBytes, 7, payload, 1, uriBytes.length - 7);
-            } else {
-                // Fallback to full URL without prefix code
-                payload = new byte[uriBytes.length];
-                System.arraycopy(uriBytes, 0, payload, 0, uriBytes.length);
-            }
-            
-            NdefRecord uriRecord = new NdefRecord(
-                NdefRecord.TNF_WELL_KNOWN,
-                NdefRecord.RTD_URI,
-                new byte[0], // No ID
-                payload
-            );
+            // Use Android's built-in createUri method for better compatibility
+            NdefRecord uriRecord = NdefRecord.createUri(simpleUrl);
             
             NdefMessage ndefMessage = new NdefMessage(new NdefRecord[]{uriRecord});
             byte[] ndefBytes = ndefMessage.toByteArray();
