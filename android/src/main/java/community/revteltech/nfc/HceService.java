@@ -99,11 +99,11 @@ public class HceService extends HostApduService {
             
             if (simpleUrl.startsWith("https://")) {
                 payload = new byte[uriBytes.length - 8 + 1];
-                payload[0] = 0x02; // https:// prefix code
+                payload[0] = 0x04; // https:// prefix code
                 System.arraycopy(uriBytes, 8, payload, 1, uriBytes.length - 8);
             } else if (simpleUrl.startsWith("http://")) {
                 payload = new byte[uriBytes.length - 7 + 1];
-                payload[0] = 0x01; // http:// prefix code
+                payload[0] = 0x03; // http:// prefix code
                 System.arraycopy(uriBytes, 7, payload, 1, uriBytes.length - 7);
             } else {
                 // Fallback to full URL without prefix code
