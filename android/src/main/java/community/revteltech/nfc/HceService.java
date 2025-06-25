@@ -77,11 +77,7 @@ public class HceService extends HostApduService {
                     contactVcf.getBytes(StandardCharsets.UTF_8)
                 );
                 NdefMessage ndefMessage = new NdefMessage(new NdefRecord[]{vcfRecord});
-                byte[] ndefBytes = ndefMessage.toByteArray();
-                currentNdefData = new byte[2 + ndefBytes.length];
-                currentNdefData[0] = (byte) ((ndefBytes.length >> 8) & 0xFF);
-                currentNdefData[1] = (byte) (ndefBytes.length & 0xFF);
-                System.arraycopy(ndefBytes, 0, currentNdefData, 2, ndefBytes.length);
+                currentNdefData = createNdefFile(ndefMessage);
                 Log.d(TAG, "NDEF prepared with VCF, size: " + currentNdefData.length);
                 return;
             }
@@ -93,15 +89,20 @@ public class HceService extends HostApduService {
 
             Log.d(TAG, "Preparing NDEF with URL: " + simpleUrl);
             
-            // Use Android's built-in createUri method for better compatibility
-            NdefRecord uriRecord = NdefRecord.createUri(simpleUrl);
+            // Manual NDEF URI record creation for better cross-device compatibility
+            byte[] uriBytes = simpleUrl.getBytes(StandardCharsets.UTF_8);
+            byte[] payload = new byte[uriBytes.length + 1];
+            payload[0] = 0x00; // No URI prefix identifier - full URI
+            System.arraycopy(uriBytes, 0, payload, 1, uriBytes.length);
             
+            NdefRecord uriRecord = new NdefRecord(
+                NdefRecord.TNF_WELL_KNOWN,
+                NdefRecord.RTD_URI,
+                new byte[0], // No ID
+                payload
+            );
             NdefMessage ndefMessage = new NdefMessage(new NdefRecord[]{uriRecord});
-            byte[] ndefBytes = ndefMessage.toByteArray();
-            currentNdefData = new byte[2 + ndefBytes.length];
-            currentNdefData[0] = (byte) ((ndefBytes.length >> 8) & 0xFF);
-            currentNdefData[1] = (byte) (ndefBytes.length & 0xFF);
-            System.arraycopy(ndefBytes, 0, currentNdefData, 2, ndefBytes.length);
+            currentNdefData = createNdefFile(ndefMessage);
             Log.d(TAG, "NDEF prepared with URL, size: " + currentNdefData.length);
             Log.d(TAG, "NDEF data hex: " + bytesToHex(currentNdefData));
 
@@ -109,6 +110,22 @@ public class HceService extends HostApduService {
             Log.e(TAG, "Error preparing NDEF data: " + e.getMessage(), e);
             currentNdefData = null;
         }
+    }
+    
+    private byte[] createNdefFile(NdefMessage ndefMessage) {
+        byte[] ndefBytes = ndefMessage.toByteArray();
+        // Create proper NDEF file structure with length prefix
+        byte[] ndefFile = new byte[2 + ndefBytes.length];
+        
+        // Write length as big-endian 16-bit value
+        int length = ndefBytes.length;
+        ndefFile[0] = (byte) ((length >> 8) & 0xFF);
+        ndefFile[1] = (byte) (length & 0xFF);
+        
+        // Copy NDEF message data
+        System.arraycopy(ndefBytes, 0, ndefFile, 2, ndefBytes.length);
+        
+        return ndefFile;
     }
 
     // Helper method to convert bytes to hex string for debugging
@@ -155,12 +172,16 @@ public class HceService extends HostApduService {
 
     @Override
     public byte[] processCommandApdu(byte[] commandApdu, Bundle extras) {
-        if (commandApdu == null) {
+        if (commandApdu == null || commandApdu.length < 4) {
+            Log.w(TAG, "Invalid APDU command received");
             return ApduUtil.A_ERROR;
         }
 
+        Log.d(TAG, "Processing APDU: " + ApduUtil.bytesToHex(commandApdu));
+
         // Handle SELECT NDEF application
         if (ApduUtil.isSelectNdefApp(commandApdu)) {
+            Log.d(TAG, "NDEF application selected");
             ndefAppSelected = true;
             capabilityContainerSelected = false;
             ndefFileSelected = false;
@@ -170,11 +191,13 @@ public class HceService extends HostApduService {
 
         // Only process further commands if NDEF app is selected
         if (!ndefAppSelected) {
-            return ApduUtil.A_ERROR;
+            Log.w(TAG, "NDEF app not selected, rejecting command");
+            return ApduUtil.A_FILE_NOT_FOUND;
         }
 
         // Handle SELECT Capability Container
         if (ApduUtil.isSelectCapabilityContainer(commandApdu)) {
+            Log.d(TAG, "Capability Container selected");
             capabilityContainerSelected = true;
             ndefFileSelected = false;
             return ApduUtil.A_OK;
@@ -182,6 +205,7 @@ public class HceService extends HostApduService {
 
         // Handle SELECT NDEF file
         if (ApduUtil.isSelectNdefFile(commandApdu)) {
+            Log.d(TAG, "NDEF file selected");
             capabilityContainerSelected = false;
             ndefFileSelected = true;
             return ApduUtil.A_OK;
@@ -190,6 +214,7 @@ public class HceService extends HostApduService {
         // Handle READ BINARY commands
         if (ApduUtil.isReadCommand(commandApdu)) {
             if (capabilityContainerSelected) {
+                Log.d(TAG, "Reading Capability Container");
                 byte[] ccData = ApduUtil.getCapabilityContainer();
                 byte[] ccDataOnly = new byte[ccData.length - 2];
                 System.arraycopy(ccData, 0, ccDataOnly, 0, ccDataOnly.length);
@@ -197,6 +222,7 @@ public class HceService extends HostApduService {
             }
             
             if (ndefFileSelected) {
+                Log.d(TAG, "Reading NDEF file");
                 if (currentNdefData != null) {
                     return ApduUtil.handleReadBinary(commandApdu, currentNdefData);
                 } else {
@@ -205,8 +231,12 @@ public class HceService extends HostApduService {
                     return ApduUtil.handleReadBinary(commandApdu, emptyNdef);
                 }
             }
+            
+            Log.w(TAG, "READ command but no file selected");
+            return ApduUtil.A_FILE_NOT_FOUND;
         }
 
+        Log.w(TAG, "Unknown APDU command: " + ApduUtil.bytesToHex(commandApdu));
         return ApduUtil.A_ERROR;
     }
 
