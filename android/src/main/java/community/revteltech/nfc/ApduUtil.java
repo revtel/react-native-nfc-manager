@@ -23,16 +23,16 @@ public class ApduUtil {
     private static final byte INS_SELECT = (byte) 0xA4;
     private static final byte INS_READ_BINARY = (byte) 0xB0;
 
-    // Capability Container for NDEF Type 4 tag (based on working implementations)
+    // Capability Container for NDEF Type 4 tag optimized for iOS compatibility
     private static final byte[] CAPABILITY_CONTAINER = {
         (byte) 0x00, (byte) 0x0F, // CCLEN (15 bytes)
         (byte) 0x20,              // Mapping version 2.0
-        (byte) 0x00, (byte) 0x3B, // MLe (maximum R-APDU data size)
-        (byte) 0x00, (byte) 0x34, // MLc (maximum C-APDU data size)
+        (byte) 0x00, (byte) 0xF6, // MLe (maximum R-APDU data size) - increased for iOS
+        (byte) 0x00, (byte) 0xF6, // MLc (maximum C-APDU data size) - increased for iOS
         (byte) 0x04,              // NDEF File Control TLV Tag
         (byte) 0x06,              // Length of file control TLV
         (byte) 0xE1, (byte) 0x04, // NDEF File ID
-        (byte) 0x00, (byte) 0xFF, // Maximum NDEF file size (255 bytes for compatibility)
+        (byte) 0x20, (byte) 0x00, // Maximum NDEF file size (8KB for iOS compatibility)
         (byte) 0x00,              // NDEF file read access (always)
         (byte) 0xFF               // NDEF file write access (denied)
     };

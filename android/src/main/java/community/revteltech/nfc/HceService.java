@@ -26,12 +26,11 @@ public class HceService extends HostApduService {
     public static final String EXTRA_SIMPLE_URL = "simple_url";
     public static final String EXTRA_CONTACT_VCF = "contact_vcf";
 
-    // Static variables to maintain state across service lifecycle
-    private static String staticSimpleUrl = null;
+        // Static variables to maintain state across service lifecycle
+    private static List<String> staticSimpleUrls = new ArrayList<>();
     private static boolean isServiceActive = false;
     private static String staticContactVcf = null;
-    
-    private String simpleUrl;
+
     private String contactVcf;
     private LocalBroadcastManager broadcastManager;
 
@@ -45,12 +44,14 @@ public class HceService extends HostApduService {
     public void onCreate() {
         super.onCreate();
         broadcastManager = LocalBroadcastManager.getInstance(this);
-        isServiceActive = true;
         
         // Restore static state
-        simpleUrl = staticSimpleUrl;
         contactVcf = staticContactVcf;
-
+        
+        // Service is active if there's any content
+        isServiceActive = (!staticSimpleUrls.isEmpty() || staticContactVcf != null);
+        
+        Log.d(TAG, "Service created - isActive: " + isServiceActive + ", hasUrls: " + staticSimpleUrls.size() + ", hasVcf: " + (staticContactVcf != null));
         
         // Broadcast service started
         broadcastManager.sendBroadcast(new Intent(ACTION_HCE_STARTED));
@@ -81,29 +82,32 @@ public class HceService extends HostApduService {
                 Log.d(TAG, "NDEF prepared with VCF, size: " + currentNdefData.length);
                 return;
             }
-            if (simpleUrl == null || simpleUrl.isEmpty()) {
-                Log.d(TAG, "No URL or VCF, clearing NDEF data");
+            
+            if (staticSimpleUrls.isEmpty()) {
+                Log.d(TAG, "No URLs or VCF, clearing NDEF data");
                 currentNdefData = null;
                 return;
             }
 
-            Log.d(TAG, "Preparing NDEF with URL: " + simpleUrl);
+            Log.d(TAG, "Preparing NDEF with " + staticSimpleUrls.size() + " URLs: " + staticSimpleUrls);
             
-            // Manual NDEF URI record creation for better cross-device compatibility
-            byte[] uriBytes = simpleUrl.getBytes(StandardCharsets.UTF_8);
-            byte[] payload = new byte[uriBytes.length + 1];
-            payload[0] = 0x00; // No URI prefix identifier - full URI
-            System.arraycopy(uriBytes, 0, payload, 1, uriBytes.length);
+            List<NdefRecord> allRecords = new ArrayList<>();
+            for (String url : staticSimpleUrls) {
+                if (url != null && !url.isEmpty()) {
+                    List<NdefRecord> records = createUriRecords(url);
+                    allRecords.addAll(records);
+                }
+            }
             
-            NdefRecord uriRecord = new NdefRecord(
-                NdefRecord.TNF_WELL_KNOWN,
-                NdefRecord.RTD_URI,
-                new byte[0], // No ID
-                payload
-            );
-            NdefMessage ndefMessage = new NdefMessage(new NdefRecord[]{uriRecord});
+            if (allRecords.isEmpty()) {
+                Log.d(TAG, "No valid URLs found, clearing NDEF data");
+                currentNdefData = null;
+                return;
+            }
+            
+            NdefMessage ndefMessage = new NdefMessage(allRecords.toArray(new NdefRecord[0]));
             currentNdefData = createNdefFile(ndefMessage);
-            Log.d(TAG, "NDEF prepared with URL, size: " + currentNdefData.length);
+            Log.d(TAG, "NDEF prepared with " + allRecords.size() + " records from " + staticSimpleUrls.size() + " URLs, size: " + currentNdefData.length);
             Log.d(TAG, "NDEF data hex: " + bytesToHex(currentNdefData));
 
         } catch (Exception e) {
@@ -112,20 +116,50 @@ public class HceService extends HostApduService {
         }
     }
     
+    /**
+     * Create NDEF URI records based on the input URL
+     * Creates only the exact URL provided,
+     */
+    private List<NdefRecord> createUriRecords(String url) {
+        List<NdefRecord> records = new ArrayList<>();
+        
+        if (url == null || url.isEmpty()) {
+            return records;
+        }
+
+        NdefRecord primaryRecord = NdefRecord.createUri(url);
+        records.add(primaryRecord);
+        Log.d(TAG, "Added URI record: " + url);
+        
+        return records;
+    }
+    
     private byte[] createNdefFile(NdefMessage ndefMessage) {
-        byte[] ndefBytes = ndefMessage.toByteArray();
-        // Create proper NDEF file structure with length prefix
-        byte[] ndefFile = new byte[2 + ndefBytes.length];
-        
-        // Write length as big-endian 16-bit value
-        int length = ndefBytes.length;
-        ndefFile[0] = (byte) ((length >> 8) & 0xFF);
-        ndefFile[1] = (byte) (length & 0xFF);
-        
-        // Copy NDEF message data
-        System.arraycopy(ndefBytes, 0, ndefFile, 2, ndefBytes.length);
-        
-        return ndefFile;
+        try {
+            byte[] ndefBytes = ndefMessage.toByteArray();
+            
+            // Validate NDEF message is not too large (iOS has stricter limits)
+            if (ndefBytes.length > 8192) { // 8KB limit for better iOS compatibility
+                Log.w(TAG, "NDEF message too large for iOS compatibility: " + ndefBytes.length + " bytes");
+            }
+            
+            // Create proper NDEF file structure with length prefix
+            byte[] ndefFile = new byte[2 + ndefBytes.length];
+            
+            // Write length as big-endian 16-bit value
+            int length = ndefBytes.length;
+            ndefFile[0] = (byte) ((length >> 8) & 0xFF);
+            ndefFile[1] = (byte) (length & 0xFF);
+            
+            // Copy NDEF message data
+            System.arraycopy(ndefBytes, 0, ndefFile, 2, ndefBytes.length);
+            
+            Log.d(TAG, "Created NDEF file with " + length + " bytes of NDEF data");
+            return ndefFile;
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating NDEF file: " + e.getMessage(), e);
+            return new byte[]{0x00, 0x00}; // Return empty NDEF file on error
+        }
     }
 
     // Helper method to convert bytes to hex string for debugging
@@ -140,31 +174,61 @@ public class HceService extends HostApduService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
+            // Check if this is an explicit clear command
+            boolean hasUrlExtra = intent.hasExtra(EXTRA_SIMPLE_URL);
+            boolean hasVcfExtra = intent.hasExtra(EXTRA_CONTACT_VCF);
             String url = intent.getStringExtra(EXTRA_SIMPLE_URL);
             String vcf = intent.getStringExtra(EXTRA_CONTACT_VCF);
             
-            Log.d(TAG, "onStartCommand - URL: " + url + ", VCF: " + vcf);
+            Log.d(TAG, "onStartCommand - URL: " + url + ", VCF: " + vcf + ", hasUrlExtra: " + hasUrlExtra + ", hasVcfExtra: " + hasVcfExtra);
 
-            if (vcf != null) {
-                contactVcf = vcf;
-                staticContactVcf = vcf;
-                simpleUrl = null;
-                staticSimpleUrl = null;
-                prepareNdefData();
-            } else if (url != null) {
-                simpleUrl = url;
-                staticSimpleUrl = url;
+            if (hasVcfExtra) {
+                if (vcf != null && !vcf.isEmpty()) {
+                    contactVcf = vcf;
+                    staticContactVcf = vcf;
+                    staticSimpleUrls.clear();
+                    isServiceActive = true; // Activate service when setting content
+                    prepareNdefData();
+                } else {fear:
+                    // Explicit clear VCF
+                    Log.d(TAG, "Clearing VCF content");
+                    contactVcf = null;
+                    staticContactVcf = null;
+                    currentNdefData = null;
+                    // Don't deactivate if URL content might still exist
+                    if (staticSimpleUrls.isEmpty()) {
+                        isServiceActive = false;
+                    }
+                }
+            } else if (hasUrlExtra) {
+                if (url != null && !url.isEmpty()) {
+                    // Add URL to the list (accumulate)
+                    if (!staticSimpleUrls.contains(url)) {
+                        staticSimpleUrls.add(url);
+                    }
+                    contactVcf = null;
+                    staticContactVcf = null;
+                    isServiceActive = true; // Activate service when setting content
+                    prepareNdefData();
+                    Log.d(TAG, "Added URL to collection. Total URLs: " + staticSimpleUrls.size());
+                } else {
+                    // Explicit clear URLs
+                    Log.d(TAG, "Clearing URL content");
+                    staticSimpleUrls.clear();
+                    currentNdefData = null;
+                    // Don't deactivate if VCF content might still exist
+                    if (staticContactVcf == null) {
+                        isServiceActive = false;
+                    }
+                }
+            } else if (hasUrlExtra && hasVcfExtra && url == null && vcf == null) {
+                // Both are explicitly null - clear all content and deactivate
+                Log.d(TAG, "Clearing all content and deactivating service");
                 contactVcf = null;
                 staticContactVcf = null;
-                prepareNdefData();
-            } else {
-                // Both are null - clear all content
-                Log.d(TAG, "Clearing all content");
-                contactVcf = null;
-                staticContactVcf = null;
-                simpleUrl = null;
-                staticSimpleUrl = null;
+                staticSimpleUrls.clear();
                 currentNdefData = null;
+                isServiceActive = false;
             }
         }
         return super.onStartCommand(intent, flags, startId);
@@ -179,6 +243,14 @@ public class HceService extends HostApduService {
 
         Log.d(TAG, "Processing APDU: " + ApduUtil.bytesToHex(commandApdu));
 
+        // Check if HCE is actually active and has content
+        if (!isServiceActive || (staticSimpleUrls.isEmpty() && staticContactVcf == null)) {
+            Log.d(TAG, "HCE service inactive or no content, rejecting all commands");
+            byte[] response = ApduUtil.A_FILE_NOT_FOUND;
+            Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+            return response;
+        }
+
         // Handle SELECT NDEF application
         if (ApduUtil.isSelectNdefApp(commandApdu)) {
             Log.d(TAG, "NDEF application selected");
@@ -186,13 +258,17 @@ public class HceService extends HostApduService {
             capabilityContainerSelected = false;
             ndefFileSelected = false;
             prepareNdefData();
-            return ApduUtil.A_OK;
+            byte[] response = ApduUtil.A_OK;
+            Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+            return response;
         }
 
         // Only process further commands if NDEF app is selected
         if (!ndefAppSelected) {
             Log.w(TAG, "NDEF app not selected, rejecting command");
-            return ApduUtil.A_FILE_NOT_FOUND;
+            byte[] response = ApduUtil.A_FILE_NOT_FOUND;
+            Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+            return response;
         }
 
         // Handle SELECT Capability Container
@@ -200,7 +276,9 @@ public class HceService extends HostApduService {
             Log.d(TAG, "Capability Container selected");
             capabilityContainerSelected = true;
             ndefFileSelected = false;
-            return ApduUtil.A_OK;
+            byte[] response = ApduUtil.A_OK;
+            Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+            return response;
         }
 
         // Handle SELECT NDEF file
@@ -208,7 +286,9 @@ public class HceService extends HostApduService {
             Log.d(TAG, "NDEF file selected");
             capabilityContainerSelected = false;
             ndefFileSelected = true;
-            return ApduUtil.A_OK;
+            byte[] response = ApduUtil.A_OK;
+            Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+            return response;
         }
 
         // Handle READ BINARY commands
@@ -218,26 +298,35 @@ public class HceService extends HostApduService {
                 byte[] ccData = ApduUtil.getCapabilityContainer();
                 byte[] ccDataOnly = new byte[ccData.length - 2];
                 System.arraycopy(ccData, 0, ccDataOnly, 0, ccDataOnly.length);
-                return ApduUtil.handleReadBinary(commandApdu, ccDataOnly);
+                byte[] response = ApduUtil.handleReadBinary(commandApdu, ccDataOnly);
+                Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+                return response;
             }
             
             if (ndefFileSelected) {
                 Log.d(TAG, "Reading NDEF file");
+                byte[] response;
                 if (currentNdefData != null) {
-                    return ApduUtil.handleReadBinary(commandApdu, currentNdefData);
+                    response = ApduUtil.handleReadBinary(commandApdu, currentNdefData);
                 } else {
                     // Return empty NDEF file
                     byte[] emptyNdef = {0x00, 0x00};
-                    return ApduUtil.handleReadBinary(commandApdu, emptyNdef);
+                    response = ApduUtil.handleReadBinary(commandApdu, emptyNdef);
                 }
+                Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+                return response;
             }
             
             Log.w(TAG, "READ command but no file selected");
-            return ApduUtil.A_FILE_NOT_FOUND;
+            byte[] response = ApduUtil.A_FILE_NOT_FOUND;
+            Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+            return response;
         }
 
         Log.w(TAG, "Unknown APDU command: " + ApduUtil.bytesToHex(commandApdu));
-        return ApduUtil.A_ERROR;
+        byte[] response = ApduUtil.A_ERROR;
+        Log.d(TAG, "Response APDU: " + ApduUtil.bytesToHex(response));
+        return response;
     }
 
     @Override
@@ -252,19 +341,20 @@ public class HceService extends HostApduService {
     }
 
     public static boolean isRunning() {
-        return isServiceActive && (staticSimpleUrl != null || staticContactVcf != null);
+        return isServiceActive && (!staticSimpleUrls.isEmpty() || staticContactVcf != null);
     }
 
-    // Static method to clear all data
+    // Static method to clear all data and deactivate service
     public static void clearAllData() {
-        staticSimpleUrl = null;
+        staticSimpleUrls.clear();
         staticContactVcf = null;
         isServiceActive = false;
+        Log.d(TAG, "All static data cleared and service deactivated");
     }
 
     // Static method to force clear current NDEF data
     public static void forceClearNdefData() {
-        staticSimpleUrl = null;
+        staticSimpleUrls.clear();
         staticContactVcf = null;
     }
 } 
