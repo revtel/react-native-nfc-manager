@@ -37,6 +37,24 @@ export interface Spec extends TurboModule {
   sendFelicaCommand(bytes: number[], callback: (err?: string, bytes?: number[]) => void): void;
   addListener: (eventType: string) => void;
   removeListeners: (count: number) => void;
+  iso15693_getSystemInfo(requestFlag: number, callback: (err?: string, systemInfo?: Object) => void): void;
+  iso15693_readSingleBlock(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
+  iso15693_readMultipleBlocks(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
+  iso15693_writeSingleBlock(options: Object, callback: (err?: string) => void): void;
+  iso15693_lockBlock(options: Object, callback: (err?: string) => void): void;
+  iso15693_writeAFI(options: Object, callback: (err?: string) => void): void;
+  iso15693_lockAFI(options: Object, callback: (err?: string) => void): void;
+  iso15693_writeDSFID(options: Object, callback: (err?: string) => void): void;
+  iso15693_lockDSFID(options: Object, callback: (err?: string) => void): void;
+  iso15693_resetToReady(options: Object, callback: (err?: string) => void): void;
+  iso15693_select(options: Object, callback: (err?: string) => void): void;
+  iso15693_stayQuiet(options: Object, callback: (err?: string) => void): void;
+  iso15693_customCommand(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
+  iso15693_sendRequest(options: Object, callback: (err?: string, responseFlag?: number, bytes?: number[]) => void): void;
+  iso15693_extendedReadSingleBlock(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
+  iso15693_extendedReadMultipleBlocks(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
+  iso15693_extendedWriteSingleBlock(options: Object, callback: (err?: string) => void): void;
+  iso15693_extendedLockBlock(options: Object, callback: (err?: string) => void): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NfcManager');
