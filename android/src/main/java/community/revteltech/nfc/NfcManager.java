@@ -350,21 +350,22 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareClassicAuthenticateA(int sector, ReadableArray key, Callback callback) {
+    public void mifareClassicAuthenticateA(double sector, ReadableArray key, Callback callback) {
         synchronized(this) {
-            mifareClassicAuthenticate('A', sector, key, callback);
+            mifareClassicAuthenticate('A', (int)sector, key, callback);
         }
     }
 
     @ReactMethod
-    public void mifareClassicAuthenticateB(int sector, ReadableArray key, Callback callback) {
+    public void mifareClassicAuthenticateB(double sector, ReadableArray key, Callback callback) {
         synchronized(this) {
-            mifareClassicAuthenticate('B', sector, key, callback);
+            mifareClassicAuthenticate('B', (int)sector, key, callback);
         }
     }
 
     @ReactMethod
-    public void mifareClassicGetBlockCountInSector(int sectorIndex, Callback callback) {
+    public void mifareClassicGetBlockCountInSector(double _sectorIndex, Callback callback) {
+        int sectorIndex = (int)_sectorIndex;
         synchronized(this) {
             if (techRequest != null) {
                 try {
@@ -413,7 +414,8 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareClassicSectorToBlock(int sectorIndex, Callback callback) {
+    public void mifareClassicSectorToBlock(double _sectorIndex, Callback callback) {
+        int sectorIndex = (int)_sectorIndex;
         synchronized(this) {
             if (techRequest != null) {
                 try {
@@ -440,7 +442,8 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareClassicReadBlock(int blockIndex, Callback callback) {
+    public void mifareClassicReadBlock(double _blockIndex, Callback callback) {
+        int blockIndex = (int)_blockIndex;
         synchronized(this) {
             if (techRequest != null) {
                 try {
@@ -472,7 +475,8 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareClassicReadSector(int sectorIndex, Callback callback) {
+    public void mifareClassicReadSector(double _sectorIndex, Callback callback) {
+        int sectorIndex = (int)_sectorIndex;
         synchronized(this) {
             if (techRequest != null) {
                 try {
@@ -509,7 +513,8 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareClassicWriteBlock(int blockIndex, ReadableArray block, Callback callback) {
+    public void mifareClassicWriteBlock(double _blockIndex, ReadableArray block, Callback callback) {
+        int blockIndex = (int)_blockIndex;
         synchronized(this) {
             if (techRequest != null) {
                 try {
@@ -546,7 +551,9 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareClassicIncrementBlock(int blockIndex, int value, Callback callback) {
+    public void mifareClassicIncrementBlock(double _blockIndex, double _value, Callback callback) {
+        int blockIndex = (int)_blockIndex;
+        int value = (int)_value;
         synchronized(this) {
             if (techRequest != null) {
                 try {
@@ -577,7 +584,9 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareClassicDecrementBlock(int blockIndex, int value, Callback callback) {
+    public void mifareClassicDecrementBlock(double _blockIndex, double _value, Callback callback) {
+        int blockIndex = (int)_blockIndex;
+        int value = (int)_value;
         synchronized(this) {
             if (techRequest != null) {
                 try {
@@ -608,7 +617,8 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareClassicTransferBlock(int blockIndex, Callback callback) {
+    public void mifareClassicTransferBlock(double _blockIndex, Callback callback) {
+        int blockIndex = (int)_blockIndex;
         synchronized(this) {
             if (techRequest != null) {
                 try {
@@ -639,12 +649,12 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareUltralightReadPages(int pageOffset, Callback callback) {
+    public void mifareUltralightReadPages(double pageOffset, Callback callback) {
         synchronized(this) {
             if (techRequest != null) {
                 try {
                     MifareUltralight techHandle = (MifareUltralight)techRequest.getTechHandle();
-                    byte[] resultBytes = techHandle.readPages(pageOffset);
+                    byte[] resultBytes = techHandle.readPages((int)pageOffset);
                     WritableArray resultRnArray = bytesToRnArray(resultBytes);
                     callback.invoke(null, resultRnArray);
                 } catch (TagLostException ex) {
@@ -659,13 +669,13 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void mifareUltralightWritePage(int pageOffset, ReadableArray rnArray, Callback callback) {
+    public void mifareUltralightWritePage(double pageOffset, ReadableArray rnArray, Callback callback) {
         synchronized(this) {
             if (techRequest != null) {
                 try {
                     byte[] bytes = rnArrayToBytes(rnArray);
                     MifareUltralight techHandle = (MifareUltralight)techRequest.getTechHandle();
-                    techHandle.writePage(pageOffset, bytes);
+                    techHandle.writePage((int)pageOffset, bytes);
                     callback.invoke();
                 } catch (TagLostException ex) {
                     callback.invoke("mifareUltralight fail: TAG_LOST");
@@ -732,7 +742,7 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void setTimeout(int timeout, Callback callback) {
+    public void setTimeout(double timeout, Callback callback) {
         synchronized (this) {
             if (techRequest != null) {
                 try {
@@ -743,31 +753,31 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
                     switch (tech) {
                         case "NfcA": {
                             NfcA techHandle = (NfcA) baseTechHandle;
-                            techHandle.setTimeout(timeout);
+                            techHandle.setTimeout((int)timeout);
                             callback.invoke();
                             return;
                         }
                         case "NfcF": {
                             NfcF techHandle = (NfcF) baseTechHandle;
-                            techHandle.setTimeout(timeout);
+                            techHandle.setTimeout((int)timeout);
                             callback.invoke();
                             return;
                         }
                         case "IsoDep": {
                             IsoDep techHandle = (IsoDep) baseTechHandle;
-                            techHandle.setTimeout(timeout);
+                            techHandle.setTimeout((int)timeout);
                             callback.invoke();
                             return;
                         }
                         case "MifareClassic": {
                             MifareClassic techHandle = (MifareClassic) baseTechHandle;
-                            techHandle.setTimeout(timeout);
+                            techHandle.setTimeout((int)timeout);
                             callback.invoke();
                             return;
                         }
                         case "MifareUltralight": {
                             MifareUltralight techHandle = (MifareUltralight) baseTechHandle;
-                            techHandle.setTimeout(timeout);
+                            techHandle.setTimeout((int)timeout);
                             callback.invoke();
                             return;
                         }

@@ -55,6 +55,27 @@ export interface Spec extends TurboModule {
   iso15693_extendedReadMultipleBlocks(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
   iso15693_extendedWriteSingleBlock(options: Object, callback: (err?: string) => void): void;
   iso15693_extendedLockBlock(options: Object, callback: (err?: string) => void): void;
+  goToNfcSetting(callback: (err?: string) => void): void;
+  getLaunchTagEvent(callback: (err?: string, tag?: Object) => void): void;
+  setTimeout(timeout: number, callback: (err?: string, tag?: Object) => void): void;
+  connect(techs: string[], callback: (err?: string) => void): void;
+  close(callback: (err?: string) => void): void;
+  transceive(bytes: number[], callback: (err?: string, bytes?: number[]) => void): void;
+  getMaxTransceiveLength(callback: (err?: string, maxLength?: number) => void): void;
+  formatNdef(bytes: number[], options: Object, callback: (err?: string) => void): void;
+  mifareUltralightReadPages(pageOffset: number, callback: (err?: string, bytes?: number[]) => void): void;
+  mifareUltralightWritePage(pageOffset: number, bytes: number[], callback: (err?: string) => void): void;
+  mifareClassicAuthenticateA(sector: number, key: number[], callback: (err?: string, result?: boolean) => void): void;
+  mifareClassicAuthenticateB(sector: number, key: number[], callback: (err?: string, result?: boolean) => void): void;
+  mifareClassicGetBlockCountInSector(sector: number, callback:(err?: string, count?: number) => void): void;
+  mifareClassicGetSectorCount(callback:(err?: string, count?: number) => void): void;
+  mifareClassicSectorToBlock(sector: number, callback:(err?: string, block?: number) => void): void;
+  mifareClassicReadBlock(block: number, callback:(err?: string, bytes?: number[]) => void): void;
+  mifareClassicReadSector(sector: number, callback:(err?: string, bytes?: number[]) => void): void;
+  mifareClassicWriteBlock(block: number, data: number[], callback:(err?: string, result?: boolean) => void): void;
+  mifareClassicIncrementBlock(block: number, value: number, callback:(err?: string, result?: boolean) => void): void;
+  mifareClassicDecrementBlock(block: number, value: number, callback:(err?: string, result?: boolean) => void): void;
+  mifareClassicTransferBlock(block: number, callback:(err?: string, result?: boolean) => void): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NfcManager');
