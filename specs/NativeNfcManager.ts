@@ -35,6 +35,8 @@ export interface Spec extends TurboModule {
   sendCommandAPDU(payload: Object, callback: (err?: string, bytes?: number[], sw1?: number, sw2?: number) => void): void;
   sendCommandAPDUBytes(bytes: number[], callback: (err?: string, bytes?: number[], sw1?: number, sw2?: number) => void): void;
   sendFelicaCommand(bytes: number[], callback: (err?: string, bytes?: number[]) => void): void;
+  addListener: (eventType: string) => void;
+  removeListeners: (count: number) => void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NfcManager');
