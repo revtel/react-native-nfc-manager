@@ -696,6 +696,41 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
         }
     }
 
+    @Override
+    public void setAlertMessage(String message, Callback callback) {
+
+    }
+
+    @Override
+    public void isSessionAvailable(Callback callback) {
+
+    }
+
+    @Override
+    public void isTagSessionAvailable(Callback callback) {
+
+    }
+
+    @Override
+    public void sendMifareCommand(ReadableArray bytes, Callback callback) {
+
+    }
+
+    @Override
+    public void sendCommandAPDU(ReadableMap payload, Callback callback) {
+
+    }
+
+    @Override
+    public void sendCommandAPDUBytes(ReadableArray bytes, Callback callback) {
+
+    }
+
+    @Override
+    public void sendFelicaCommand(ReadableArray bytes, Callback callback) {
+
+    }
+
     @ReactMethod
     public void setTimeout(int timeout, Callback callback) {
         synchronized (this) {
@@ -1064,6 +1099,21 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
         callback.invoke();
     }
 
+    @Override
+    public void restartTechnologyRequest(Callback callback) {
+
+    }
+
+    @Override
+    public void invalidateSession(Callback callback) {
+
+    }
+
+    @Override
+    public void invalidateSessionWithError(String message, Callback callback) {
+
+    }
+
     @ReactMethod
     public void registerTagEvent(ReadableMap options, Callback callback) {
         isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
@@ -1123,9 +1173,101 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
     }
 
     @ReactMethod
-    public void removeListeners(Integer count) {
+    public void removeListeners(double count) {
         // Keep: Required for RN built in Event Emitter Calls.
     }
+
+    @Override
+    public void iso15693_getSystemInfo(double requestFlag, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_readSingleBlock(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_readMultipleBlocks(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_writeSingleBlock(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_lockBlock(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_writeAFI(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_lockAFI(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_writeDSFID(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_lockDSFID(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_resetToReady(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_select(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_stayQuiet(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_customCommand(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_sendRequest(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_extendedReadSingleBlock(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_extendedReadMultipleBlocks(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_extendedWriteSingleBlock(ReadableMap options, Callback callback) {
+
+    }
+
+    @Override
+    public void iso15693_extendedLockBlock(ReadableMap options, Callback callback) {
+
+    }
+
+
 
     @Override
     public void onHostResume() {
