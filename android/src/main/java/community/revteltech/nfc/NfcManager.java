@@ -94,12 +94,6 @@ class NfcManager extends NativeNfcManagerSpec implements ActivityEventListener, 
         return "NfcManager";
     }
 
-    @ReactMethod
-    @Override
-    public void echo(String value, Callback callback) {
-        callback.invoke(null, value);
-    }
-
     @Override
     public Map<String, Object> getConstants() {
         final Map<String, Object> constants = new HashMap<>();

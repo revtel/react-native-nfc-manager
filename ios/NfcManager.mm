@@ -599,10 +599,6 @@ continueUserActivity:(NSUserActivity *)userActivity
 }
 #endif
 
-- (void)echo:(NSString *)value callback:(RCTResponseSenderBlock)callback {
-  callback(@[[NSNull null], value]);
-}
-    
 - (void)hasTagEventRegistration:(RCTResponseSenderBlock)callback {
     // bypass, Android's interface
 }

@@ -2,7 +2,6 @@ import type {TurboModule} from 'react-native';
 import {TurboModuleRegistry} from 'react-native';
 
 export interface Spec extends TurboModule {
-  echo(value: string, callback: (err?: string, resp?: string) => void): void;
   isSupported(tech: string, callback: (err?: string, resp?: boolean) => void): void;
   isEnabled(callback: (err?: string, resp?: boolean) => void): void;
   start(callback: (err?: string) => void): void;
