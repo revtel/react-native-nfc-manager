@@ -75,7 +75,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "test": "jest -i",
-    "release": "dotenv -- release-it --"
+    "release": "dotenv -- release-it --",
+    "release:beta": "release-it --preRelease=beta --increment=prerelease"
   },
   "codegenConfig": {
     "name": "NativeNfcManagerSpec",
