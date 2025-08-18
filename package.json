@@ -23,7 +23,8 @@
     "android",
     "ios",
     "react-native-nfc-manager.podspec",
-    "app.plugin.js"
+    "app.plugin.js",
+    "specs"
   ],
   "license": "MIT",
   "author": {
