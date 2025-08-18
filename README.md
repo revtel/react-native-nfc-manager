@@ -12,7 +12,7 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 
 > Special thanks to [javix64](https://github.com/javix64) for restructuring the documentation!
 
-## New VS Old Architecture
+## Version Notes
 
 - `v3` only supports legacy architecture (latest release is `v3.16.2`).
 - `v4` supports new architecture (still in beta, latest release is `v4.0.0-beta.3`) .
