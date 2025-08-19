@@ -14,8 +14,8 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 
 ## Version Notes
 
-- `v3` only supports legacy architecture (latest release is `v3.16.2`).
-- `v4` supports new architecture (still in beta, latest release is `v4.0.0-beta.3`) .
+- `v3` only supports legacy architecture (latest release is `v3.16.3`).
+- `v4` supports new architecture (still in beta, latest release is `v4.0.0-beta.4`) .
 
 ## Table of Contents
 
