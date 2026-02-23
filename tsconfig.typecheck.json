@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "react-native-nfc-manager": [
+        "./index.d.ts"
+      ]
+    }
+  },
+  "include": [
+    "index.d.ts",
+    "types-tests/**/*.ts"
+  ]
+}

@@ -3,6 +3,7 @@
   "version": "4.0.0-beta.7",
   "description": "A NFC module for react native.",
   "main": "src/index.js",
+  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/whitedogg13/react-native-nfc-manager.git"
@@ -75,6 +76,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "test": "jest -i",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "release": "dotenv -- release-it --",
     "release:beta": "release-it --preRelease=beta --increment=prerelease"
   },

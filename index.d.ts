@@ -87,12 +87,12 @@ declare module 'react-native-nfc-manager' {
   }
 
   export interface CancelTechReqOpts {
-    throwOnError?: boolean = false;
-    delayMsAndroid?: number = 1000;
+    throwOnError?: boolean;
+    delayMsAndroid?: number;
   }
 
   interface NdefHandler {
-    writeNdefMessage: (bytes: number[] , options?: { reconnectAfterWrite: boolean }) => Promise<void>;
+    writeNdefMessage: (bytes: number[] , options?: { reconnectAfterWrite?: boolean }) => Promise<void>;
     getNdefMessage: () => Promise<TagEvent | null>;
     makeReadOnly: () => Promise<void>;
     getNdefStatus: () => Promise<{
@@ -115,34 +115,32 @@ declare module 'react-native-nfc-manager' {
   }
 
   interface MifareClassicHandlerAndroid {
-    mifareClassicSectorToBlock: (sector: number) => Promise<ArrayLike<number>>;
-    mifareClassicReadBlock: (
-      block: ArrayLike<number>,
-    ) => Promise<ArrayLike<number>>;
+    mifareClassicGetBlockCountInSector: (sector: number) => Promise<number>;
+    mifareClassicSectorToBlock: (sector: number) => Promise<number>;
+    mifareClassicReadBlock: (block: number) => Promise<number[]>;
+    mifareClassicReadSector: (sector: number) => Promise<number[]>;
     mifareClassicWriteBlock: (
-      block: ArrayLike<number>,
-      simpliArr: any[],
-    ) => Promise<void>;
+      block: number,
+      data: number[],
+    ) => Promise<boolean>;
     mifareClassicIncrementBlock: (
-      block: ArrayLike<number>,
-      data: number,
-    ) => Promise<void>;
+      block: number,
+      value: number,
+    ) => Promise<boolean>;
     mifareClassicDecrementBlock: (
-      block: ArrayLike<number>,
-      data: number,
-    ) => Promise<void>;
-    mifareClassicTransferBlock: (
-      block: ArrayLike<number>,
-    ) => Promise<void>;
+      block: number,
+      value: number,
+    ) => Promise<boolean>;
+    mifareClassicTransferBlock: (block: number) => Promise<boolean>;
     mifareClassicGetSectorCount: () => Promise<number>;
     mifareClassicAuthenticateA: (
       sector: number,
       keys: number[],
-    ) => Promise<void>;
+    ) => Promise<boolean>;
     mifareClassicAuthenticateB: (
       sector: number,
       keys: number[],
-    ) => Promise<void>;
+    ) => Promise<boolean>;
   }
 
   interface MifareUltralightHandlerAndroid {
@@ -160,7 +158,7 @@ declare module 'react-native-nfc-manager' {
   /** [iOS ONLY] */
   interface Iso15693HandlerIOS {
     getSystemInfo: (
-      requestFloags: number,
+      requestFlags: number,
     ) => Promise<{
       dsfid: number;
       afi: number;
@@ -223,15 +221,17 @@ declare module 'react-native-nfc-manager' {
   type OnDiscoverTag = (evt: TagEvent) => void;
   type OnSessionClosed = (error?: NfcError.NfcErrorBase) => void;
   type OnStateChanged = (evt: {state: string}) => void;
-  type OnNfcEvents = OnDiscoverTag | OnSessionClosed | OnStateChanged;
 
   interface NfcManager {
     start(): Promise<void>;
-    isSupported(): Promise<boolean>;
+    isSupported(tech?: NfcTech | ''): Promise<boolean>;
     isEnabled(): Promise<boolean>;
     registerTagEvent(options?: RegisterTagEventOpts): Promise<void>;
     unregisterTagEvent(): Promise<void>;
-    setEventListener(name: NfcEvents, callback: OnNfcEvents | null): void;
+    setEventListener(name: NfcEvents.DiscoverTag, callback: OnDiscoverTag | null): void;
+    setEventListener(name: NfcEvents.DiscoverBackgroundTag, callback: OnDiscoverTag | null): void;
+    setEventListener(name: NfcEvents.SessionClosed, callback: OnSessionClosed | null): void;
+    setEventListener(name: NfcEvents.StateChanged, callback: OnStateChanged | null): void;
     requestTechnology(
       tech: NfcTech | NfcTech[],
       options?: RegisterTagEventOpts,
@@ -257,8 +257,8 @@ declare module 'react-native-nfc-manager' {
     setAlertMessageIOS: (alertMessage: string) => Promise<void>;
     invalidateSessionIOS: () => Promise<void>;
     invalidateSessionWithErrorIOS: (errorMessage: string) => Promise<void>;
-    isSessionAvailableIOS: () => Promise<Boolean>;
-    isTagSessionAvailableIOS: () => Promise<Boolean>;
+    isSessionAvailableIOS: () => Promise<boolean>;
+    isTagSessionAvailableIOS: () => Promise<boolean>;
     sendMifareCommandIOS: (bytes: number[]) => Promise<number[]>;
     sendFelicaCommandIOS: (bytes: number[]) => Promise<number[]>;
     sendCommandAPDUIOS: (
@@ -412,13 +412,30 @@ declare module 'react-native-nfc-manager' {
   export const NfcErrorIOS: {
     errCodes: {
       unknown: -1;
+      unsupportedFeature: 1;
+      securityViolation: 2;
+      invalidParameter: 3;
+      invalidParameterLength: 4;
+      parameterOutOfBound: 5;
+      radioDisabled: 6;
+      tagConnectionLost: 100;
+      retryExceeded: 101;
+      tagResponseError: 102;
+      sessionInvalidated: 103;
+      tagNotConnected: 104;
+      packetTooLong: 105;
       userCancel: 200;
       timeout: 201;
       unexpected: 202;
       systemBusy: 203;
       firstNdefInvalid: 204;
+      invalidConfiguration: 300;
+      tagNotWritable: 400;
+      tagUpdateFailure: 401;
+      tagSizeTooSmall: 402;
+      zeroLengthMessage: 403;
     };
-    parse(errorString: string): number;
+    parse(error: string | NfcError.UserCancel): number;
   }
 
   export namespace NfcError {
