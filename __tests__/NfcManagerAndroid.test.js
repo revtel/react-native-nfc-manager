@@ -6,7 +6,7 @@ import * as NfcError from '../src/NfcError';
 
 describe('NfcManager (android)', () => {
   Platform.setOS('android');
-  const NfcManagerModule = require('../src/index.js');
+  const NfcManagerModule = require('../src/index');
   const NfcManager = NfcManagerModule.default;
   const {NfcTech} = NfcManagerModule;
 

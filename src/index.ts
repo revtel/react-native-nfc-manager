@@ -1,5 +1,5 @@
 import {Platform} from 'react-native';
-import Ndef from '../ndef-lib';
+const Ndef = require('../ndef-lib');
 import {NfcEvents, NfcTech, NdefStatus} from './NfcManager';
 import {NfcAdapter, NfcManagerAndroid} from './NfcManagerAndroid';
 import {

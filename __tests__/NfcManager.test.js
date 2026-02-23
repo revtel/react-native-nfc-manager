@@ -10,7 +10,7 @@ import * as NfcError from '../src/NfcError';
 
 describe('NfcManager (ios)', () => {
   Platform.setOS('ios');
-  const NfcManagerModule = require('../src/index.js');
+  const NfcManagerModule = require('../src/index');
   const NfcManager = NfcManagerModule.default;
   const {NfcEvents, NfcErrorIOS, NfcTech} = NfcManagerModule;
   const lastNativeCall = () =>

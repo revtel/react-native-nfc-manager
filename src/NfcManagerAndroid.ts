@@ -5,6 +5,12 @@ import {MifareUltralightHandlerAndroid} from './NfcTech/MifareUltralightHandlerA
 import {NdefFormatableHandlerAndroid} from './NfcTech/NdefFormatableHandlerAndroid';
 import {handleNativeException, buildNfcExceptionAndroid} from './NfcError';
 
+type RequestTechnologyOptions = Record<string, unknown>;
+type CancelTechnologyRequestOptions = {
+  throwOnError?: boolean;
+  delayMsAndroid?: number;
+};
+
 const NfcAdapter = {
   FLAG_READER_NFC_A: 0x1,
   FLAG_READER_NFC_B: 0x2,
@@ -15,15 +21,26 @@ const NfcAdapter = {
   FLAG_READER_NO_PLATFORM_SOUNDS: 0x100,
 };
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 class NfcManagerAndroid extends NfcManagerBase {
+  cleanUpTagRegistration: boolean;
+  _mifareClassicHandlerAndroid: MifareClassicHandlerAndroid | null;
+  _mifareUltralightHandlerAndroid: MifareUltralightHandlerAndroid | null;
+  _ndefFormatableHandlerAndroid: NdefFormatableHandlerAndroid | null;
+
   constructor() {
     super();
     this.cleanUpTagRegistration = false;
+    this._mifareClassicHandlerAndroid = null;
+    this._mifareUltralightHandlerAndroid = null;
+    this._ndefFormatableHandlerAndroid = null;
   }
 
-  requestTechnology = async (tech, options = {}) => {
+  requestTechnology = async (
+    tech: string | string[],
+    options: RequestTechnologyOptions = {},
+  ) => {
     try {
       if (typeof tech === 'string') {
         tech = [tech];
@@ -43,7 +60,7 @@ class NfcManagerAndroid extends NfcManagerBase {
     }
   };
 
-  cancelTechnologyRequest = async (options = {}) => {
+  cancelTechnologyRequest = async (options: CancelTechnologyRequestOptions = {}) => {
     const {throwOnError = false, delayMsAndroid = 1000} = options;
 
     try {
@@ -77,20 +94,20 @@ class NfcManagerAndroid extends NfcManagerBase {
   getLaunchTagEvent = () =>
     handleNativeException(callNative('getLaunchTagEvent'));
 
-  setNdefPushMessage = (bytes) => {
+  setNdefPushMessage = (_bytes: number[]) => {
     return Promise.reject('this api is deprecated');
   }
 
-  setTimeout = (timeout) =>
+  setTimeout = (timeout: number) =>
     handleNativeException(callNative('setTimeout', [timeout]));
 
   getTimeout = () => handleNativeException(callNative('getTimeout'));
 
-  connect = (techs) => handleNativeException(callNative('connect', [techs]));
+  connect = (techs: string[]) => handleNativeException(callNative('connect', [techs]));
 
   close = () => handleNativeException(callNative('close'));
 
-  transceive = (bytes) =>
+  transceive = (bytes: number[]) =>
     handleNativeException(callNative('transceive', [bytes]));
 
   getMaxTransceiveLength = () =>
@@ -123,7 +140,7 @@ class NfcManagerAndroid extends NfcManagerBase {
   // -------------------------------------
   get ndefFormatableHandlerAndroid() {
     if (!this._ndefFormatableHandlerAndroid) {
-      this._ndefFormatableHandlerAndroid = new NdefFormatableHandlerAndroid(this);
+      this._ndefFormatableHandlerAndroid = new NdefFormatableHandlerAndroid();
     }
     return this._ndefFormatableHandlerAndroid;
   }

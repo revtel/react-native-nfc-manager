@@ -67,7 +67,7 @@ declare module 'react-native-nfc-manager' {
     id?: number[];
     tnf: TNF;
     type: number[] | string;
-    payload: any[];
+    payload: number[];
   }
 
   export interface TagEvent {
@@ -374,7 +374,7 @@ declare module 'react-native-nfc-manager' {
       encodePayload: (
         text: string,
         lang?: ISOLangCode,
-        encoding?: any,
+        encoding?: unknown,
       ) => NdefRecord;
       decodePayload: (data: Uint8Array) => string;
     };
@@ -387,25 +387,25 @@ declare module 'react-native-nfc-manager' {
       decodePayload: (data: Uint8Array) => WifiSimpleCredentials;
     };
     util: {
-      stringToBytes: (string: string) => any[];
-      bytesToString: (bytes: any) => string;
-      bytesToHexString: (bytes: any) => string;
-      toHex: (i: any) => any;
-      toPrintable: (i: any) => string;
+      stringToBytes: (string: string) => number[];
+      bytesToString: (bytes: string | number[]) => string;
+      bytesToHexString: (bytes: number[]) => string;
+      toHex: (i: number) => string;
+      toPrintable: (i: number) => string;
     };
     isType(record: NdefRecord, tnf: TNF, type: string): boolean;
     stringify(data: number[], separator: string): string;
     encodeMessage(records: NdefRecord[]): number[];
     decodeMessage(bytes: number[]): NdefRecord[];
-    textRecord(text: string, lang?: ISOLangCode, encoding?: any): NdefRecord;
-    uriRecord(uri: URI, id?: any): NdefRecord;
-    wifiSimpleRecord(credentials: WifiSimpleCredentials, id?: any): NdefRecord;
+    textRecord(text: string, lang?: ISOLangCode, encoding?: unknown): NdefRecord;
+    uriRecord(uri: URI, id?: string | number[]): NdefRecord;
+    wifiSimpleRecord(credentials: WifiSimpleCredentials, id?: string | number[]): NdefRecord;
     androidApplicationRecord(pkgName: string): NdefRecord;
     record(
       tnf: TNF,
       type: string,
-      id: string | any[],
-      payload: string | any[],
+      id: string | number[],
+      payload: string | number[],
     ): NdefRecord;
   };
 

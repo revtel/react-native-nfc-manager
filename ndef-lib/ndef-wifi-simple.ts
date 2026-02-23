@@ -1,5 +1,26 @@
 var util = require('./util');
 
+type Byte = number;
+type ByteArray = Byte[];
+
+type WifiCredentials = {
+  ssid: string;
+  networkKey: string;
+  authType?: ByteArray;
+};
+
+type Tlv = {
+  type: ByteArray;
+  length: ByteArray;
+  value: ByteArray;
+};
+
+type DecodedWifiCredentials = {
+  ssid?: string | null;
+  networkKey?: string | null;
+  authType?: ByteArray;
+};
+
 const CREDENTIAL_FIELD_ID = [0x10, 0x0e];
 const SSID_FIELD_ID = [0x10, 0x45];
 const AUTH_TYPE_FIELD_ID = [0x10, 0x03];
@@ -10,14 +31,14 @@ const AUTH_TYPES = {
   WPA2_PSK: [0x00, 0x20],
 };
 
-function _getLengthBytes(valueBytes) {
+function _getLengthBytes(valueBytes: ByteArray): ByteArray {
   if (valueBytes.length > 255) {
     return [Math.floor(valueBytes.length / 256), valueBytes.length % 256];
   }
   return [0x0, valueBytes.length];
 }
 
-function _arrayEqual(arr1, arr2) {
+function _arrayEqual(arr1: ByteArray, arr2: ByteArray): boolean {
   if (arr1.length !== arr2.length) {
     return false;
   }
@@ -31,7 +52,7 @@ function _arrayEqual(arr1, arr2) {
   return true;
 }
 
-function _getNextTLV(bytes) {
+function _getNextTLV(bytes: ByteArray): Tlv {
   const type = bytes.slice(0, 2);
   const length = bytes.slice(2, 4);
   const value = bytes.slice(4, 4 + (length[0] * 256 + length[1]));
@@ -43,8 +64,8 @@ function _getNextTLV(bytes) {
 }
 
 // @returns an string of wifi credentials
-function decode(bytes) {
-  let result = {};
+function decode(bytes: ByteArray): DecodedWifiCredentials {
+  let result: DecodedWifiCredentials = {};
 
   while (bytes.length > 0) {
     let {type, value} = _getNextTLV(bytes);
@@ -73,13 +94,13 @@ function decode(bytes) {
 
 // encode wifi object payload
 // @returns an array of bytes
-function encode({ssid, networkKey, authType = AUTH_TYPES.WPA2_PSK}) {
+function encode({ssid, networkKey, authType = AUTH_TYPES.WPA2_PSK}: WifiCredentials): ByteArray {
   if (typeof ssid !== 'string' || typeof networkKey !== 'string') {
     throw new Error('');
   }
 
-  ssid = util.stringToBytes(ssid);
-  networkKey = util.stringToBytes(networkKey);
+  const ssidBytes = util.stringToBytes(ssid);
+  const networkKeyBytes = util.stringToBytes(networkKey);
 
   // build seperated TLV
   const authTypeTLV = [
@@ -88,12 +109,12 @@ function encode({ssid, networkKey, authType = AUTH_TYPES.WPA2_PSK}) {
     authType.length,
     ...authType,
   ];
-  const ssidTLV = [...SSID_FIELD_ID, 0x0, ssid.length, ...ssid];
+  const ssidTLV = [...SSID_FIELD_ID, 0x0, ssidBytes.length, ...ssidBytes];
   const networkKeyTLV = [
     ...NETWORK_KEY_FIELD_ID,
     0x0,
-    networkKey.length,
-    ...networkKey,
+    networkKeyBytes.length,
+    ...networkKeyBytes,
   ];
 
   // build credential TLV
@@ -112,3 +133,5 @@ module.exports = {
   decodePayload: decode,
   authTypes: AUTH_TYPES,
 };
+
+export {};

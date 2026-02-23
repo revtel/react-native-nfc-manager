@@ -1,9 +1,12 @@
 const util = require('./util');
 const protocols = require('./constants').RTD_URI_PROTOCOLS;
 
+type Byte = number;
+type ByteArray = Byte[];
+
 // decode a URI payload bytes
 // @returns a string
-function decode(data) {
+function decode(data: ByteArray): string {
   var prefix = protocols[data[0]];
   if (!prefix) {
     // 36 to 255 should be ""
@@ -14,8 +17,8 @@ function decode(data) {
 
 // shorten a URI with standard prefix
 // @returns an array of bytes
-function encode(uri) {
-  var prefix, protocolCode, encoded;
+function encode(uri: string): ByteArray {
+  var prefix: string | undefined, protocolCode, encoded;
 
   // check each protocol, unless we've found a match
   // "urn:" is the one exception where we need to keep checking
@@ -42,3 +45,5 @@ module.exports = {
   encodePayload: encode,
   decodePayload: decode,
 };
+
+export {};

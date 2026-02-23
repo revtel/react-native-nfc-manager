@@ -13,16 +13,33 @@ import {
 } from './NfcTech/Iso15693HandlerIOS';
 import {handleNativeException} from './NfcError';
 
+type RegisterTagEventOptions = Partial<typeof DEFAULT_REGISTER_TAG_EVENT_OPTIONS>;
+type CancelTechnologyRequestOptions = {throwOnError?: boolean};
+type IsoDepApdu = {
+  cla: number;
+  ins: number;
+  p1: number;
+  p2: number;
+  data: number[];
+  le: number;
+};
+
 class NfcManagerIOS extends NfcManagerBase {
+  _iso15693HandlerIOS: Iso15693HandlerIOS | null;
+
   constructor() {
     super();
+    this._iso15693HandlerIOS = null;
   }
 
   isEnabled = async () => {
     return true;
   };
 
-  requestTechnology = async (tech, options = {}) => {
+  requestTechnology = async (
+    tech: string | string[],
+    options: RegisterTagEventOptions = {},
+  ) => {
     if (typeof tech === 'string') {
       tech = [tech];
     }
@@ -55,7 +72,7 @@ class NfcManagerIOS extends NfcManagerBase {
     );
   };
 
-  cancelTechnologyRequest = async (options = {}) => {
+  cancelTechnologyRequest = async (options: CancelTechnologyRequestOptions = {}) => {
     const {throwOnError = false} = options;
     return handleNativeException(
       callNative('cancelTechnologyRequest'),
@@ -74,10 +91,10 @@ class NfcManagerIOS extends NfcManagerBase {
   getBackgroundNdef = () =>
     handleNativeException(callNative('getBackgroundNdef'));
 
-  setAlertMessage = (alertMessage) =>
+  setAlertMessage = (alertMessage: string) =>
     handleNativeException(callNative('setAlertMessage', [alertMessage]));
 
-  setAlertMessageIOS = (alertMessage) =>
+  setAlertMessageIOS = (alertMessage: string) =>
     handleNativeException(callNative('setAlertMessage', [alertMessage]));
 
   invalidateSessionIOS = () =>
@@ -97,19 +114,19 @@ class NfcManagerIOS extends NfcManagerBase {
   // -------------------------------------
   // (iOS) NfcTech.MifareIOS API
   // -------------------------------------
-  sendMifareCommandIOS = (bytes) =>
+  sendMifareCommandIOS = (bytes: number[]) =>
     handleNativeException(callNative('sendMifareCommand', [bytes]));
 
   // -------------------------------------
   // (iOS) NfcTech.FelicaIOS API
   // -------------------------------------
-  sendFelicaCommandIOS = (bytes) =>
+  sendFelicaCommandIOS = (bytes: number[]) =>
     handleNativeException(callNative('sendFelicaCommand', [bytes]));
 
   // -------------------------------------
   // (iOS) NfcTech.IsoDep API
   // -------------------------------------
-  sendCommandAPDUIOS = (bytesOrApdu) => {
+  sendCommandAPDUIOS = (bytesOrApdu: number[] | IsoDepApdu) => {
     if (Platform.OS !== 'ios') {
       return Promise.reject('not implemented');
     }

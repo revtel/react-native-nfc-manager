@@ -1,19 +1,34 @@
 const ndef = require('./ndef');
 const constants = require('./constants');
 
+type Byte = number;
+type ByteArray = Byte[];
+
+type NdefRecord = {
+  tnf: number;
+  type: string | ByteArray;
+  payload: ByteArray;
+  id?: ByteArray;
+};
+
 // Convert NDEF records and messages to strings
 // This works OK for demos, but real code proably needs
 // a custom implementation. It would be nice to make
 // smarter record objects that can print themselves
 let stringifier = {
-  stringify: function (data, separator) {
+  stringify: function (data: NdefRecord | NdefRecord[] | ByteArray, separator?: string): string {
     if (Array.isArray(data)) {
+      const records: NdefRecord[] =
+        typeof data[0] === 'number'
+          ? ndef.decodeMessage(data as ByteArray)
+          : (data as NdefRecord[]);
+
       if (typeof data[0] === 'number') {
         // guessing this message bytes
-        data = ndef.decodeMessage(data);
+        data = records;
       }
 
-      return stringifier.printRecords(data, separator);
+      return stringifier.printRecords(records, separator);
     } else {
       return stringifier.printRecord(data, separator);
     }
@@ -22,7 +37,7 @@ let stringifier = {
   // @message - NDEF Message (array of NDEF Records)
   // @separator - line separator, optional, defaults to \n
   // @returns string with NDEF Message
-  printRecords: function (message, separator) {
+  printRecords: function (message: NdefRecord[], separator?: string) {
     if (!separator) {
       separator = '\n';
     }
@@ -40,7 +55,7 @@ let stringifier = {
   // @record - NDEF Record
   // @separator - line separator, optional, defaults to \n
   // @returns string with NDEF Record
-  printRecord: function (record, separator) {
+  printRecord: function (record: NdefRecord, separator?: string): string {
     let result = '';
 
     if (!separator) {
@@ -65,7 +80,7 @@ let stringifier = {
       case constants.TNF_ABSOLUTE_URI:
         result += 'Absolute URI';
         result += separator;
-        result += s(record.type); // the URI is the type
+        result += s(record.type);
         result += separator;
         result += s(record.payload); // might be binary
         break;
@@ -86,7 +101,7 @@ let stringifier = {
     return result;
   },
 
-  printWellKnown: function (record, separator) {
+  printWellKnown: function (record: NdefRecord, separator?: string): string {
     let result = '';
 
     if (record.tnf !== constants.TNF_WELL_KNOWN) {
@@ -120,8 +135,8 @@ let stringifier = {
     return result;
   },
 
-  tnfToString: function (tnf) {
-    let value = tnf;
+  tnfToString: function (tnf: number): string | number {
+    let value: string | number = tnf;
 
     switch (tnf) {
       case constants.TNF_EMPTY:
@@ -153,7 +168,7 @@ let stringifier = {
   },
 };
 
-function s(bytes) {
+function s(bytes: string | ByteArray): string {
   if (typeof bytes === 'string') {
     return bytes;
   }
@@ -164,3 +179,5 @@ function s(bytes) {
 }
 
 module.exports = stringifier;
+
+export {};

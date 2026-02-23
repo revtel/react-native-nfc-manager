@@ -208,6 +208,16 @@ Check the full documentation that contains `examples`, `faq` and other topics li
 
 For local library development and native smoke testing, use the RN CLI example app in [`example/`](./example). See [example/README.md](./example/README.md).
 
+### Build (TypeScript)
+
+This project now uses a TypeScript build flow and emits distributable JavaScript to [`dist/`](./dist):
+
+```shell
+npm run build
+```
+
+For package publishing, `prepack` runs the build automatically.
+
 ## Nfc Compatibility
 
 <a name="nfccompatibility"></a>

@@ -22,7 +22,7 @@ const NfcManagerEmitter = {
 };
 
 const callNative = jest.fn((...args) => {
-  const [methodName, ...rest] = args;
+  const [methodName] = args;
   if (_nextError && (!methodName || methodName === _nextErrorMethod)) {
     const err = _nextError;
     _nextError = null;

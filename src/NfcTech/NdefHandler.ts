@@ -2,6 +2,18 @@ import {Platform} from 'react-native';
 import {callNative} from '../NativeNfcManager';
 import {handleNativeException} from '../NfcError';
 
+type Byte = number;
+type ByteArray = Byte[];
+
+type WriteNdefOptions = {
+  reconnectAfterWrite?: boolean;
+};
+
+type NdefStatusResult = {
+  status: number;
+  capacity: number;
+};
+
 const NdefStatus = {
   NotSupported: 1,
   ReadWrite: 2,
@@ -9,8 +21,7 @@ const NdefStatus = {
 };
 
 class NdefHandler {
-  async writeNdefMessage(bytes, options) {
-  
+  async writeNdefMessage(bytes: ByteArray, options?: WriteNdefOptions) {
     const defaultOptions = { reconnectAfterWrite: false };
     return handleNativeException(
         callNative('writeNdefMessage', [
@@ -18,7 +29,6 @@ class NdefHandler {
             {...defaultOptions, ...options}
         ])
     );
-  
   }
 
   async getNdefMessage() {
@@ -29,12 +39,15 @@ class NdefHandler {
     return handleNativeException(callNative('makeReadOnly'));
   }
 
-  async getNdefStatus() {
+  async getNdefStatus(): Promise<NdefStatusResult> {
     if (Platform.OS === 'ios') {
-      return handleNativeException(callNative('queryNdefStatus'));
+      return handleNativeException(callNative('queryNdefStatus')) as Promise<NdefStatusResult>;
     } else {
       try {
-        const result = await handleNativeException(callNative('queryNdefStatus'));
+        const result = await handleNativeException(callNative('queryNdefStatus')) as {
+          isWritable: boolean;
+          maxSize: number;
+        };
         return {
           status: result.isWritable
             ? NdefStatus.ReadWrite

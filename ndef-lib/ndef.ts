@@ -1,6 +1,30 @@
 const util = require('./util');
 
-function createNdefRecord(tnf, type, id, payload) {
+type Byte = number;
+type ByteArray = Byte[];
+
+type TnfHeader = {
+  mb: boolean;
+  me: boolean;
+  cf: boolean;
+  sr: boolean;
+  il: boolean;
+  tnf: number;
+};
+
+type NdefRecord = {
+  tnf: number;
+  type: string | ByteArray;
+  id: ByteArray;
+  payload: ByteArray;
+};
+
+function createNdefRecord(
+  tnf: number,
+  type: string | ByteArray,
+  id: string | ByteArray,
+  payload: string | ByteArray,
+): NdefRecord {
   if (
     tnf === undefined ||
     type === undefined ||
@@ -25,16 +49,19 @@ function createNdefRecord(tnf, type, id, payload) {
     payload = util.stringToBytes(payload);
   }
 
+  const idBytes = id as ByteArray;
+  const payloadBytes = payload as ByteArray;
+
   return {
-    tnf: tnf,
-    type: type,
-    id: id,
-    payload: payload,
+    tnf,
+    type,
+    id: idBytes,
+    payload: payloadBytes,
   };
 }
 
-function encodeNdefMessage(ndefRecords) {
-  const encodeTnf = ({mb, me, cf, sr, il, tnf}) => {
+function encodeNdefMessage(ndefRecords: NdefRecord[]): ByteArray {
+  const encodeTnf = ({mb, me, cf, sr, il, tnf}: TnfHeader): number => {
     let value = tnf;
 
     if (mb) {
@@ -114,8 +141,8 @@ function encodeNdefMessage(ndefRecords) {
   return encoded;
 }
 
-function decodeNdefMessage(ndefBytes) {
-  const decodeTnf = (tnf_byte) => ({
+function decodeNdefMessage(ndefBytes: ByteArray): NdefRecord[] {
+  const decodeTnf = (tnf_byte: number): TnfHeader => ({
     mb: (tnf_byte & 0x80) !== 0,
     me: (tnf_byte & 0x40) !== 0,
     cf: (tnf_byte & 0x20) !== 0,
@@ -125,7 +152,7 @@ function decodeNdefMessage(ndefBytes) {
   });
 
   // ndefBytes can be an array of bytes e.g. [0x03, 0x31, 0xd1] or a Buffer
-  let bytes;
+  let bytes: ByteArray;
   if (ndefBytes instanceof Array) {
     bytes = ndefBytes.slice(0);
   } else {
@@ -135,7 +162,7 @@ function decodeNdefMessage(ndefBytes) {
   }
 
   bytes = bytes.slice(0); // clone since parsing is destructive
-  let ndef_message = [],
+  let ndef_message: NdefRecord[] = [],
     tnf_byte,
     header,
     type_length = 0,
@@ -146,23 +173,23 @@ function decodeNdefMessage(ndefBytes) {
     payload = [];
 
   while (bytes.length) {
-    tnf_byte = bytes.shift();
+    tnf_byte = bytes.shift() as number;
     header = decodeTnf(tnf_byte);
 
-    type_length = bytes.shift();
+    type_length = bytes.shift() as number;
 
     if (header.sr) {
-      payload_length = bytes.shift();
+      payload_length = bytes.shift() as number;
     } else {
       // next 4 bytes are length
       payload_length =
-        ((0xff & bytes.shift()) << 24) |
-        ((0xff & bytes.shift()) << 16) |
-        ((0xff & bytes.shift()) << 8) |
-        (0xff & bytes.shift());
+        ((0xff & (bytes.shift() as number)) << 24) |
+        ((0xff & (bytes.shift() as number)) << 16) |
+        ((0xff & (bytes.shift() as number)) << 8) |
+        (0xff & (bytes.shift() as number));
     }
 
-    id_length = header.il ? bytes.shift() : 0;
+    id_length = header.il ? (bytes.shift() as number) : 0;
 
     record_type = bytes.splice(0, type_length);
     id = bytes.splice(0, id_length);
@@ -178,7 +205,7 @@ function decodeNdefMessage(ndefBytes) {
   return ndef_message;
 }
 
-function equalToRecordType(record, tnf, type) {
+function equalToRecordType(record: NdefRecord, tnf: number, type: string): boolean {
   if (record.tnf === tnf) {
     if (Array.isArray(record.type)) {
       return util.bytesToString(record.type) === type;
@@ -195,3 +222,5 @@ module.exports = {
   decodeNdefMessage,
   equalToRecordType,
 };
+
+export {};

@@ -14,20 +14,29 @@ const uriHelper = require('./ndef-uri');
 const wifiSimpleHelper = require('./ndef-wifi-simple');
 const stringifier = require('./stringifier');
 
+type Byte = number;
+type ByteArray = Byte[];
+type NdefRecord = {
+  tnf: number;
+  type: string | ByteArray;
+  id: ByteArray;
+  payload: ByteArray;
+};
+
 const PrimitiveRecord = {
-  emptyRecord() {
+  emptyRecord(): NdefRecord {
     return createNdefRecord(constants.TNF_EMPTY, [], [], []);
   },
 
-  absoluteUriRecord(uri, payload = [], id = []) {
+  absoluteUriRecord(uri: string, payload: string | ByteArray = [], id: string | ByteArray = []): NdefRecord {
     return createNdefRecord(constants.TNF_ABSOLUTE_URI, uri, id, payload);
   },
 
-  mimeMediaRecord(mimeType, payload, id = []) {
+  mimeMediaRecord(mimeType: string, payload: string | ByteArray, id: string | ByteArray = []): NdefRecord {
     return createNdefRecord(constants.TNF_MIME_MEDIA, mimeType, id, payload);
   },
 
-  externalTypeRecord(externalType, payload, id = []) {
+  externalTypeRecord(externalType: string, payload: string | ByteArray, id: string | ByteArray = []): NdefRecord {
     return createNdefRecord(
       constants.TNF_EXTERNAL_TYPE,
       externalType,
@@ -38,7 +47,7 @@ const PrimitiveRecord = {
 };
 
 const WellKnownRecord = {
-  textRecord(text, languageCode, id = []) {
+  textRecord(text: string, languageCode?: string, id: string | ByteArray = []): NdefRecord {
     return createNdefRecord(
       constants.TNF_WELL_KNOWN,
       constants.RTD_TEXT,
@@ -47,7 +56,7 @@ const WellKnownRecord = {
     );
   },
 
-  uriRecord(uri, id = []) {
+  uriRecord(uri: string, id: string | ByteArray = []): NdefRecord {
     return createNdefRecord(
       constants.TNF_WELL_KNOWN,
       constants.RTD_URI,
@@ -56,8 +65,8 @@ const WellKnownRecord = {
     );
   },
 
-  smartPoster(ndefRecords, id = []) {
-    let payload = [];
+  smartPoster(ndefRecords: NdefRecord[] | ByteArray, id: string | ByteArray = []): NdefRecord {
+    let payload: ByteArray = [];
 
     if (ndefRecords) {
       // make sure we have an array of something like NDEF records before encoding
@@ -65,10 +74,10 @@ const WellKnownRecord = {
         ndefRecords[0] instanceof Object &&
         ndefRecords[0].hasOwnProperty('tnf')
       ) {
-        payload = encodeNdefMessage(ndefRecords);
+        payload = encodeNdefMessage(ndefRecords as NdefRecord[]);
       } else {
         // assume the caller has already encoded the NDEF records into a byte array
-        payload = ndefRecords;
+        payload = ndefRecords as ByteArray;
       }
     } else {
       console.log('WARNING: Expecting an array of NDEF records');
@@ -84,7 +93,7 @@ const WellKnownRecord = {
 };
 
 const ExtraTypeRecord = {
-  androidApplicationRecord(packageName, id = []) {
+  androidApplicationRecord(packageName: string, id: string | ByteArray = []): NdefRecord {
     return PrimitiveRecord.externalTypeRecord(
       'android.com:pkg',
       packageName,
@@ -92,7 +101,7 @@ const ExtraTypeRecord = {
     );
   },
 
-  wifiSimpleRecord: function (credentials, id = []) {
+  wifiSimpleRecord: function (credentials: {ssid: string; networkKey: string; authType?: ByteArray}, id: string | ByteArray = []): NdefRecord {
     let payload = wifiSimpleHelper.encodePayload(credentials);
     return PrimitiveRecord.mimeMediaRecord(constants.MIME_WFA_WSC, payload, id);
   },
@@ -120,3 +129,5 @@ const NDEF = {
 };
 
 module.exports = NDEF;
+
+export {};

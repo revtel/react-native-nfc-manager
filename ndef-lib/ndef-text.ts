@@ -1,8 +1,11 @@
 var util = require('./util');
 
+type Byte = number;
+type ByteArray = Byte[];
+
 // decode text bytes from ndef record payload
 // @returns a string
-function decode(data) {
+function decode(data: ByteArray): string | null {
   var languageCodeLength = data[0] & 0x3f; // 6 LSBs
   // languageCode = data.slice(1, 1 + languageCodeLength),
   // utf16 = (data[0] & 0x80) !== 0; // assuming UTF-16BE
@@ -15,7 +18,7 @@ function decode(data) {
 
 // encode text payload
 // @returns an array of bytes
-function encode(text, lang, encoding) {
+function encode(text: string, lang?: string, encoding?: unknown): ByteArray {
   // ISO/IANA language code, but we're not enforcing
   if (!lang) {
     lang = 'en';
@@ -31,3 +34,5 @@ module.exports = {
   encodePayload: encode,
   decodePayload: decode,
 };
+
+export {};

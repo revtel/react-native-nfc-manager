@@ -2,8 +2,11 @@ import {Platform} from 'react-native';
 import {callNative, NativeNfcManager} from '../NativeNfcManager';
 import {handleNativeException} from '../NfcError';
 
+type Byte = number;
+type ByteArray = Byte[];
+
 class NfcVHandler {
-  async transceive(bytes) {
+  async transceive(bytes: ByteArray): Promise<ByteArray> {
     if (!Array.isArray(bytes)) {
       throw new Error(
         'IsoDepHandler.transceive only takes input as a byte array',
@@ -13,14 +16,14 @@ class NfcVHandler {
     if (Platform.OS === 'ios') {
       const [flags, commandCode, ...data] = bytes;
       return handleNativeException(
-        new Promise((resolve, reject) => {
+        new Promise<ByteArray>((resolve, reject) => {
           NativeNfcManager.iso15693_sendRequest(
             {
                 flags,
                 commandCode,
                 data,
             },
-            (err, responseFlag, response) => {
+            (err: string | null, responseFlag: number, response: ByteArray) => {
               if (err) {
                 reject(err);
               } else {
@@ -29,10 +32,10 @@ class NfcVHandler {
             },
           );
         }),
-      );
+      ) as Promise<ByteArray>;
     }
 
-    return handleNativeException(callNative('transceive', [bytes]));
+    return handleNativeException(callNative('transceive', [bytes])) as Promise<ByteArray>;
   }
 }
 

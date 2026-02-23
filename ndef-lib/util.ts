@@ -2,8 +2,11 @@
 // Copyright 2013 Don Coleman
 //
 
+type Byte = number;
+type ByteArray = Byte[];
+
 // https://weblog.rogueamoeba.com/2017/02/27/javascript-correctly-converting-a-byte-array-to-a-utf-8-string/
-function _utf8ArrayToStr(data) {
+function _utf8ArrayToStr(data: ByteArray): string | null {
   const extraByteMap = [1, 1, 1, 1, 2, 2, 3, 0];
   var count = data.length;
   var str = '';
@@ -34,7 +37,7 @@ function _utf8ArrayToStr(data) {
 }
 
 // https://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
-function _toUTF8Array(str) {
+function _toUTF8Array(str: string): ByteArray {
   var out = [],
     p = 0;
   for (var i = 0; i < str.length; i++) {
@@ -64,7 +67,7 @@ function _toUTF8Array(str) {
   return out;
 }
 
-function stringToBytes(string) {
+function stringToBytes(string: string): ByteArray {
   return _toUTF8Array(string);
   // var bytes = Buffer(string).toJSON();
   // if (bytes.hasOwnProperty('data')) {
@@ -76,7 +79,7 @@ function stringToBytes(string) {
   // }
 }
 
-function bytesToString(bytes) {
+function bytesToString(bytes: string | ByteArray): string | null {
   if (typeof bytes === 'string') {
     return bytes;
   }
@@ -86,7 +89,7 @@ function bytesToString(bytes) {
 }
 
 // useful for readable version of Tag UID
-function bytesToHexString(bytes) {
+function bytesToHexString(bytes: ByteArray): string {
   var dec,
     hexstring,
     bytesAsHexString = '';
@@ -107,7 +110,7 @@ function bytesToHexString(bytes) {
 }
 
 // i must be <= 256
-function toHex(i) {
+function toHex(i: number): string {
   var hex;
 
   if (i < 0) {
@@ -122,8 +125,8 @@ function toHex(i) {
   return hex;
 }
 
-function toPrintable(i) {
-  if ((i >= 0x20) & (i <= 0x7f)) {
+function toPrintable(i: number): string {
+  if (i >= 0x20 && i <= 0x7f) {
     return String.fromCharCode(i);
   } else {
     return '.';
@@ -137,3 +140,5 @@ module.exports = {
   toHex: toHex,
   toPrintable: toPrintable,
 };
+
+export {};
