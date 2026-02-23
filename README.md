@@ -17,6 +17,10 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 - `v3` only supports legacy architecture (`v3.x.y`).
 - `v4` supports new architecture (still in beta, `v4.0.0-beta.x`) .
 
+## Support Policy
+
+- See [Support Policy](./docs/SUPPORT_POLICY.md) for official React Native version window, architecture targets, and verification matrix.
+
 ## Table of Contents
 
 1. [Installation](#installation)
@@ -28,6 +32,7 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 7. [API](#api)
 8. [App demo](#appdemo)
 9. [Learn](#learn)
+10. [Development Example](#development-example)
 
 ## Installation
 
@@ -196,6 +201,12 @@ export default App;
 <a name="docs"></a>
 
 Check the full documentation that contains `examples`, `faq` and other topics like `Expo` in our [Wiki](https://github.com/revtel/react-native-nfc-manager/wiki)
+
+## Development Example
+
+<a name="development-example"></a>
+
+For local library development and native smoke testing, use the RN CLI example app in [`example/`](./example). See [example/README.md](./example/README.md).
 
 ## Nfc Compatibility
 
