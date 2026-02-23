@@ -15,17 +15,14 @@
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import <NativeNfcManagerSpec/NativeNfcManagerSpec.h>
-@interface NfcManager : RCTEventEmitter <NativeNfcManagerSpec, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate> {
+@interface NfcManager : RCTEventEmitter <NativeNfcManagerSpec> {
 
 }
 #else
-@interface NfcManager : RCTEventEmitter <RCTBridgeModule, NFCNDEFReaderSessionDelegate, NFCTagReaderSessionDelegate> {
+@interface NfcManager : RCTEventEmitter <RCTBridgeModule> {
 
 }
 #endif
-
-@property (strong, nonatomic) NFCNDEFReaderSession * _Nullable session;
-@property (strong, nonatomic) NFCTagReaderSession * _Nullable tagSession;
 
 + (BOOL)application:(nonnull UIApplication *)application
     continueUserActivity:(nonnull NSUserActivity *)userActivity
@@ -37,8 +34,3 @@
         #endif
 
 @end
-
-extern NSString* _Nonnull getHexString(NSData * _Nonnull);
-extern NSString* _Nonnull getErrorMessage(NSError * _Nonnull);
-extern NSData * _Nonnull arrayToData(NSArray * _Nonnull);
-extern NSArray * _Nonnull dataToArray(NSData * _Nonnull);

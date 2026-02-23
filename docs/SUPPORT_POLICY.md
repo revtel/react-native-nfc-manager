@@ -18,6 +18,11 @@ This document defines the official support scope for `react-native-nfc-manager` 
   - Old Architecture: Native Modules bridge path
   - New Architecture: TurboModule + Codegen path (`specs/`)
 
+### iOS toolchain baseline
+
+- Minimum Swift language version for iOS native sources: **Swift 5.7**
+- Maintainers should validate iOS builds with an Xcode toolchain that supports Swift 5.7+
+
 ### Example app policy
 
 - Primary development example: **React Native CLI** (`example/`)

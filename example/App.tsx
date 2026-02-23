@@ -85,6 +85,30 @@ function App(): React.JSX.Element {
         },
       },
       {
+        label: 'Request NfcA + Transceive',
+        testID: 'action-request-nfca-transceive',
+        run: async () => {
+          await NfcManager.requestTechnology(NfcTech.NfcA, {
+            alertMessage: 'Ready to scan NfcA tag',
+          });
+          appendLog('requestTechnology(NfcA) success, sending nfcAHandler.transceive([0x30, 0x00])');
+          const response = await NfcManager.nfcAHandler.transceive([0x30, 0x00]);
+          appendLog(`transceive([0x30,0x00]): ${JSON.stringify(response)}`);
+        },
+      },
+      {
+        label: 'Request Iso15693 + GetSystemInfo',
+        testID: 'action-request-iso15693-systeminfo',
+        run: async () => {
+          await NfcManager.requestTechnology(NfcTech.Iso15693IOS, {
+            alertMessage: 'Ready to scan Iso15693 tag',
+          });
+          appendLog('requestTechnology(Iso15693IOS) success, calling getSystemInfo(0)');
+          const systemInfo = await NfcManager.iso15693HandlerIOS.getSystemInfo(0);
+          appendLog(`getSystemInfo(0): ${JSON.stringify(systemInfo)}`);
+        },
+      },
+      {
         label: 'Cancel Request',
         run: async () => {
           await NfcManager.cancelTechnologyRequest();
@@ -123,6 +147,7 @@ function App(): React.JSX.Element {
         {actions.map(action => (
           <Pressable
             key={action.label}
+            testID={action.testID}
             style={styles.button}
             onPress={() => {
               void runAction(action.run);

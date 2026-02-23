@@ -48,6 +48,9 @@ This library use native-modules, so you will need to do `pod install` for iOS:
 ```shell
 cd ios && pod install && cd ..
 ```
+
+Minimum Swift language version for iOS native sources is **Swift 5.7**.
+
 ### Android
 
 It should be properly auto-linked, so you don't need to do anything.
