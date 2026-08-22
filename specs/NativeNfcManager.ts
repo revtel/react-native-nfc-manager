@@ -25,6 +25,7 @@ export interface Spec extends TurboModule {
   invalidateSession(callback: (err?: string) => void): void;
   invalidateSessionWithError(message: string, callback: (err?: string) => void): void;
   getNdefMessage(callback: (err?: string, tag?: Object) => void): void;
+  getCachedNdefMessage(callback: (err?: string, tag?: Object) => void): void;
   writeNdefMessage(bytes: number[], options: Object, callback: (err?: string) => void): void;
   makeReadOnly(callback: (err?: string) => void): void;
   setAlertMessage(message: string, callback: (err?: string) => void): void;
@@ -38,7 +39,7 @@ export interface Spec extends TurboModule {
   removeListeners: (count: number) => void;
   iso15693_getSystemInfo(requestFlag: number, callback: (err?: string, systemInfo?: Object) => void): void;
   iso15693_readSingleBlock(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
-  iso15693_readMultipleBlocks(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
+  iso15693_readMultipleBlocks(options: Object, callback: (err?: string, blocks?: number[][]) => void): void;
   iso15693_writeSingleBlock(options: Object, callback: (err?: string) => void): void;
   iso15693_lockBlock(options: Object, callback: (err?: string) => void): void;
   iso15693_writeAFI(options: Object, callback: (err?: string) => void): void;
@@ -47,11 +48,11 @@ export interface Spec extends TurboModule {
   iso15693_lockDSFID(options: Object, callback: (err?: string) => void): void;
   iso15693_resetToReady(options: Object, callback: (err?: string) => void): void;
   iso15693_select(options: Object, callback: (err?: string) => void): void;
-  iso15693_stayQuiet(options: Object, callback: (err?: string) => void): void;
+  iso15693_stayQuiet(callback: (err?: string) => void): void;
   iso15693_customCommand(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
   iso15693_sendRequest(options: Object, callback: (err?: string, responseFlag?: number, bytes?: number[]) => void): void;
   iso15693_extendedReadSingleBlock(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
-  iso15693_extendedReadMultipleBlocks(options: Object, callback: (err?: string, bytes?: number[]) => void): void;
+  iso15693_extendedReadMultipleBlocks(options: Object, callback: (err?: string, blocks?: number[][]) => void): void;
   iso15693_extendedWriteSingleBlock(options: Object, callback: (err?: string) => void): void;
   iso15693_extendedLockBlock(options: Object, callback: (err?: string) => void): void;
   goToNfcSetting(callback: (err?: string) => void): void;

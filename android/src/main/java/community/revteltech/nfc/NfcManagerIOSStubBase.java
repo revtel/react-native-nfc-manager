@@ -101,7 +101,7 @@ abstract class NfcManagerIOSStubBase extends NativeNfcManagerSpec {
     }
 
     @Override
-    public void iso15693_stayQuiet(ReadableMap options, Callback callback) {
+    public void iso15693_stayQuiet(Callback callback) {
     }
 
     @Override

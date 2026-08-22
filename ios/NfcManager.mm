@@ -146,6 +146,11 @@ continueUserActivity:(NSUserActivity *)userActivity
     [RNNfcManager getNdefMessageWithCallback:callback];
 }
 
+- (void)getCachedNdefMessage: (nonnull RCTResponseSenderBlock)callback
+{
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
 - (void)writeNdefMessage:(NSArray*)bytes options:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback
 {
     [RNNfcManager writeNdefMessage:bytes options:options callback:callback];
