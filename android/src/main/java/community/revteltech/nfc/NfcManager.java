@@ -68,15 +68,14 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
     @ReactMethod
     public void cancelTechnologyRequest(Callback callback) {
         synchronized(this) {
-            if (techRequest != null) {
-                techRequest.close();
+            TagTechnologyRequest request = detachTechnologyRequest();
+            if (request != null) {
+                request.close();
                 try {
-                    techRequest.invokePendingCallbackWithError(ERR_CANCEL);
+                    request.invokePendingCallbackWithError(ERR_CANCEL);
                 } catch (RuntimeException ex) {
-                    // the pending callback might already been invoked when there is an ongoing
-                    // connected tag, bypass this case explicitly
+                    Log.w(LOG_TAG, "fail to complete cancelled technology request", ex);
                 }
-                techRequest = null;
             }
             callback.invoke();
         }
@@ -101,9 +100,14 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
     @ReactMethod
     public void closeTechnology(Callback callback) {
         synchronized(this) {
-            if (techRequest != null) {
-                techRequest.close();
-                techRequest = null;
+            TagTechnologyRequest request = detachTechnologyRequest();
+            if (request != null) {
+                request.close();
+                try {
+                    request.invokePendingCallbackWithError(ERR_CANCEL);
+                } catch (RuntimeException ex) {
+                    Log.w(LOG_TAG, "fail to complete closed technology request", ex);
+                }
             }
             callback.invoke();
         }
@@ -341,25 +345,43 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
     @ReactMethod
     public void connect(ReadableArray techs, Callback callback){
         synchronized(this) {
+            if (hasPendingRequest()) {
+                callback.invoke(ERR_MULTI_REQ);
+                return;
+            }
+
+            TagTechnologyRequest request = new TagTechnologyRequest(techs.toArrayList(), null);
             try {
-                techRequest = new TagTechnologyRequest(techs.toArrayList(), null);
-                techRequest.connect(this.tag);
-                callback.invoke(null, null);
+                if (!request.connect(this.tag)) {
+                    request.close();
+                    callback.invoke(this.tag == null ? ERR_NO_REFERENCE : ERR_API_NOT_SUPPORT);
+                    return;
+                }
+                techRequest = request;
             } catch (Exception ex) {
                 callback.invoke(ex.toString());
+                return;
             }
+            callback.invoke(null, null);
         }
     }
 
     @ReactMethod
     public void close(Callback callback){
         synchronized(this) {
-            try {
-                techRequest.close();
-                callback.invoke(null, null);
-            } catch (Exception ex) {
-                callback.invoke(ex.toString());
+            TagTechnologyRequest request = detachTechnologyRequest();
+            if (request == null) {
+                callback.invoke(ERR_NO_TECH_REQ);
+                return;
             }
+
+            request.close();
+            try {
+                request.invokePendingCallbackWithError(ERR_CANCEL);
+            } catch (RuntimeException ex) {
+                Log.w(LOG_TAG, "fail to complete closed technology request", ex);
+            }
+            callback.invoke(null, null);
         }
     }
 
@@ -613,6 +635,12 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
         return writeNdefRequest != null || techRequest != null;
     }
 
+    private TagTechnologyRequest detachTechnologyRequest() {
+        TagTechnologyRequest request = techRequest;
+        techRequest = null;
+        return request;
+    }
+
     private void enableDisableForegroundDispatch(boolean enable) {
         Log.i(LOG_TAG, "enableForegroundDispatch, enable = " + enable);
         var context = getReactApplicationContext();
@@ -724,8 +752,9 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
         synchronized(this) {
             this.tag = tag;
             if (writeNdefRequest != null) {
-                NdefHandler.writeNdef(tag, writeNdefRequest);
+                NdefHandler.WriteNdefRequest request = writeNdefRequest;
                 writeNdefRequest = null;
+                NdefHandler.writeNdef(tag, request);
 
                 // explicitly return null, to avoid extra detection
                 return null;
@@ -767,4 +796,3 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
     }
 
 }
-

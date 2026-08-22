@@ -33,17 +33,23 @@ class TagTechnologyRequest {
     }
 
     void invokePendingCallbackWithError(String err) {
-        if (mJsCallback != null) {
-            mJsCallback.invoke(err);
-            mJsCallback = null;
+        Callback callback = takePendingCallback();
+        if (callback != null) {
+            callback.invoke(err);
         }
     }
 
     void invokePendingCallback(String connectedTech) {
-        if (mJsCallback != null) {
-            mJsCallback.invoke(null, connectedTech);
-            mJsCallback = null;
+        Callback callback = takePendingCallback();
+        if (callback != null) {
+            callback.invoke(null, connectedTech);
         }
+    }
+
+    private Callback takePendingCallback() {
+        Callback callback = mJsCallback;
+        mJsCallback = null;
+        return callback;
     }
 
     TagTechnology getTechHandle() {
@@ -122,9 +128,15 @@ class TagTechnologyRequest {
 
     void close() {
         try {
-            mTech.close();
+            if (mTech != null) {
+                mTech.close();
+            }
         } catch (Exception ex) {
             Log.d(LOG_TAG, "fail to close tech");
+        } finally {
+            mTag = null;
+            mTech = null;
+            mTechType = null;
         }
     }
 }

@@ -34,6 +34,26 @@ class NdefHandler {
             this.format = format;
             this.formatReadOnly = formatReadOnly;
         }
+
+        void invokeCallback() {
+            Callback pendingCallback = takeCallback();
+            if (pendingCallback != null) {
+                pendingCallback.invoke();
+            }
+        }
+
+        void invokeCallbackWithError(String error) {
+            Callback pendingCallback = takeCallback();
+            if (pendingCallback != null) {
+                pendingCallback.invoke(error);
+            }
+        }
+
+        private Callback takeCallback() {
+            Callback pendingCallback = callback;
+            callback = null;
+            return pendingCallback;
+        }
     }
 
     private NdefHandler() {
@@ -178,7 +198,7 @@ class NdefHandler {
             Callback callback
     ) {
         if (writeNdefRequest != null) {
-            writeNdefRequest.callback.invoke(ERR_CANCEL);
+            writeNdefRequest.invokeCallbackWithError(ERR_CANCEL);
             callback.invoke();
             return null;
         }
@@ -234,7 +254,6 @@ class NdefHandler {
             WriteNdefRequest request
     ) {
         NdefMessage message = request.message;
-        Callback callback = request.callback;
         boolean formatReadOnly = request.formatReadOnly;
         boolean format = request.format;
 
@@ -243,7 +262,7 @@ class NdefHandler {
                 Log.d(LOG_TAG, "ready to writeNdef");
                 NdefFormatable formatable = NdefFormatable.get(tag);
                 if (formatable == null) {
-                    callback.invoke(ERR_API_NOT_SUPPORT);
+                    request.invokeCallbackWithError(ERR_API_NOT_SUPPORT);
                 } else {
                     Log.d(LOG_TAG, "ready to format ndef, seriously");
                     formatable.connect();
@@ -252,29 +271,29 @@ class NdefHandler {
                     } else {
                         formatable.format(message);
                     }
-                    callback.invoke();
+                    request.invokeCallback();
                 }
             } catch (Exception ex) {
-                callback.invoke(ex.toString());
+                request.invokeCallbackWithError(ex.toString());
             }
         } else {
             try {
                 Log.d(LOG_TAG, "ready to writeNdef");
                 Ndef ndef = Ndef.get(tag);
                 if (ndef == null) {
-                    callback.invoke(ERR_API_NOT_SUPPORT);
+                    request.invokeCallbackWithError(ERR_API_NOT_SUPPORT);
                 } else if (!ndef.isWritable()) {
-                    callback.invoke("tag is not writeable");
+                    request.invokeCallbackWithError("tag is not writeable");
                 } else if (ndef.getMaxSize() < message.toByteArray().length) {
-                    callback.invoke("tag size is not enough");
+                    request.invokeCallbackWithError("tag size is not enough");
                 } else {
                     Log.d(LOG_TAG, "ready to writeNdef, seriously");
                     ndef.connect();
                     ndef.writeNdefMessage(message);
-                    callback.invoke();
+                    request.invokeCallback();
                 }
             } catch (Exception ex) {
-                callback.invoke(ex.toString());
+                request.invokeCallbackWithError(ex.toString());
             }
         }
     }
