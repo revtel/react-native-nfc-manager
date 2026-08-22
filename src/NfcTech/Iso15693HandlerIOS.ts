@@ -58,12 +58,12 @@ class Iso15693HandlerIOS {
     ) as Promise<ByteArray>;
   }
 
-  readMultipleBlocks({flags, blockNumber, blockCount}: MultiBlockOptions): Promise<ByteArray> {
+  readMultipleBlocks({flags, blockNumber, blockCount}: MultiBlockOptions): Promise<ByteArray[]> {
     return handleNativeException(
       callNative('iso15693_readMultipleBlocks', [
         {flags, blockNumber, blockCount},
       ]),
-    ) as Promise<ByteArray>;
+    ) as Promise<ByteArray[]>;
   }
 
   writeSingleBlock({flags, blockNumber, dataBlock}: WriteBlockOptions): Promise<void> {
@@ -110,8 +110,12 @@ class Iso15693HandlerIOS {
     return handleNativeException(callNative('iso15693_select', [{flags}])) as Promise<void>;
   }
 
-  stayQuite(): Promise<void> {
+  stayQuiet(): Promise<void> {
     return handleNativeException(callNative('iso15693_stayQuiet')) as Promise<void>;
+  }
+
+  stayQuite(): Promise<void> {
+    return this.stayQuiet();
   }
 
   customCommand({flags, customCommandCode, customRequestParameters}: CustomCommandOptions): Promise<ByteArray> {
@@ -137,12 +141,12 @@ class Iso15693HandlerIOS {
     ) as Promise<ByteArray>;
   }
 
-  extendedReadMultipleBlocks({flags, blockNumber, blockCount}: MultiBlockOptions): Promise<ByteArray> {
+  extendedReadMultipleBlocks({flags, blockNumber, blockCount}: MultiBlockOptions): Promise<ByteArray[]> {
     return handleNativeException(
       callNative('iso15693_extendedReadMultipleBlocks', [
         {flags, blockNumber, blockCount},
       ]),
-    ) as Promise<ByteArray>;
+    ) as Promise<ByteArray[]>;
   }
 
   extendedWriteSingleBlock({flags, blockNumber, dataBlock}: WriteBlockOptions): Promise<void> {

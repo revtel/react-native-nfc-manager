@@ -26,6 +26,13 @@ async function smoke() {
     isReaderModeEnabled: true,
   } as RegisterTagEventOpts);
 
+  await NfcManager.writeNdefMessage([0xd1, 0x01, 0x00]);
+  const directNdef = await NfcManager.getNdefMessage();
+  const backgroundNdef = await NfcManager.getBackgroundNdef();
+  await NfcManager.invalidateSessionWithErrorIOS();
+  void directNdef;
+  void backgroundNdef;
+
   NfcManager.setEventListener(NfcEvents.DiscoverTag, (evt: TagEvent) => {
     const id = evt.id;
     void id;
@@ -46,6 +53,19 @@ async function smoke() {
   await NfcManager.mifareClassicHandlerAndroid.mifareClassicGetBlockCountInSector(1);
   await NfcManager.mifareClassicHandlerAndroid.mifareClassicReadSector(1);
   await NfcManager.iso15693HandlerIOS.stayQuite();
+  await NfcManager.iso15693HandlerIOS.stayQuiet();
+  const blocks: number[][] =
+    await NfcManager.iso15693HandlerIOS.readMultipleBlocks({
+      flags: 0,
+      blockNumber: 0,
+      blockCount: 1,
+    });
+  void blocks;
+
+  const mifareBlockSize: number = NfcManager.MIFARE_BLOCK_SIZE;
+  const mifarePageSize: number = NfcManager.MIFARE_ULTRALIGHT_PAGE_SIZE;
+  void mifareBlockSize;
+  void mifarePageSize;
 
   const _ = Ndef.TNF_WELL_KNOWN;
   const __ = NdefStatus.ReadWrite;

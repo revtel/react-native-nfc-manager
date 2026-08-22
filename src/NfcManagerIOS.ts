@@ -15,6 +15,7 @@ import {handleNativeException} from './NfcError';
 
 type RegisterTagEventOptions = Partial<typeof DEFAULT_REGISTER_TAG_EVENT_OPTIONS>;
 type CancelTechnologyRequestOptions = {throwOnError?: boolean};
+type BackgroundTag = {ndefMessage?: unknown[]};
 type IsoDepApdu = {
   cla: number;
   ins: number;
@@ -83,13 +84,16 @@ class NfcManagerIOS extends NfcManagerBase {
   getBackgroundTag = () =>
     handleNativeException(callNative('getBackgroundTag'));
 
-  clearBackgroundTag = async () => callNative('clearBackgroundTag');
+  clearBackgroundTag = () =>
+    handleNativeException(callNative('clearBackgroundTag'));
 
   // -------------------------------------
   // public only for iOS
   // -------------------------------------
-  getBackgroundNdef = () =>
-    handleNativeException(callNative('getBackgroundNdef'));
+  getBackgroundNdef = async () => {
+    const tag = await this.getBackgroundTag() as BackgroundTag | null | undefined;
+    return tag?.ndefMessage ?? null;
+  };
 
   setAlertMessage = (alertMessage: string) =>
     handleNativeException(callNative('setAlertMessage', [alertMessage]));

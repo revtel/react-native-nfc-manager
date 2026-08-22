@@ -144,7 +144,7 @@ declare module 'react-native-nfc-manager' {
   }
 
   interface MifareUltralightHandlerAndroid {
-    mifareUltralightReadPages: (offset: number) => Promise<ArrayLike<number>>;
+    mifareUltralightReadPages: (offset: number) => Promise<number[]>;
     mifareUltralightWritePage: (
       offset: number,
       data: number[],
@@ -152,7 +152,7 @@ declare module 'react-native-nfc-manager' {
   }
 
   interface NdefFormatableHandlerAndroid {
-    formatNdef: (bytes: number[], options?: { readOnly: boolean }) => Promise<void>;
+    formatNdef: (bytes: number[], options?: {readOnly?: boolean}) => Promise<void>;
   }
 
   /** [iOS ONLY] */
@@ -187,6 +187,8 @@ declare module 'react-native-nfc-manager' {
     lockDSFID: (params: {flags: number}) => Promise<void>;
     resetToReady: (params: {flags: number}) => Promise<void>;
     select: (params: {flags: number}) => Promise<void>;
+    stayQuiet: () => Promise<void>;
+    /** @deprecated Use stayQuiet instead. */
     stayQuite: () => Promise<void>;
     customCommand: (params: {
       flags: number;
@@ -241,6 +243,17 @@ declare module 'react-native-nfc-manager' {
     getBackgroundTag: () => Promise<TagEvent | null>;
     clearBackgroundTag: () => Promise<void>;
     setAlertMessage: (alertMessage: string) => Promise<void>;
+    writeNdefMessage: (
+      bytes: number[],
+      options?: {reconnectAfterWrite?: boolean},
+    ) => Promise<void>;
+    getNdefMessage: () => Promise<TagEvent | null>;
+
+    readonly MIFARE_BLOCK_SIZE: number;
+    readonly MIFARE_ULTRALIGHT_PAGE_SIZE: number;
+    readonly MIFARE_ULTRALIGHT_TYPE: number;
+    readonly MIFARE_ULTRALIGHT_TYPE_C: number;
+    readonly MIFARE_ULTRALIGHT_TYPE_UNKNOWN: number;
 
     /**
      * common tech handler getters for both iOS / Android
@@ -253,10 +266,11 @@ declare module 'react-native-nfc-manager' {
     /**
      * iOS only
      */
+    /** @deprecated Use getBackgroundTag instead. */
     getBackgroundNdef: () => Promise<NdefRecord[] | null>;
     setAlertMessageIOS: (alertMessage: string) => Promise<void>;
     invalidateSessionIOS: () => Promise<void>;
-    invalidateSessionWithErrorIOS: (errorMessage: string) => Promise<void>;
+    invalidateSessionWithErrorIOS: (errorMessage?: string) => Promise<void>;
     isSessionAvailableIOS: () => Promise<boolean>;
     isTagSessionAvailableIOS: () => Promise<boolean>;
     sendMifareCommandIOS: (bytes: number[]) => Promise<number[]>;
@@ -285,6 +299,8 @@ declare module 'react-native-nfc-manager' {
     getMaxTransceiveLength(): Promise<number>;
     setTimeout(timeout: number): Promise<void>;
     getTimeout(): Promise<number|void>;
+    /** @deprecated Android Beam is no longer supported. */
+    setNdefPushMessage(bytes: number[]): Promise<never>;
     connect: (techs: NfcTech[]) => Promise<void>;
     close: () => Promise<void>;
     mifareClassicHandlerAndroid: MifareClassicHandlerAndroid;

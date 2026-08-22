@@ -47,6 +47,7 @@ const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
 
 type NfcEventName = (typeof NfcEvents)[keyof typeof NfcEvents];
 type RegisterTagEventOptions = Partial<typeof DEFAULT_REGISTER_TAG_EVENT_OPTIONS>;
+type WriteNdefOptions = {reconnectAfterWrite?: boolean};
 type ClientEventCallback = ((payload: unknown) => void) | null;
 type NativeSubscriptionMap = Partial<Record<NfcEventName, {remove: () => void}>>;
 type ClientListenerMap = Partial<Record<NfcEventName, ClientEventCallback>>;
@@ -130,12 +131,12 @@ class NfcManagerBase {
 
   getTimeout: AsyncMethod = DoNothing;
 
-  async writeNdefMessage(bytes: number[], options: Record<string, unknown> = {}) {
-    return handleNativeException(callNative('writeNdefMessage', [bytes, options]));
+  async writeNdefMessage(bytes: number[], options: WriteNdefOptions = {}) {
+    return this.ndefHandler.writeNdefMessage(bytes, options);
   }
 
   async getNdefMessage() {
-    return handleNativeException(callNative('getNdefMessage'));
+    return this.ndefHandler.getNdefMessage();
   }
 
   get ndefHandler() {
