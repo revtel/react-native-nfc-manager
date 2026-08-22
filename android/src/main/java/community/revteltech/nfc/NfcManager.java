@@ -35,6 +35,7 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
     private TagTechnologyRequest techRequest = null;
     private Tag tag = null;
     private WritableMap bgTag = null;
+    private Activity receiverActivity = null;
     // Use NFC reader mode instead of listening to a dispatch
     private Boolean isReaderModeEnabled = false;
     private int readerModeFlags = 0;
@@ -426,26 +427,36 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
 
     @ReactMethod
     public void start(Callback callback) {
-        var context = getReactApplicationContext();
-        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
-        if (nfcAdapter != null) {
-            Log.d(LOG_TAG, "start");
+        synchronized(this) {
+            var context = getReactApplicationContext();
+            NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
+            if (nfcAdapter == null) {
+                Log.d(LOG_TAG, "not support in this device");
+                callback.invoke(ERR_NO_NFC_SUPPORT);
+                return;
+            }
 
-            IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
+            Log.d(LOG_TAG, "start");
             Activity currentActivity = context.getCurrentActivity();
             if (currentActivity == null) {
                 callback.invoke(ERR_GET_ACTIVITY_FAIL);
                 return;
             }
 
-            currentActivity.registerReceiver(mReceiver, filter);
-            Intent launchIntent = currentActivity.getIntent();
-            // we consider the launching intent to be background
-            bgTag = parseNfcIntent(launchIntent);
+            try {
+                if (receiverActivity == null) {
+                    IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
+                    currentActivity.registerReceiver(mReceiver, filter);
+                    receiverActivity = currentActivity;
+                }
+                Intent launchIntent = currentActivity.getIntent();
+                // we consider the launching intent to be background
+                bgTag = parseNfcIntent(launchIntent);
+            } catch (Exception ex) {
+                callback.invoke(ex.toString());
+                return;
+            }
             callback.invoke();
-        } else {
-            Log.d(LOG_TAG, "not support in this device");
-            callback.invoke(ERR_NO_NFC_SUPPORT);
         }
     }
 
@@ -530,49 +541,45 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
 
     @ReactMethod
     public void registerTagEvent(ReadableMap options, Callback callback) {
-        isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
-        readerModeFlags = options.getInt("readerModeFlags");
-        readerModeDelay = options.getInt("readerModeDelay");
+        synchronized(this) {
+            Log.d(LOG_TAG, "registerTagEvent");
+            IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+            try {
+                // capture all mime-based dispatch NDEF
+                ndef.addDataType("*/*");
+            } catch (MalformedMimeTypeException ex) {
+                callback.invoke(ex.toString());
+                return;
+            }
 
-        Log.d(LOG_TAG, "registerTagEvent");
-        isForegroundEnabled = true;
+            intentFilters.clear();
+            techLists.clear();
+            intentFilters.add(ndef);
+            // capture all rest NDEF, such as uri-based
+            intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED));
+            techLists.add(new String[]{Ndef.class.getName()});
+            // for those without NDEF, get them as tags
+            intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED));
 
-        // capture all mime-based dispatch NDEF
-        IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-        try {
-            ndef.addDataType("*/*");
-        } catch (MalformedMimeTypeException e) {
-            throw new RuntimeException("fail", e);
+            isReaderModeEnabled = options.getBoolean("isReaderModeEnabled");
+            readerModeFlags = options.getInt("readerModeFlags");
+            readerModeDelay = options.getInt("readerModeDelay");
+            isForegroundEnabled = true;
+
+            if (isResumed) {
+                enableDisableForegroundDispatch(true);
+            }
+            callback.invoke();
         }
-        intentFilters.add(ndef);
-
-        // capture all rest NDEF, such as uri-based
-        intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED));
-        techLists.add(new String[]{Ndef.class.getName()});
-
-        // for those without NDEF, get them as tags
-        intentFilters.add(new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED));
-
-        if (isResumed) {
-            enableDisableForegroundDispatch(true);
-        }
-        callback.invoke();
     }
 
     @ReactMethod
     public void unregisterTagEvent(Callback callback) {
-        Log.d(LOG_TAG, "unregisterTagEvent");
-        if (isResumed) {
-            enableDisableForegroundDispatch(false);
+        synchronized(this) {
+            Log.d(LOG_TAG, "unregisterTagEvent");
+            resetTagRegistration();
+            callback.invoke();
         }
-
-        intentFilters.clear();
-        isForegroundEnabled = false;
-        isReaderModeEnabled = false;
-        readerModeFlags = 0;
-        readerModeDelay = 0;
-
-        callback.invoke();
     }
 
     @ReactMethod
@@ -610,6 +617,16 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
     @Override
     public void onHostDestroy() {
         Log.d(LOG_TAG, "onDestroy");
+        cleanUpNativeState();
+    }
+
+    @Override
+    public void invalidate() {
+        cleanUpNativeState();
+        ReactApplicationContext context = getReactApplicationContext();
+        context.removeActivityEventListener(this);
+        context.removeLifecycleEventListener(this);
+        super.invalidate();
     }
 
     @Override
@@ -639,6 +656,57 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
         TagTechnologyRequest request = techRequest;
         techRequest = null;
         return request;
+    }
+
+    private void resetTagRegistration() {
+        if (isResumed) {
+            enableDisableForegroundDispatch(false);
+        }
+        intentFilters.clear();
+        techLists.clear();
+        isForegroundEnabled = false;
+        isReaderModeEnabled = false;
+        readerModeFlags = 0;
+        readerModeDelay = 0;
+    }
+
+    private void cleanUpNativeState() {
+        synchronized(this) {
+            resetTagRegistration();
+            isResumed = false;
+
+            TagTechnologyRequest request = detachTechnologyRequest();
+            if (request != null) {
+                request.close();
+                try {
+                    request.invokePendingCallbackWithError(ERR_CANCEL);
+                } catch (RuntimeException ex) {
+                    Log.w(LOG_TAG, "fail to complete destroyed technology request", ex);
+                }
+            }
+
+            NdefHandler.WriteNdefRequest ndefRequest = writeNdefRequest;
+            writeNdefRequest = null;
+            if (ndefRequest != null) {
+                try {
+                    ndefRequest.invokeCallbackWithError(ERR_CANCEL);
+                } catch (RuntimeException ex) {
+                    Log.w(LOG_TAG, "fail to complete destroyed NDEF request", ex);
+                }
+            }
+
+            if (receiverActivity != null) {
+                try {
+                    receiverActivity.unregisterReceiver(mReceiver);
+                } catch (IllegalArgumentException ex) {
+                    Log.w(LOG_TAG, "adapter-state receiver was already unregistered", ex);
+                }
+                receiverActivity = null;
+            }
+
+            tag = null;
+            bgTag = null;
+        }
     }
 
     private void enableDisableForegroundDispatch(boolean enable) {

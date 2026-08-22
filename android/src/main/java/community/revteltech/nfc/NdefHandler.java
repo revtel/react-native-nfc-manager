@@ -258,9 +258,10 @@ class NdefHandler {
         boolean format = request.format;
 
         if (format || formatReadOnly) {
+            NdefFormatable formatable = null;
             try {
                 Log.d(LOG_TAG, "ready to writeNdef");
-                NdefFormatable formatable = NdefFormatable.get(tag);
+                formatable = NdefFormatable.get(tag);
                 if (formatable == null) {
                     request.invokeCallbackWithError(ERR_API_NOT_SUPPORT);
                 } else {
@@ -275,11 +276,14 @@ class NdefHandler {
                 }
             } catch (Exception ex) {
                 request.invokeCallbackWithError(ex.toString());
+            } finally {
+                closeQuietly(formatable);
             }
         } else {
+            Ndef ndef = null;
             try {
                 Log.d(LOG_TAG, "ready to writeNdef");
-                Ndef ndef = Ndef.get(tag);
+                ndef = Ndef.get(tag);
                 if (ndef == null) {
                     request.invokeCallbackWithError(ERR_API_NOT_SUPPORT);
                 } else if (!ndef.isWritable()) {
@@ -294,7 +298,21 @@ class NdefHandler {
                 }
             } catch (Exception ex) {
                 request.invokeCallbackWithError(ex.toString());
+            } finally {
+                closeQuietly(ndef);
             }
+        }
+    }
+
+    private static void closeQuietly(android.nfc.tech.TagTechnology technology) {
+        if (technology == null) {
+            return;
+        }
+
+        try {
+            technology.close();
+        } catch (Exception ex) {
+            Log.d(LOG_TAG, "fail to close NDEF technology: " + ex);
         }
     }
 
