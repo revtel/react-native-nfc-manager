@@ -78,14 +78,6 @@ class NfcManagerBase {
     this._subscribeNativeEvents();
   }
 
-  hello(str: string) {
-    return NativeNfcManager.hello(str);
-  }
-
-  async echo(msg: string) {
-    return handleNativeException(callNative('echo', [msg]));
-  }
-
   async start() {
     return handleNativeException(callNative('start'));
   }
