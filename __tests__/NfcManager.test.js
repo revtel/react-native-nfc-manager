@@ -48,6 +48,36 @@ describe('NfcManager (ios)', () => {
     expect(typeof NfcManager.getTag).toBe('function');
     expect(typeof NfcManager.requestTechnology).toBe('function');
     expect(typeof NfcManager.cancelTechnologyRequest).toBe('function');
+    expect(NfcManager.hello).toBeUndefined();
+    expect(NfcManager.echo).toBeUndefined();
+  });
+
+  test('API: direct NDEF compatibility methods', async () => {
+    await NfcManager.writeNdefMessage([0xd1], {reconnectAfterWrite: true});
+    expect(lastNativeCall()).toEqual([
+      'writeNdefMessage',
+      [[0xd1], {reconnectAfterWrite: true}],
+    ]);
+
+    await NfcManager.getNdefMessage();
+    expect(lastNativeCall()[0]).toEqual('getNdefMessage');
+  });
+
+  test('API: background NDEF compatibility method', async () => {
+    callNative.mockResolvedValueOnce({ndefMessage: [0xd1, 0x01]});
+    await expect(NfcManager.getBackgroundNdef()).resolves.toEqual([0xd1, 0x01]);
+    expect(lastNativeCall()[0]).toEqual('getBackgroundTag');
+
+    callNative.mockResolvedValueOnce(null);
+    await expect(NfcManager.getBackgroundNdef()).resolves.toBeNull();
+  });
+
+  test('API: ISO 15693 quiet aliases', async () => {
+    await NfcManager.iso15693HandlerIOS.stayQuiet();
+    expect(lastNativeCall()).toEqual(['iso15693_stayQuiet']);
+
+    await NfcManager.iso15693HandlerIOS.stayQuite();
+    expect(lastNativeCall()).toEqual(['iso15693_stayQuiet']);
   });
 
   test('API: start', () => {

@@ -4,6 +4,9 @@ let _nextErrorMethod = null;
 const NativeNfcManager = {
   MIFARE_BLOCK_SIZE: 16,
   MIFARE_ULTRALIGHT_PAGE_SIZE: 4,
+  MIFARE_ULTRALIGHT_TYPE: 1,
+  MIFARE_ULTRALIGHT_TYPE_C: 2,
+  MIFARE_ULTRALIGHT_TYPE_UNKNOWN: -1,
   setNextError: (err, nativeMethodName = null) => {
     _nextError = err;
     _nextErrorMethod = nativeMethodName;
