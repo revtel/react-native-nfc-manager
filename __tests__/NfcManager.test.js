@@ -118,6 +118,34 @@ describe('NfcManager (ios)', () => {
       error: 'NFCError:200',
     });
     expect(sessionClosed).toBe(true);
+
+    const backgroundTag = {id: 'background-tag'};
+    const onBackgroundTag = jest.fn();
+    NfcManager.setEventListener(
+      NfcEvents.DiscoverBackgroundTag,
+      onBackgroundTag,
+    );
+    NfcManagerEmitter._testTriggerCallback(
+      NfcEvents.DiscoverBackgroundTag,
+      backgroundTag,
+    );
+    expect(onBackgroundTag).toHaveBeenCalledWith(backgroundTag);
+
+    const onSessionClosed = jest.fn();
+    NfcManager.setEventListener(NfcEvents.SessionClosed, onSessionClosed);
+    NfcManagerEmitter._testTriggerCallback(NfcEvents.SessionClosed, {
+      error: 'NFCError:201',
+    });
+    expect(onSessionClosed).toHaveBeenCalledWith(expect.any(NfcError.Timeout));
+  });
+
+  test('API: native success and error results remain observable', async () => {
+    const tag = {id: 'tag-success'};
+    callNative.mockResolvedValueOnce(tag);
+    await expect(NfcManager.getTag()).resolves.toEqual(tag);
+
+    NativeNfcManager.setNextError('NFCError:201', 'getTag');
+    await expect(NfcManager.getTag()).rejects.toBeInstanceOf(NfcError.Timeout);
   });
 
   test('API: registerTagEvent', () => {
@@ -141,6 +169,13 @@ describe('NfcManager (ios)', () => {
     } catch (ex) {
       expect(ex.message).toEqual('fake-error-again');
     }
+  });
+
+  test('API: repeated request error reaches a terminal rejection', async () => {
+    NativeNfcManager.setNextError('request already active', 'requestTechnology');
+    await expect(
+      NfcManager.requestTechnology(NfcTech.Ndef),
+    ).rejects.toMatchObject({message: 'request already active'});
   });
 
   test('API: setAlertMessage', () => {

@@ -1,14 +1,18 @@
 jest.mock('../src/NativeNfcManager');
 
 import {Platform} from 'react-native';
-import {NativeNfcManager, callNative} from '../src/NativeNfcManager';
+import {
+  NativeNfcManager,
+  NfcManagerEmitter,
+  callNative,
+} from '../src/NativeNfcManager';
 import * as NfcError from '../src/NfcError';
 
 describe('NfcManager (android)', () => {
   Platform.setOS('android');
   const NfcManagerModule = require('../src/index');
   const NfcManager = NfcManagerModule.default;
-  const {NfcTech} = NfcManagerModule;
+  const {NfcEvents, NfcTech} = NfcManagerModule;
   const lastNativeCall = () =>
     callNative.mock.calls[callNative.mock.calls.length - 1];
 
@@ -71,6 +75,55 @@ describe('NfcManager (android)', () => {
   test('API: cached NDEF remains Android-only handler behavior', async () => {
     await NfcManager.ndefHandler.getCachedNdefMessageAndroid();
     expect(lastNativeCall()[0]).toEqual('getCachedNdefMessage');
+  });
+
+  test('API: timeout forwards success and native errors', async () => {
+    await NfcManager.setTimeout(500);
+    expect(lastNativeCall()).toEqual(['setTimeout', [500]]);
+
+    callNative.mockResolvedValueOnce(500);
+    await expect(NfcManager.getTimeout()).resolves.toBe(500);
+
+    NativeNfcManager.setNextError('timeout unavailable', 'getTimeout');
+    await expect(NfcManager.getTimeout()).rejects.toMatchObject({
+      message: 'timeout unavailable',
+    });
+  });
+
+  test('API: state-change events deliver their native payload', () => {
+    const onStateChanged = jest.fn();
+    const state = {state: 'on'};
+    NfcManager.setEventListener(NfcEvents.StateChanged, onStateChanged);
+    NfcManagerEmitter._testTriggerCallback(NfcEvents.StateChanged, state);
+    expect(onStateChanged).toHaveBeenCalledWith(state);
+  });
+
+  test('API: temporary tag registration is cleaned up on cancellation', async () => {
+    callNative.mockClear();
+    callNative.mockResolvedValueOnce(false);
+
+    await NfcManager.requestTechnology(NfcTech.NfcA, {alertMessage: 'Tap'});
+    await NfcManager.cancelTechnologyRequest({delayMsAndroid: 0});
+
+    expect(callNative.mock.calls.map(([method]) => method)).toEqual([
+      'hasTagEventRegistration',
+      'registerTagEvent',
+      'requestTechnology',
+      'cancelTechnologyRequest',
+      'unregisterTagEvent',
+    ]);
+    expect(NfcManager.cleanUpTagRegistration).toBe(false);
+  });
+
+  test('API: repeated request error reaches a terminal rejection', async () => {
+    callNative.mockResolvedValueOnce(true);
+    NativeNfcManager.setNextError(
+      'Duplicated registration',
+      'requestTechnology',
+    );
+    await expect(
+      NfcManager.requestTechnology(NfcTech.Ndef),
+    ).rejects.toMatchObject({message: 'Duplicated registration'});
   });
 
   test('API: MIFARE constants remain available', () => {
