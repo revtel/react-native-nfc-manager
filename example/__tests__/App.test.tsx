@@ -57,7 +57,7 @@ test('renders correctly', async () => {
   });
 });
 
-test('smoke test - request NfcA + transceive([0x30, 0x00])', async () => {
+test('mocked interaction - request NfcA + transceive([0x30, 0x00])', async () => {
   let root: ReactTestRenderer.ReactTestRenderer;
 
   await ReactTestRenderer.act(() => {
@@ -79,7 +79,7 @@ test('smoke test - request NfcA + transceive([0x30, 0x00])', async () => {
   expect(NfcManager.nfcAHandler.transceive).toHaveBeenCalledWith([0x30, 0x00]);
 });
 
-test('smoke test - request Iso15693 + getSystemInfo(0)', async () => {
+test('mocked interaction - request Iso15693 + getSystemInfo(0)', async () => {
   let root: ReactTestRenderer.ReactTestRenderer;
 
   await ReactTestRenderer.act(() => {
