@@ -222,6 +222,25 @@ public extension RNNfcManager {
         resetRequestState()
     }
 
+    @objc(invalidateRuntimeState)
+    static func invalidateRuntimeState() {
+        var invalidatedSession = false
+
+        if #available(iOS 11.0, *), let ndefSession = runtimeSession {
+            ndefSession.invalidate()
+            invalidatedSession = true
+        }
+
+        if #available(iOS 13.0, *), let tagSession = runtimeTagSession {
+            tagSession.invalidate()
+            invalidatedSession = true
+        }
+
+        if !invalidatedSession {
+            resetRuntimeState()
+        }
+    }
+
     @objc(isSupported:callback:)
     static func isSupported(
         _ tech: String,

@@ -22,6 +22,7 @@ typedef void (^RNNfcResponseSenderBlock)(NSArray * _Nonnull response);
 + (void)startWithCallback:(RNNfcResponseSenderBlock)callback;
 
 + (void)resetRuntimeState;
++ (void)invalidateRuntimeState;
 
 + (NSObject *)createSessionDelegateProxy;
 

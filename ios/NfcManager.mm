@@ -58,7 +58,17 @@ continueUserActivity:(NSUserActivity *)userActivity
 
 - (void)reset
 {
-    [RNNfcManager resetRuntimeState];
+    [RNNfcManager invalidateRuntimeState];
+}
+
+- (void)invalidate
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:kBgNfcTagNotification
+                                                  object:nil];
+    [RNNfcBridgeUtil setEventEmitter:nil];
+    [RNNfcManager invalidateRuntimeState];
+    [super invalidate];
 }
 
 - (NSArray<NSString *> *)supportedEvents
