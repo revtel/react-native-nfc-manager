@@ -1,7 +1,7 @@
 # react-native-nfc-manager
 
 [![npm version](https://img.shields.io/npm/v/react-native-nfc-manager.svg?style=flat)](https://www.npmjs.com/package/react-native-nfc-manager)
-[![build](https://api.travis-ci.org/whitedogg13/react-native-nfc-manager.svg?branch=master)](https://travis-ci.org/whitedogg13/react-native-nfc-manager)
+[![CI](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml)
 [![issues](https://img.shields.io/github/issues/whitedogg13/react-native-nfc-manager.svg?style=flat)](https://github.com/whitedogg13/react-native-nfc-manager/issues)
 
 Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) and [react-native-ble-manager](https://github.com/innoveit/react-native-ble-manager)
@@ -15,7 +15,7 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 ## Version Notes
 
 - `v3` only supports legacy architecture (`v3.x.y`).
-- `v4` supports new architecture (still in beta, `v4.0.0-beta.x`) .
+- `v4` targets the New Architecture and remains beta (`v4.0.0-beta.x`). React Native 0.82 and newer are treated as New Architecture only.
 
 ## Support Policy
 
@@ -41,6 +41,9 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 ```shell
 npm i --save react-native-nfc-manager
 ```
+
+To evaluate the v4 beta, install an explicit `4.0.0-beta.x` version rather than relying on the default npm tag.
+
 ### iOS
 
 This library use native-modules, so you will need to do `pod install` for iOS:
@@ -209,7 +212,9 @@ Check the full documentation that contains `examples`, `faq` and other topics li
 
 <a name="development-example"></a>
 
-For local library development and native smoke testing, use the RN CLI example app in [`example/`](./example). See [example/README.md](./example/README.md).
+For local library development and physical-device NFC testing, use the React Native 0.84 New Architecture example app in [`example/`](./example). See [example/README.md](./example/README.md).
+
+The example Jest suite mocks the native module and verifies application interactions only. It does not verify NFC hardware. Android and iOS compiler builds and physical-device checks are separate release gates.
 
 ### Build (TypeScript)
 
@@ -220,6 +225,10 @@ npm run build
 ```
 
 For package publishing, `prepack` runs the build automatically.
+
+### Routine CI
+
+Routine CI uses Node.js 22 and runs dependency installation, the TypeScript build, lint, root Jest tests, and type checking. It deliberately does not run Android or iOS builds.
 
 ## Nfc Compatibility
 
@@ -238,6 +247,8 @@ For package publishing, `prepack` runs the build automatically.
 | `MifareIOS`       | ❌      | ✅   |
 | `Iso15693IOS`     | ❌      | ✅   |
 | `FelicaIOS`       | ❌      | ✅   |
+
+This table describes the intended platform API availability. It is not a record of the devices, OS versions, or tag technologies verified for a particular release; see the [Support Policy](./docs/SUPPORT_POLICY.md) for evidence labels and limitations.
 
 ## Usage concept
 
@@ -317,4 +328,3 @@ We have a full featured NFC utility app using this library available for downloa
 We have published a React Native NFC course with [newline.co](https://www.newline.co/), check it out!
 - Free course (1 hour) about basic NFC setup and concept [here](https://www.youtube.com/watch?v=rAS-DvNUFck)
 - Full course (3 hours) for more (NDEF, Deep Linking, NTAG password protection, signature with UID) [here](https://www.newline.co/courses/newline-guide-to-nfcs-with-react-native)
-
