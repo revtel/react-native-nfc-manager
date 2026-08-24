@@ -23,7 +23,8 @@ This section records changes since `v4.0.0-beta.7`. It does not announce a relea
 - Direct NDEF compatibility methods and `getBackgroundNdef()` remain available.
 - The misspelled iOS ISO 15693 `stayQuite()` entry point remains as a compatibility alias for `stayQuiet()`.
 - Deprecated Android `setNdefPushMessage()` continues to reject explicitly rather than acting as a supported operation.
-- React Native 0.82 and newer are treated as New Architecture only. The verified development and compiler baseline is React Native 0.84; other claimed combinations must be labeled best-effort or unverified unless corresponding evidence is recorded.
+- The v4 support floor is React Native 0.76 with the New Architecture enabled. React Native 0.82 and newer are New Architecture only. The verified development and compiler baseline is React Native 0.84; React Native 0.76–0.83 remains best-effort/unverified until corresponding evidence is recorded.
+- The package now declares React 18.2 and React Native 0.76 as its minimum peer versions, and the podspec now declares iOS 15.1 to match that React Native support floor.
 
 ### Known limitations
 
@@ -127,5 +128,4 @@ This section records changes since `v4.0.0-beta.7`. It does not announce a relea
 
 
 ## 0.0.2 (2017-08-01)
-
 

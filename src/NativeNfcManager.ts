@@ -2,7 +2,10 @@
 import {NativeModules, NativeEventEmitter} from 'react-native';
 
 type NativeMethod = (...args: unknown[]) => void;
-type NativeModule = Record<string, NativeMethod> & Record<string, unknown>;
+type NativeModule = Record<string, NativeMethod> & Record<string, unknown> & {
+  addListener: (eventType: string) => void;
+  removeListeners: (count: number) => void;
+};
 type NativeEventSubscription = {remove: () => void};
 type NativeEmitterLike = {
   addListener: (eventName: string, listener: (payload: unknown) => void) => NativeEventSubscription;
@@ -20,7 +23,7 @@ const NfcManagerEmitter: NativeEmitterLike =
     : {addListener: () => ({remove: () => {}})};
 
 function callNative<T = unknown>(name: string, params: unknown[] = []): Promise<T> {
-  const nativeMethod = NativeNfcManager[name];
+  const nativeMethod = NativeNfcManager[name] as NativeMethod | undefined;
 
   if (!nativeMethod) {
     throw new Error(`no such native method: "${name}"`);

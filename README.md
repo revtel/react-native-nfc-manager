@@ -15,7 +15,7 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 ## Version Notes
 
 - `v3` only supports legacy architecture (`v3.x.y`).
-- `v4` targets the New Architecture and remains beta (`v4.0.0-beta.x`). React Native 0.82 and newer are treated as New Architecture only.
+- `v4` targets the New Architecture and remains beta (`v4.0.0-beta.x`). Its support floor is React Native 0.76 with the New Architecture enabled; React Native 0.82 and newer are New Architecture only.
 
 ## Support Policy
 
