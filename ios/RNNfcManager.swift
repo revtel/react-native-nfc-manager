@@ -20,6 +20,33 @@ public class RNNfcManager: NSObject {
         runtimeTechRequestCallback = nil
     }
 
+    static func isCurrentTagSession(_ session: NFCTagReaderSession) -> Bool {
+        return runtimeTagSession === session
+    }
+
+    static func isCurrentNdefSession(_ session: NFCNDEFReaderSession) -> Bool {
+        return runtimeSession === session
+    }
+
+    static func pendingTechnologyRequestTypes(for session: NFCTagReaderSession) -> [String]? {
+        guard isCurrentTagSession(session), runtimeTechRequestCallback != nil else {
+            return nil
+        }
+        return runtimeTechRequestTypes
+    }
+
+    static func takeTechnologyRequestCallback(
+        for session: NFCTagReaderSession
+    ) -> RNNfcResponseSenderBlock? {
+        guard isCurrentTagSession(session) else {
+            return nil
+        }
+
+        let callback = runtimeTechRequestCallback
+        runtimeTechRequestCallback = nil
+        return callback
+    }
+
     @objc(isTagSessionSupported)
     public static func isTagSessionSupported() -> Bool {
         if #available(iOS 13.0, *) {
@@ -222,7 +249,6 @@ public extension RNNfcManager {
         if #available(iOS 11.0, *) {
             if NFCNDEFReaderSession.readingAvailable {
                 NSLog("NfcManager initialized")
-                resetRuntimeState()
                 callback([])
                 return
             }
@@ -346,14 +372,12 @@ public extension RNNfcManager {
     ) {
         if let ndefSession = runtimeSession {
             ndefSession.invalidate()
-            runtimeSession = nil
             callback([])
             return
         }
 
         if #available(iOS 13.0, *), let tagSession = runtimeTagSession {
             tagSession.invalidate()
-            runtimeTagSession = nil
             callback([])
             return
         }
@@ -365,9 +389,12 @@ public extension RNNfcManager {
     static func invalidateSession(
         callback: @escaping RNNfcResponseSenderBlock
     ) {
-        if #available(iOS 13.0, *) {
+        if #available(iOS 11.0, *) {
             invalidateActiveSession(callback: callback)
+            return
         }
+
+        callback(["Not support in this device", NSNull()])
     }
 
     @objc(invalidateActiveSessionWithErrorMessage:callback:)
@@ -377,14 +404,12 @@ public extension RNNfcManager {
     ) {
         if let ndefSession = runtimeSession {
             ndefSession.invalidate(errorMessage: errorMessage)
-            runtimeSession = nil
             callback([])
             return
         }
 
         if #available(iOS 13.0, *), let tagSession = runtimeTagSession {
             tagSession.invalidate(errorMessage: errorMessage)
-            runtimeTagSession = nil
             callback([])
             return
         }
@@ -397,9 +422,12 @@ public extension RNNfcManager {
         withErrorMessage errorMessage: String,
         callback: @escaping RNNfcResponseSenderBlock
     ) {
-        if #available(iOS 13.0, *) {
+        if #available(iOS 11.0, *) {
             invalidateActiveSession(withErrorMessage: errorMessage, callback: callback)
+            return
         }
+
+        callback(["Not support in this device", NSNull()])
     }
 
     @objc(restartTechnologyRequestWithCallback:)
@@ -411,6 +439,11 @@ public extension RNNfcManager {
                 callback: callback,
                 noSessionMessage: "No active registration"
             ) else {
+                return
+            }
+
+            guard runtimeTechRequestCallback == nil else {
+                callback(["Duplicated registration", NSNull()])
                 return
             }
 
@@ -436,7 +469,6 @@ public extension RNNfcManager {
             }
 
             tagSession.invalidate()
-            runtimeTagSession = nil
             callback([])
             return
         }
@@ -457,7 +489,6 @@ public extension RNNfcManager {
             }
 
             ndefSession.invalidate()
-            runtimeSession = nil
             callback([])
             return
         }

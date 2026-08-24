@@ -15,6 +15,9 @@ public class RNNfcSessionDelegateProxy: NSObject, NFCNDEFReaderSessionDelegate, 
 
     public func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: Error) {
         NSLog("readerSession:didInvalidateWithError: (%@)", (error as NSError).localizedDescription)
+        guard RNNfcManager.isCurrentNdefSession(session) else {
+            return
+        }
         RNNfcManager.resetSessionsState()
         RNNfcManager.resetRequestState()
         RNNfcBridgeUtil.emitEvent("NfcManagerSessionClosed", body: ["error": RNNfcSwiftUtil.errorMessage(from: error as NSError)])
@@ -23,8 +26,7 @@ public class RNNfcSessionDelegateProxy: NSObject, NFCNDEFReaderSessionDelegate, 
     @available(iOS 13.0, *)
     public func tagReaderSession(_ session: NFCTagReaderSession, didDetect tags: [NFCTag]) {
         NSLog("NFCTag didDetectTags")
-          guard let requestedTypes = RNNfcManager.runtimeTechRequestTypes,
-              let callback = RNNfcManager.runtimeTechRequestCallback else {
+        guard let requestedTypes = RNNfcManager.pendingTechnologyRequestTypes(for: session) else {
             return
         }
 
@@ -44,12 +46,17 @@ public class RNNfcSessionDelegateProxy: NSObject, NFCNDEFReaderSessionDelegate, 
 
             session.connect(to: tag) { error in
                 if error != nil {
+                    guard RNNfcManager.isCurrentTagSession(session) else {
+                        return
+                    }
                     NSLog("NFCTag restarting polling")
                     session.restartPolling()
                     return
                 }
 
-                RNNfcManager.runtimeTechRequestCallback = nil
+                guard let callback = RNNfcManager.takeTechnologyRequestCallback(for: session) else {
+                    return
+                }
                 callback([NSNull(), matchedRequestType])
             }
             return
@@ -60,13 +67,14 @@ public class RNNfcSessionDelegateProxy: NSObject, NFCNDEFReaderSessionDelegate, 
     public func tagReaderSession(_ session: NFCTagReaderSession, didInvalidateWithError error: Error) {
         NSLog("NFCTag didInvalidateWithError")
 
-        if let callback = RNNfcManager.runtimeTechRequestCallback {
-            callback([RNNfcSwiftUtil.errorMessage(from: error as NSError)])
-            RNNfcManager.runtimeTechRequestCallback = nil
+        guard RNNfcManager.isCurrentTagSession(session) else {
+            return
         }
 
+        let callback = RNNfcManager.takeTechnologyRequestCallback(for: session)
         RNNfcManager.resetSessionsState()
         RNNfcManager.resetRequestState()
+        callback?([RNNfcSwiftUtil.errorMessage(from: error as NSError)])
         RNNfcBridgeUtil.emitEvent("NfcManagerSessionClosed", body: ["error": RNNfcSwiftUtil.errorMessage(from: error as NSError)])
     }
 
