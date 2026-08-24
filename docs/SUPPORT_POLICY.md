@@ -1,22 +1,20 @@
 # Support Policy
 
-This document defines the official support scope for `react-native-nfc-manager` and serves as the source of truth for example apps and CI verification.
+This document defines the v4 support scope for `react-native-nfc-manager` and distinguishes API intent from recorded validation evidence.
 
 ## Versioning Policy
 
-- React Native support follows a rolling window of **N, N-1, N-2** minor versions.
-- Official support is based on combinations that pass CI and smoke tests in this repository.
-- Combinations not listed as verified are considered best-effort.
-- For React Native **0.82+**, treat runtime as **New Architecture only**.
+- The current v4 development baseline is React Native **0.84** with the New Architecture enabled.
+- React Native **0.82 and newer are New Architecture only**. This policy does not imply that every such minor has been tested.
+- A combination is verified only at the evidence level explicitly recorded below. Unlisted combinations are unverified, not implicitly covered by a rolling window.
+- v3 remains the legacy-architecture line; v4 closeout work does not revalidate v3.
 
 ## Runtime Targets
 
 ### Library API contract
 
 - JavaScript API: public API in `src/` and `index.d.ts`
-- Native bridge:
-  - Old Architecture: Native Modules bridge path
-  - New Architecture: TurboModule + Codegen path (`specs/`)
+- Native bridge: TurboModule + Codegen path (`specs/`) with compatibility bridge files required by React Native integration
 
 ### iOS toolchain baseline
 
@@ -31,34 +29,36 @@ This document defines the official support scope for `react-native-nfc-manager` 
 
 ## Verification Matrix
 
-This matrix is the Phase 0 baseline and should be maintained per release.
+| React Native | Architecture | Android | iOS | Status |
+|---|---|---|---|---|
+| 0.84 | New Architecture | Example application compiled | Pods resolved and simulator application compiled | Current verified compiler baseline |
+| 0.83 | New Architecture | Not run | Not run | Unverified |
+| 0.82 | New Architecture | Not run | Not run | Unverified |
+| Earlier versions | New or legacy | Not part of this closeout | Not part of this closeout | Best-effort only when separately documented |
 
-| Axis | Values |
-|---|---|
-| React Native | N, N-1, N-2 |
-| Platform | iOS, Android |
-| Architecture | New Architecture (RN 0.82+), Old + New (older RN lines only when explicitly tested) |
-| Example type | RN CLI (required), Expo prebuild/dev-client (future phase) |
+Routine CI uses Node.js 22 and validates install, TypeScript build, lint, root mocked Jest tests, and type checking. It does not compile native applications. Example Jest is run separately and is mocked application-interaction coverage.
+
+Compiler and simulator evidence does not establish physical-device NFC behavior. No Android or iOS device, OS, or tag technology is considered verified until a release record names it and records the tested flow and outcome.
 
 ## Release Quality Gates
 
 For each release candidate:
 
-- Required (RN 0.82+): RN CLI smoke checks pass on:
-  - iOS + New Architecture
-  - Android + New Architecture
-- Optional (older RN lines only): Old Architecture checks if that line is still claimed as supported
-- Required smoke flows:
+- Required: RN 0.84 New Architecture Android and iOS compiler checks
+- Optional: older React Native lines only when the release claims them
+- Required physical-device flows:
   - `start()` and `isSupported()`
   - `requestTechnology()` + `cancelTechnologyRequest()`
   - NDEF read path (`getTag()` / `getNdefMessage()`)
-- Optional (later): Expo prebuild/dev-client smoke run
+- Required physical-device records include platform, device, OS, tag technology, flow, and outcome.
+- Optional (later): Expo prebuild/dev-client validation
 
 ## Known Constraints
 
 - NFC requires native capabilities/permissions and physical hardware.
 - iOS requires entitlement and Info.plist NFC keys.
 - Android requires NFC permission and NFC-enabled devices.
+- Mocks, simulators, emulators, and compiler checks must not be reported as NFC hardware validation.
 
 ## Ownership
 
