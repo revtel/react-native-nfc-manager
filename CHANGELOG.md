@@ -1,3 +1,37 @@
+## Unreleased — v4 beta closeout
+
+This section records changes since `v4.0.0-beta.7`. It does not announce a release or promote v4 to stable.
+
+### Changed
+
+- Migrated the library source to TypeScript, the iOS implementation to Swift with an Objective-C++ bridge, and the Android implementation into focused Java handlers.
+- Updated the primary development example to React Native 0.84 with the New Architecture enabled.
+- Aligned the public runtime API, `index.d.ts`, public type coverage, TurboModule Codegen spec, and applicable native implementations.
+- Added repeatable package-content validation and confirmed `prepack` rebuilds the untracked `dist/` output used by consumers.
+- Routine CI now uses Node.js 22 and remains limited to JavaScript and TypeScript validation. Android/iOS compiler checks and physical-device NFC checks are separate release gates.
+
+### Fixed
+
+- Native request callbacks and cleanup paths now prevent repeated completion and stale callback/session ownership across success, error, cancellation, timeout, repeated-request, and lifecycle paths.
+- Android cancellation cleans up temporary tag registration and NFC lifecycle resources.
+- iOS session state changes are serialized and session callbacks are completed at most once.
+- Common, Android-only, iOS-only, deprecated, unsupported, and compatibility-alias declarations now match the intended v4 runtime contract.
+
+### Compatibility and migration notes
+
+- Removed the unintended refactor-only `hello` and `echo` runtime helpers; they were not part of the declared or documented v4 API.
+- Direct NDEF compatibility methods and `getBackgroundNdef()` remain available.
+- The misspelled iOS ISO 15693 `stayQuite()` entry point remains as a compatibility alias for `stayQuiet()`.
+- Deprecated Android `setNdefPushMessage()` continues to reject explicitly rather than acting as a supported operation.
+- React Native 0.82 and newer are treated as New Architecture only. The verified development and compiler baseline is React Native 0.84; other claimed combinations must be labeled best-effort or unverified unless corresponding evidence is recorded.
+
+### Known limitations
+
+- Jest and example Jest use native mocks and do not verify NFC hardware behavior.
+- Simulator/emulator and compiler success do not verify tag discovery, I/O, cancellation timing, timeout, background/resume, or cleanup on a physical device.
+- Physical-device results must be recorded separately by platform, device, OS, tag technology, flow, and outcome before release-candidate review.
+- Completion of this closeout makes another v4 beta eligible for review; stable promotion remains a separate decision.
+
 ## [3.0.2](https://github.com/whitedogg13/react-native-nfc-manager/compare/v3.0.1...v3.0.2) (2021-02-22)
 
 
@@ -93,6 +127,5 @@
 
 
 ## 0.0.2 (2017-08-01)
-
 
 
