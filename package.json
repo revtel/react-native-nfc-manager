@@ -85,6 +85,7 @@
     "lint:fix": "eslint --fix .",
     "test": "jest -i",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "verify:package": "npm run build && node scripts/verify-package-contents.js",
     "prepack": "npm run build",
     "release": "dotenv -- release-it --",
     "release:beta": "release-it --preRelease=beta --increment=prerelease"
