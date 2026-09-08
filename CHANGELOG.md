@@ -1,3 +1,9 @@
+## [4.0.0-beta.9](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.8...v4.0.0-beta.9) (2026-09-08)
+
+### Bug Fixes
+
+- Support React Native 0.76 and 0.77 TypeScript Codegen event parsing by using a directly imported `EventEmitter` type.
+
 ## [4.0.0-beta.8](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.7...v4.0.0-beta.8) (2026-09-08)
 
 This section records changes since `v4.0.0-beta.7`. It does not announce a release or promote v4 to stable.
