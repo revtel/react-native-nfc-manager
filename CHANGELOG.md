@@ -1,4 +1,4 @@
-## Unreleased — v4 beta closeout
+## [4.0.0-beta.8](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.7...v4.0.0-beta.8) (2026-09-08)
 
 This section records changes since `v4.0.0-beta.7`. It does not announce a release or promote v4 to stable.
 
@@ -128,4 +128,3 @@ This section records changes since `v4.0.0-beta.7`. It does not announce a relea
 
 
 ## 0.0.2 (2017-08-01)
-
