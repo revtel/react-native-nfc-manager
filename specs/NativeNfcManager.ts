@@ -1,7 +1,19 @@
-import type {TurboModule} from 'react-native';
+import type {CodegenTypes, TurboModule} from 'react-native';
 import {TurboModuleRegistry} from 'react-native';
 
+export type SessionClosedEvent = {
+  error: string;
+};
+
+export type StateChangedEvent = {
+  state: string;
+};
+
 export interface Spec extends TurboModule {
+  readonly onDiscoverTag: CodegenTypes.EventEmitter<Object>;
+  readonly onDiscoverBackgroundTag: CodegenTypes.EventEmitter<Object>;
+  readonly onSessionClosed: CodegenTypes.EventEmitter<SessionClosedEvent>;
+  readonly onStateChanged: CodegenTypes.EventEmitter<StateChangedEvent>;
   isSupported(tech: string, callback: (err?: string, resp?: boolean) => void): void;
   isEnabled(callback: (err?: string, resp?: boolean) => void): void;
   start(callback: (err?: string) => void): void;

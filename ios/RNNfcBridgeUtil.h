@@ -2,20 +2,19 @@
 
 #if __has_include(<React/RCTBridgeModule.h>)
 #import <React/RCTBridgeModule.h>
-#import <React/RCTEventEmitter.h>
 #elif __has_include("React/RCTBridgeModule.h")
 #import "React/RCTBridgeModule.h"
-#import "React/RCTEventEmitter.h"
 #else
 #import "RCTBridgeModule.h"
-#import "RCTEventEmitter.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void (^RNNfcEventEmitterBlock)(NSString *name, id _Nullable body);
+
 @interface RNNfcBridgeUtil : NSObject
 
-+ (void)setEventEmitter:(RCTEventEmitter * _Nullable)eventEmitter;
++ (void)setEventEmitter:(RNNfcEventEmitterBlock _Nullable)eventEmitter;
 
 + (void)sendResultToCallback:(RCTResponseSenderBlock)callback
                        error:(NSError * _Nullable)error

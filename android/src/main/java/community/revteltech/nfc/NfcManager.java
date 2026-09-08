@@ -787,6 +787,23 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
 
     private void sendEvent(String eventName,
                            @Nullable WritableMap params) {
+        if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+            WritableMap eventPayload = params != null ? params : Arguments.createMap();
+            switch (eventName) {
+                case "NfcManagerDiscoverTag":
+                    emitOnDiscoverTag(eventPayload);
+                    return;
+                case "NfcManagerDiscoverBackgroundTag":
+                    emitOnDiscoverBackgroundTag(eventPayload);
+                    return;
+                case "NfcManagerStateChanged":
+                    emitOnStateChanged(eventPayload);
+                    return;
+                default:
+                    Log.w(LOG_TAG, "unknown NFC event: " + eventName);
+                    return;
+            }
+        }
         getReactApplicationContext()
                 .getJSModule(RCTNativeAppEventEmitter.class)
                 .emit(eventName, params);

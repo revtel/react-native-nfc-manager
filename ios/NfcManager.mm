@@ -46,7 +46,24 @@ continueUserActivity:(NSUserActivity *)userActivity
 {
     if (self = [super init]) {
         NSLog(@"NfcManager created");
-        [RNNfcBridgeUtil setEventEmitter:self];
+        __weak NfcManager *weakSelf = self;
+        [RNNfcBridgeUtil setEventEmitter:^(NSString *name, id body) {
+            NfcManager *strongSelf = weakSelf;
+            if (strongSelf == nil) {
+                return;
+            }
+#ifdef RCT_NEW_ARCH_ENABLED
+            if ([name isEqualToString:@"NfcManagerDiscoverTag"]) {
+                [strongSelf emitOnDiscoverTag:(NSDictionary *)body];
+            } else if ([name isEqualToString:@"NfcManagerDiscoverBackgroundTag"]) {
+                [strongSelf emitOnDiscoverBackgroundTag:(NSDictionary *)body];
+            } else if ([name isEqualToString:@"NfcManagerSessionClosed"]) {
+                [strongSelf emitOnSessionClosed:(NSDictionary *)body];
+            }
+#else
+            [strongSelf sendEventWithName:name body:body];
+#endif
+        }];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleBgNfcTagNotification:)
                                                      name:kBgNfcTagNotification
@@ -68,7 +85,9 @@ continueUserActivity:(NSUserActivity *)userActivity
                                                   object:nil];
     [RNNfcBridgeUtil setEventEmitter:nil];
     [RNNfcManager invalidateRuntimeState];
+#ifndef RCT_NEW_ARCH_ENABLED
     [super invalidate];
+#endif
 }
 
 - (NSArray<NSString *> *)supportedEvents
@@ -89,6 +108,16 @@ continueUserActivity:(NSUserActivity *)userActivity
 {
     return dispatch_get_main_queue();
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+- (void)addListener:(NSString *)eventName
+{
+}
+
+- (void)removeListeners:(double)count
+{
+}
+#endif
     
 - (void)getBackgroundTag: (nonnull RCTResponseSenderBlock)callback
 {

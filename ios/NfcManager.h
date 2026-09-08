@@ -15,7 +15,7 @@
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import <NativeNfcManagerSpec/NativeNfcManagerSpec.h>
-@interface NfcManager : RCTEventEmitter <NativeNfcManagerSpec> {
+@interface NfcManager : NativeNfcManagerSpecBase <NativeNfcManagerSpec> {
 
 }
 #else

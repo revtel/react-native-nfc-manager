@@ -18,8 +18,10 @@ public class RNNfcSessionDelegateProxy: NSObject, NFCNDEFReaderSessionDelegate, 
         guard RNNfcManager.isCurrentNdefSession(session) else {
             return
         }
+        let invalidationCallback = RNNfcManager.takeSessionInvalidationCallback()
         RNNfcManager.resetSessionsState()
         RNNfcManager.resetRequestState()
+        invalidationCallback?([])
         RNNfcBridgeUtil.emitEvent("NfcManagerSessionClosed", body: ["error": RNNfcSwiftUtil.errorMessage(from: error as NSError)])
     }
 
@@ -72,9 +74,11 @@ public class RNNfcSessionDelegateProxy: NSObject, NFCNDEFReaderSessionDelegate, 
         }
 
         let callback = RNNfcManager.takeTechnologyRequestCallback(for: session)
+        let invalidationCallback = RNNfcManager.takeSessionInvalidationCallback()
         RNNfcManager.resetSessionsState()
         RNNfcManager.resetRequestState()
         callback?([RNNfcSwiftUtil.errorMessage(from: error as NSError)])
+        invalidationCallback?([])
         RNNfcBridgeUtil.emitEvent("NfcManagerSessionClosed", body: ["error": RNNfcSwiftUtil.errorMessage(from: error as NSError)])
     }
 

@@ -8,6 +8,7 @@ public class RNNfcManager: NSObject {
     static var runtimeSessionDelegateProxy: NSObject?
     static var runtimeTechRequestTypes: [String]?
     static var runtimeTechRequestCallback: RNNfcResponseSenderBlock?
+    static var runtimeSessionInvalidationCallback: RNNfcResponseSenderBlock?
 
     static func resetSessionsState() {
         runtimeSession = nil
@@ -18,6 +19,24 @@ public class RNNfcManager: NSObject {
     static func resetRequestState() {
         runtimeTechRequestTypes = nil
         runtimeTechRequestCallback = nil
+    }
+
+    static func beginSessionInvalidation(
+        callback: @escaping RNNfcResponseSenderBlock
+    ) -> Bool {
+        guard runtimeSessionInvalidationCallback == nil else {
+            callback(["Duplicated registration", NSNull()])
+            return false
+        }
+
+        runtimeSessionInvalidationCallback = callback
+        return true
+    }
+
+    static func takeSessionInvalidationCallback() -> RNNfcResponseSenderBlock? {
+        let callback = runtimeSessionInvalidationCallback
+        runtimeSessionInvalidationCallback = nil
+        return callback
     }
 
     static func isCurrentTagSession(_ session: NFCTagReaderSession) -> Bool {
@@ -220,6 +239,7 @@ public extension RNNfcManager {
     static func resetRuntimeState() {
         resetSessionsState()
         resetRequestState()
+        runtimeSessionInvalidationCallback = nil
     }
 
     @objc(invalidateRuntimeState)
@@ -390,14 +410,18 @@ public extension RNNfcManager {
         callback: @escaping RNNfcResponseSenderBlock
     ) {
         if let ndefSession = runtimeSession {
+            guard beginSessionInvalidation(callback: callback) else {
+                return
+            }
             ndefSession.invalidate()
-            callback([])
             return
         }
 
         if #available(iOS 13.0, *), let tagSession = runtimeTagSession {
+            guard beginSessionInvalidation(callback: callback) else {
+                return
+            }
             tagSession.invalidate()
-            callback([])
             return
         }
 
@@ -422,14 +446,18 @@ public extension RNNfcManager {
         callback: @escaping RNNfcResponseSenderBlock
     ) {
         if let ndefSession = runtimeSession {
+            guard beginSessionInvalidation(callback: callback) else {
+                return
+            }
             ndefSession.invalidate(errorMessage: errorMessage)
-            callback([])
             return
         }
 
         if #available(iOS 13.0, *), let tagSession = runtimeTagSession {
+            guard beginSessionInvalidation(callback: callback) else {
+                return
+            }
             tagSession.invalidate(errorMessage: errorMessage)
-            callback([])
             return
         }
 
@@ -487,8 +515,10 @@ public extension RNNfcManager {
                 return
             }
 
+            guard beginSessionInvalidation(callback: callback) else {
+                return
+            }
             tagSession.invalidate()
-            callback([])
             return
         }
 
@@ -507,8 +537,10 @@ public extension RNNfcManager {
                 return
             }
 
+            guard beginSessionInvalidation(callback: callback) else {
+                return
+            }
             ndefSession.invalidate()
-            callback([])
             return
         }
 

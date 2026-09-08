@@ -2,7 +2,7 @@
 
 @implementation RNNfcBridgeUtil
 
-static __weak RCTEventEmitter *sEventEmitter = nil;
+static RNNfcEventEmitterBlock sEventEmitter = nil;
 
 static NSString *RNNfcErrorMessageFromError(NSError *error)
 {
@@ -18,9 +18,9 @@ static NSString *RNNfcErrorMessageFromError(NSError *error)
     return [NSString stringWithFormat:@"%@:%ld", error.domain, (long)error.code];
 }
 
-+ (void)setEventEmitter:(RCTEventEmitter * _Nullable)eventEmitter
++ (void)setEventEmitter:(RNNfcEventEmitterBlock _Nullable)eventEmitter
 {
-    sEventEmitter = eventEmitter;
+    sEventEmitter = [eventEmitter copy];
 }
 
 + (void)sendResultToCallback:(RCTResponseSenderBlock)callback
@@ -46,7 +46,7 @@ static NSString *RNNfcErrorMessageFromError(NSError *error)
         return;
     }
 
-    [sEventEmitter sendEventWithName:name body:body];
+    sEventEmitter(name, body);
 }
 
 @end
