@@ -1,4 +1,5 @@
-import type {CodegenTypes, TurboModule} from 'react-native';
+import type {TurboModule} from 'react-native';
+import type {EventEmitter} from 'react-native/Libraries/Types/CodegenTypes';
 import {TurboModuleRegistry} from 'react-native';
 
 export type SessionClosedEvent = {
@@ -10,10 +11,10 @@ export type StateChangedEvent = {
 };
 
 export interface Spec extends TurboModule {
-  readonly onDiscoverTag: CodegenTypes.EventEmitter<Object>;
-  readonly onDiscoverBackgroundTag: CodegenTypes.EventEmitter<Object>;
-  readonly onSessionClosed: CodegenTypes.EventEmitter<SessionClosedEvent>;
-  readonly onStateChanged: CodegenTypes.EventEmitter<StateChangedEvent>;
+  readonly onDiscoverTag: EventEmitter<Object>;
+  readonly onDiscoverBackgroundTag: EventEmitter<Object>;
+  readonly onSessionClosed: EventEmitter<SessionClosedEvent>;
+  readonly onStateChanged: EventEmitter<StateChangedEvent>;
   isSupported(tech: string, callback: (err?: string, resp?: boolean) => void): void;
   isEnabled(callback: (err?: string, resp?: boolean) => void): void;
   start(callback: (err?: string) => void): void;
