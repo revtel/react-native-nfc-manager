@@ -32,15 +32,17 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 
 ## Verification Matrix
 
-| React Native | Architecture | Android | iOS | Status |
-|---|---|---|---|---|
-| 0.84 | New Architecture | Example application compiled | Pods resolved and simulator application compiled | Current verified compiler baseline |
-| 0.83 | New Architecture | Not run | Not run | Unverified |
-| 0.82 | New Architecture | Not run | Not run | Unverified |
-| 0.76–0.81 | New Architecture | Not run | Not run | Supported floor; best-effort/unverified until separately tested |
-| Earlier than 0.76 | New or legacy | Outside v4 scope | Outside v4 scope | Unsupported |
+| React Native | Architecture | Codegen | Android | iOS | Status |
+|---|---|---|---|---|---|
+| 0.84.0 | New Architecture | Packed package generated for both platforms | Example application compiled with the 0.84 development line | Pods resolved and simulator application compiled with the 0.84 development line | Current Codegen and compiler baseline |
+| 0.77.3 | New Architecture | Packed package generated for both platforms | Not compiled | Not compiled | Codegen regression line only |
+| 0.76.9 | New Architecture | Packed package generated for both platforms | Not compiled | Not compiled | Codegen-tested support floor only |
+| 0.83 | New Architecture | Not run | Not run | Not run | Unverified |
+| 0.82 | New Architecture | Not run | Not run | Not run | Unverified |
+| Other 0.76–0.81 versions | New Architecture | Not run | Not run | Not run | Supported; best-effort/unverified until separately tested |
+| Earlier than 0.76 | New or legacy | Outside v4 scope | Outside v4 scope | Outside v4 scope | Unsupported |
 
-Routine CI uses Node.js 22 and validates install, TypeScript build, lint, root mocked Jest tests, and type checking. It does not compile native applications. Example Jest is run separately and is mocked application-interaction coverage.
+The representative Codegen rows record only the exact versions shown; they do not imply that every intervening React Native minor was compiled or tested. Routine CI uses Node.js 22 and validates install, TypeScript build, lint, root mocked Jest tests, type checking, packed-package contents, and Android/iOS Codegen generation for React Native 0.76.9, 0.77.3, and 0.84.0. It does not compile native applications. Example Jest is run separately and is mocked application-interaction coverage.
 
 Compiler and simulator evidence does not establish physical-device NFC behavior. No Android or iOS device, OS, or tag technology is considered verified until a release record names it and records the tested flow and outcome.
 
@@ -48,6 +50,7 @@ Compiler and simulator evidence does not establish physical-device NFC behavior.
 
 For each release candidate:
 
+- Required: packed-package Android/iOS Codegen matrix for RN 0.76.9, 0.77.3, and 0.84.0
 - Required: RN 0.84 New Architecture Android and iOS compiler checks
 - Optional: older React Native lines only when the release claims them
 - Required physical-device flows:

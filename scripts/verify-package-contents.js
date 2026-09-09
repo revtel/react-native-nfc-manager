@@ -47,6 +47,8 @@ try {
   }
 
   const forbiddenPatterns = [
+    /^build\//,
+    /^generated\//,
     /^android\/build\//,
     /^ios\/build\//,
     /\/(?:build|generated)\//,

@@ -88,6 +88,9 @@
     "test": "jest -i",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "verify:package": "npm run build && node scripts/verify-package-contents.js",
+    "verify:codegen": "node scripts/verify-codegen-compatibility.js",
+    "verify:codegen:version": "node scripts/verify-codegen-compatibility.js --version",
+    "verify:codegen:regression": "node scripts/verify-codegen-compatibility.js --version=0.77.3 --assert-beta8-regression",
     "prepack": "npm run build",
     "release": "dotenv -- release-it --",
     "release:beta": "release-it --preRelease=beta --increment=prerelease"

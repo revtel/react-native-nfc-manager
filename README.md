@@ -20,6 +20,7 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 ## Support Policy
 
 - See [Support Policy](./docs/SUPPORT_POLICY.md) for official React Native version window, architecture targets, and verification matrix.
+- Maintainers should follow [Release Validation](./docs/RELEASING.md) for Codegen, compiler, simulator, and physical-device evidence gates.
 
 ## Table of Contents
 

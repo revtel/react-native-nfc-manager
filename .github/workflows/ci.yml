@@ -35,3 +35,9 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Verify package contents
+        run: npm run verify:package
+
+      - name: Verify React Native Codegen compatibility
+        run: npm run verify:codegen
