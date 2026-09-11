@@ -51,7 +51,12 @@ try {
     /^generated\//,
     /^android\/build\//,
     /^ios\/build\//,
+    /^NfcSupportFloor\//,
+    /(^|\/)Pods\//,
+    /(^|\/)DerivedData\//,
+    /(^|\/)npm-cache\//,
     /\/(?:build|generated)\//,
+    /\.tgz$/,
     /\.(?:class|dex)$/,
   ];
   const forbiddenFiles = [...files].filter((path) =>

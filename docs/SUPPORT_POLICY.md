@@ -23,6 +23,7 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 - Minimum Swift language version for iOS native sources: **Swift 5.7**
 - Minimum iOS deployment target: **15.1**, matching the React Native 0.76 support floor
 - Maintainers should validate iOS builds with an Xcode toolchain that supports Swift 5.7+
+- RN 0.76.9's pinned `fmt` 11.0.2 requires the documented, disposable-consumer consteval adjustment when the support-floor build is run with Xcode 26 or newer. This is an upstream RN dependency/toolchain compatibility step, not a library source patch.
 
 ### Example app policy
 
@@ -36,13 +37,15 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 |---|---|---|---|---|---|
 | 0.84.0 | New Architecture | Packed package generated for both platforms | Example application compiled with the 0.84 development line | Pods resolved and simulator application compiled with the 0.84 development line | Current Codegen and compiler baseline |
 | 0.77.3 | New Architecture | Packed package generated for both platforms | Not compiled | Not compiled | Codegen regression line only |
-| 0.76.9 | New Architecture | Packed package generated for both platforms | Not compiled | Not compiled | Codegen-tested support floor only |
+| 0.76.9 | New Architecture | Packed package generated for both platforms | Clean packed-package consumer assembled | Pods resolved and clean packed-package simulator application compiled | Codegen-and-native-build verified support floor; no RN 0.76 hardware claim |
 | 0.83 | New Architecture | Not run | Not run | Not run | Unverified |
 | 0.82 | New Architecture | Not run | Not run | Not run | Unverified |
 | Other 0.76–0.81 versions | New Architecture | Not run | Not run | Not run | Supported; best-effort/unverified until separately tested |
 | Earlier than 0.76 | New or legacy | Outside v4 scope | Outside v4 scope | Outside v4 scope | Unsupported |
 
 The representative Codegen rows record only the exact versions shown; they do not imply that every intervening React Native minor was compiled or tested. Routine CI uses Node.js 22 and validates install, TypeScript build, lint, root mocked Jest tests, type checking, packed-package contents, and Android/iOS Codegen generation for React Native 0.76.9, 0.77.3, and 0.84.0. It does not compile native applications. Example Jest is run separately and is mocked application-interaction coverage.
+
+RN 0.76.9 native-build evidence is produced by the release-only support-floor validator, not routine CI. It installs the actual packed candidate into a generated consumer and checks both application artifacts. On Xcode 26+, the iOS run reports and applies the narrow `fmt` compatibility adjustment described above inside the disposable Pods directory.
 
 Compiler and simulator evidence does not establish physical-device NFC behavior. No Android or iOS device, OS, or tag technology is considered verified until a release record names it and records the tested flow and outcome.
 
@@ -51,6 +54,7 @@ Compiler and simulator evidence does not establish physical-device NFC behavior.
 For each release candidate:
 
 - Required: packed-package Android/iOS Codegen matrix for RN 0.76.9, 0.77.3, and 0.84.0
+- Required before stable promotion while RN 0.76 remains supported: clean packed-package RN 0.76.9 New Architecture Android and iOS application builds
 - Required: RN 0.84 New Architecture Android and iOS compiler checks
 - Optional: older React Native lines only when the release claims them
 - Required physical-device flows:
