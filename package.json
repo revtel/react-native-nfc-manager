@@ -94,6 +94,10 @@
     "verify:native:support-floor": "node scripts/verify-native-support-floor.js",
     "verify:native:support-floor:android": "node scripts/verify-native-support-floor.js --platform=android",
     "verify:native:support-floor:ios": "node scripts/verify-native-support-floor.js --platform=ios",
+    "verify:expo": "node scripts/verify-expo-consumer.js",
+    "verify:expo:config": "node scripts/verify-expo-consumer.js --platform=config",
+    "verify:expo:android": "node scripts/verify-expo-consumer.js --platform=android",
+    "verify:expo:ios": "node scripts/verify-expo-consumer.js --platform=ios",
     "prepack": "npm run build",
     "release": "dotenv -- release-it --",
     "release:beta": "release-it --preRelease=beta --increment=prerelease"

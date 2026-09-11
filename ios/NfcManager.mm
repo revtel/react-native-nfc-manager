@@ -245,9 +245,9 @@ continueUserActivity:(NSUserActivity *)userActivity
     [RNNfcManager sendCommandAPDU:apduData callback:callback];
 }
 
-- (void)iso15693_getSystemInfo:(nonnull NSNumber *)flags callback:(nonnull RCTResponseSenderBlock)callback
+- (void)iso15693_getSystemInfo:(double)requestFlag callback:(nonnull RCTResponseSenderBlock)callback
 {
-    [RNNfcManager iso15693GetSystemInfo:flags callback:callback];
+    [RNNfcManager iso15693GetSystemInfo:@(requestFlag) callback:callback];
 }
 
 - (void)iso15693_readSingleBlock:(NSDictionary *)options callback:(nonnull RCTResponseSenderBlock)callback
@@ -347,6 +347,94 @@ continueUserActivity:(NSUserActivity *)userActivity
     
 - (void)isEnabled:(RCTResponseSenderBlock)callback {
     // bypass, Android's interface
+}
+
+- (void)goToNfcSetting:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)getLaunchTagEvent:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)setTimeout:(double)timeout callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)getTimeout:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)connect:(NSArray *)techs callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)close:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)transceive:(NSArray *)bytes callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)getMaxTransceiveLength:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)formatNdef:(NSArray *)bytes options:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareUltralightReadPages:(double)pageOffset callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareUltralightWritePage:(double)pageOffset bytes:(NSArray *)bytes callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicAuthenticateA:(double)sector key:(NSArray *)key callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicAuthenticateB:(double)sector key:(NSArray *)key callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicGetBlockCountInSector:(double)sector callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicGetSectorCount:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicSectorToBlock:(double)sector callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicReadBlock:(double)block callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicReadSector:(double)sector callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicWriteBlock:(double)block data:(NSArray *)data callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicIncrementBlock:(double)block value:(double)value callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicDecrementBlock:(double)block value:(double)value callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
+- (void)mifareClassicTransferBlock:(double)block callback:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
 }
     
 @end

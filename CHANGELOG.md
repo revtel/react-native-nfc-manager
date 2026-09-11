@@ -1,3 +1,15 @@
+## Unreleased
+
+### Expo Development Build support
+
+- Hardened the packaged Expo config plugin for repeated evaluation, explicit permission opt-out, and current Expo Gradle layouts.
+- Added a pinned packed-package Expo SDK 57 / React Native 0.86 New Architecture consumer validator for prebuild, Expo Doctor, Android, and iOS release gates.
+- Documented Expo Development Builds as the supported Expo path; Expo Go remains unsupported, and local compilation is not presented as hosted EAS or physical-device NFC evidence.
+
+### Fixed
+
+- Aligned the iOS ISO 15693 `getSystemInfo` bridge parameter with the generated TurboModule scalar protocol while preserving the existing internal NSNumber call.
+
 ## [4.0.0-beta.9](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.8...v4.0.0-beta.9) (2026-09-08)
 
 ### Bug Fixes

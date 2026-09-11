@@ -28,8 +28,8 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 ### Example app policy
 
 - Primary development example: **React Native CLI** (`example/`)
-- Secondary validation example (later phase): Expo prebuild + custom dev client
-- `Expo Go` is not an official target for this NFC native module
+- Representative secondary consumer: pinned **Expo SDK 57.0.21 / React Native 0.86.3** prebuild + custom Development Build
+- Expo Go is unsupported because it cannot load this package's custom native module
 
 ## Verification Matrix
 
@@ -43,6 +43,14 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 | Other 0.76–0.81 versions | New Architecture | Not run | Not run | Not run | Supported; best-effort/unverified until separately tested |
 | Earlier than 0.76 | New or legacy | Outside v4 scope | Outside v4 scope | Outside v4 scope | Unsupported |
 
+### Expo integration evidence
+
+| Expo | React Native | Architecture | Prebuild | Android | iOS | Status |
+|---|---|---|---|---|---|---|
+| 57.0.21 | 0.86.3 | New Architecture | Packed-package plugin output verified | Generated consumer APK compiled | Pods, Codegen, and unsigned Simulator app compiled | Local Development Build integration verified; hardware and hosted EAS unverified |
+
+The Expo validator accepts the currently known React Native Directory warning that `react-native-nfc-manager` is not yet marked as New Architecture tested. This is external metadata, not build evidence. The metadata SHALL be updated in coordination with v4 becoming the default stable package so the legacy v3 line is not mislabeled prematurely.
+
 The representative Codegen rows record only the exact versions shown; they do not imply that every intervening React Native minor was compiled or tested. Routine CI uses Node.js 22 and validates install, TypeScript build, lint, root mocked Jest tests, type checking, packed-package contents, and Android/iOS Codegen generation for React Native 0.76.9, 0.77.3, and 0.84.0. It does not compile native applications. Example Jest is run separately and is mocked application-interaction coverage.
 
 RN 0.76.9 native-build evidence is produced by the release-only support-floor validator, not routine CI. It installs the actual packed candidate into a generated consumer and checks both application artifacts. On Xcode 26+, the iOS run reports and applies the narrow `fmt` compatibility adjustment described above inside the disposable Pods directory.
@@ -55,6 +63,7 @@ For each release candidate:
 
 - Required: packed-package Android/iOS Codegen matrix for RN 0.76.9, 0.77.3, and 0.84.0
 - Required before stable promotion while RN 0.76 remains supported: clean packed-package RN 0.76.9 New Architecture Android and iOS application builds
+- Required before stable promotion: clean packed-package Expo SDK 57.0.21 / RN 0.86.3 prebuild, Expo Doctor review, Android application build, and iOS pod/Codegen/application build
 - Required: RN 0.84 New Architecture Android and iOS compiler checks
 - Optional: older React Native lines only when the release claims them
 - Required physical-device flows:
@@ -62,7 +71,7 @@ For each release candidate:
   - `requestTechnology()` + `cancelTechnologyRequest()`
   - NDEF read path (`getTag()` / `getNdefMessage()`)
 - Required physical-device records include platform, device, OS, tag technology, flow, and outcome.
-- Optional (later): Expo prebuild/dev-client validation
+- Required before claiming Expo hardware verification: physical-device Expo Development Build records for the applicable NFC flows
 
 ## Known Constraints
 
@@ -70,6 +79,7 @@ For each release candidate:
 - iOS requires entitlement and Info.plist NFC keys.
 - Android requires NFC permission and NFC-enabled devices.
 - Mocks, simulators, emulators, and compiler checks must not be reported as NFC hardware validation.
+- Local Expo prebuild and native compilation must not be reported as hosted EAS Build evidence.
 
 ## Ownership
 

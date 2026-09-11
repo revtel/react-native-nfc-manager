@@ -42,9 +42,9 @@ function addValuesToArray(obj, key, values) {
 function withIosNfcEntitlement(c, {includeNdefEntitlement}) {
   return withEntitlementsPlist(c, (config) => {
     // Add the required formats
-    let entitlements = ['NDEF', 'TAG']
+    let entitlements = ['NDEF', 'TAG'];
     if (includeNdefEntitlement === false) {
-      entitlements = ['TAG']
+      entitlements = ['TAG'];
     }
     config.modResults = addValuesToArray(
       config.modResults,
@@ -90,16 +90,15 @@ function withNfc(config, props = {}) {
   config = withIosNfcSelectIdentifiers(config, {selectIdentifiers});
   config = withIosNfcSystemCodes(config, {systemCodes});
 
-  // We start to support Android 12 from v3.11.1, and you will need to update compileSdkVersion to 31,
-  // otherwise the build will fail:
-  config = AndroidConfig.Version.withBuildScriptExtMinimumVersion(config, {
-    name: 'compileSdkVersion',
-    minVersion: 31,
-  });
-
   if (nfcPermission !== false) {
     config = withIosPermission(config, props);
     config = AndroidConfig.Permissions.withPermissions(config, [
+      'android.permission.NFC',
+    ]);
+  } else {
+    // The library manifest declares NFC for React Native CLI consumers. Block it
+    // explicitly when an Expo consumer opts out so manifest merging removes it.
+    config = AndroidConfig.Permissions.withBlockedPermissions(config, [
       'android.permission.NFC',
     ]);
   }

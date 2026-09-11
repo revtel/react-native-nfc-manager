@@ -25,8 +25,9 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 ## Table of Contents
 
 1. [Installation](#installation)
-2. [Getting Started](#gettingstarted)
-3. [Setup](#setup)
+2. [Expo Development Builds](#expo-development-builds)
+3. [Getting Started](#gettingstarted)
+4. [Setup](#setup)
 4. [Documentation](#docs)
 5. [Nfc compatibility](#nfccompatibility)
 6. [Usage Concept](#usageconcept)
@@ -44,6 +45,47 @@ npm i --save react-native-nfc-manager
 ```
 
 To evaluate the v4 beta, install an explicit `4.0.0-beta.x` version rather than relying on the default npm tag.
+
+### Expo Development Builds
+
+`react-native-nfc-manager` contains native code, so it does **not** work in Expo Go. Use an [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/) generated locally or by EAS.
+
+Install the package and add its config plugin to `app.json`:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-nfc-manager",
+        {
+          "nfcPermission": "Allow this app to scan nearby NFC tags",
+          "includeNdefEntitlement": true,
+          "selectIdentifiers": ["A0000002471001"],
+          "systemCodes": ["8008"]
+        }
+      ]
+    ]
+  }
+}
+```
+
+- `nfcPermission` sets the iOS `NFCReaderUsageDescription` and enables the Android NFC permission. Omit it to use the default description.
+- `nfcPermission: false` is an advanced opt-out: it omits the iOS usage description and blocks the Android permission contributed by the library manifest. NFC cannot be used until the application supplies equivalent native configuration itself.
+- `includeNdefEntitlement` defaults to `true`; set it to `false` to generate only the iOS `TAG` reader-session format.
+- `selectIdentifiers` supplies iOS ISO 7816 application identifiers.
+- `systemCodes` supplies iOS FeliCa system codes.
+
+Generate and build the native application after adding or changing the plugin:
+
+```shell
+npx expo prebuild
+npx expo run:ios
+# or
+npx expo run:android
+```
+
+An EAS Development Build is also a valid deployment path, but a new native build is still required after native dependency or plugin configuration changes. The config plugin generates project files; Apple provisioning must still permit the NFC capability for the selected App ID.
 
 ### iOS
 
@@ -207,7 +249,7 @@ export default App;
 
 <a name="docs"></a>
 
-Check the full documentation that contains `examples`, `faq` and other topics like `Expo` in our [Wiki](https://github.com/revtel/react-native-nfc-manager/wiki)
+Check the full documentation that contains `examples`, `faq`, and other topics in our [Wiki](https://github.com/revtel/react-native-nfc-manager/wiki). The Expo instructions above are the current v4 integration contract.
 
 ## Development Example
 

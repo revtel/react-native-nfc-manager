@@ -63,6 +63,41 @@ Temporary consumers, caches, tarballs, Pods, DerivedData, and build outputs are 
 
 Run the documented physical-device smoke tests before a release candidate whenever runtime JavaScript, native NFC behavior, session state, callbacks, events, errors, cancellation, timeout, or cleanup changes. A tooling-only Codegen matrix change does not by itself require repeating physical-device NFC tests.
 
+## Expo stable-promotion gate
+
+The representative Expo consumer uses Expo SDK 57.0.21, React Native 0.86.3, and the New Architecture. It installs the packed candidate rather than the repository checkout.
+
+Run configuration generation without native compilation:
+
+```sh
+npm run verify:expo:config
+```
+
+Run either native platform independently, or both:
+
+```sh
+npm run verify:expo:android
+npm run verify:expo:ios
+npm run verify:expo
+```
+
+The validator runs prebuild and Expo Doctor for every mode, verifies the generated NFC configuration, package provenance, host-owned config-plugin version, and Expo autolinking, then requires an APK and/or unsigned iOS Simulator app for selected native platforms. Temporary output is removed by default; append `-- --keep-temp` only for diagnosis.
+
+Expo Doctor currently reports that the package is untested on the New Architecture because React Native Directory lacks v4 metadata. Record that single accepted external warning. Any additional Doctor failure, prebuild failure, duplicate config-plugin runtime, Codegen warning from `NfcManager`, or missing native artifact fails the gate.
+
+Local prebuild and compiler success are not hosted EAS Build evidence and do not exercise NFC. Before stable promotion, use a custom Expo Development Build on physical devices and record each applicable row:
+
+| Platform | Device / OS | Tag technology | Required flow | Status |
+|---|---|---|---|---|
+| Android | Record exact device and OS | NDEF | `start()`, support/enabled checks, request, tag read, cancel | Pending |
+| Android | Record exact device and OS | NfcA | `transceive()`, timeout, repeated request, cleanup | Pending |
+| iOS | Record exact device and OS | NDEF | `start()`, support checks, request, tag read, cancel/session close | Pending |
+| iOS | Record exact device and OS | ISO 15693 when available | command, timeout, cancellation, cleanup | Pending |
+
+Record background/resume behavior and event occurrence counts on both platforms. Unavailable hardware remains explicitly unverified. A hosted EAS Development Build can be recorded as additional evidence but is not inferred from these local commands.
+
+When v4 becomes the default stable npm line, update the package's React Native Directory entry to the appropriate New Architecture classification and confirm that Expo Doctor no longer reports the metadata warning. Do not apply a package-wide classification early if it would misrepresent legacy v3 consumers.
+
 ## Release operation
 
 Only after all applicable gates are recorded should the maintainer run the beta release command. Confirm the intended prerelease version and npm `beta` dist-tag before publishing; commit, tag, push, GitHub release creation, and npm publication remain separately reviewable release actions.
