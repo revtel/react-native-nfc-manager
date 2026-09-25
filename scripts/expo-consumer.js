@@ -174,10 +174,14 @@ function configureConsumer(consumerDirectory, tarballPath) {
   const packagePath = join(consumerDirectory, 'package.json');
   const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
   const expectedDependencies = {
-    expo: `~${EXPO_CONSUMER.expo}`,
     react: EXPO_CONSUMER.react,
     'react-native': EXPO_CONSUMER.reactNative,
   };
+  if (!/^~57\.0\.\d+$/.test(packageJson.dependencies?.expo)) {
+    throw new Error(
+      `generated Expo template expected SDK 57.0.x; found ${packageJson.dependencies?.expo}`,
+    );
+  }
   for (const [name, version] of Object.entries(expectedDependencies)) {
     if (packageJson.dependencies?.[name] !== version) {
       throw new Error(
@@ -185,6 +189,7 @@ function configureConsumer(consumerDirectory, tarballPath) {
       );
     }
   }
+  packageJson.dependencies.expo = EXPO_CONSUMER.expo;
   packageJson.dependencies['react-native-nfc-manager'] = `file:${tarballPath}`;
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
 

@@ -98,6 +98,7 @@
     "verify:expo:config": "node scripts/verify-expo-consumer.js --platform=config",
     "verify:expo:android": "node scripts/verify-expo-consumer.js --platform=android",
     "verify:expo:ios": "node scripts/verify-expo-consumer.js --platform=ios",
+    "prepare:expo:smoke": "node scripts/prepare-expo-smoke.js",
     "prepack": "npm run build",
     "release": "dotenv -- release-it --",
     "release:beta": "release-it --preRelease=beta --increment=prerelease"

@@ -87,6 +87,8 @@ npx expo run:android
 
 An EAS Development Build is also a valid deployment path, but a new native build is still required after native dependency or plugin configuration changes. The config plugin generates project files; Apple provisioning must still permit the NFC capability for the selected App ID.
 
+Repository maintainers can prepare a packed-package [Expo NFC device smoke app](example-expo/README.md) with `npm run prepare:expo:smoke`. Its build checks do not replace physical-device NFC scans.
+
 ### iOS
 
 This library use native-modules, so you will need to do `pod install` for iOS:

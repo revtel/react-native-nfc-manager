@@ -110,7 +110,7 @@ describe('Expo consumer validator', () => {
         join(consumerDirectory, 'package.json'),
         JSON.stringify({
           dependencies: {
-            expo: '~57.0.21',
+            expo: '~57.0.24',
             react: '19.2.3',
             'react-native': '0.86.3',
           },
@@ -127,6 +127,7 @@ describe('Expo consumer validator', () => {
       expect(packageJson.dependencies['react-native-nfc-manager']).toBe(
         'file:/tmp/library.tgz',
       );
+      expect(packageJson.dependencies.expo).toBe('57.0.21');
       expect(appJson.expo.newArchEnabled).toBeUndefined();
       expect(appJson.expo.plugins[0][1]).toMatchObject({
         nfcPermission: 'Scan nearby NFC tags',

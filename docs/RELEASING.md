@@ -87,6 +87,8 @@ Expo Doctor currently reports that the package is untested on the New Architectu
 
 Local prebuild and compiler success are not hosted EAS Build evidence and do not exercise NFC. Before stable promotion, use a custom Expo Development Build on physical devices and record each applicable row:
 
+Prepare the source-controlled smoke screen from the current checkout with `npm run prepare:expo:smoke`. The command prints the temporary consumer path and device installation commands. Follow [the Expo smoke test guide](../example-expo/README.md), and record the tarball/version, device/OS, tag, event counts, errors, cancellation, repeated-request, timeout, and background/resume results. This is a separate gate from `verify:expo`; preparing the app alone leaves all hardware rows pending.
+
 | Platform | Device / OS | Tag technology | Required flow | Status |
 |---|---|---|---|---|
 | Android | Record exact device and OS | NDEF | `start()`, support/enabled checks, request, tag read, cancel | Pending |
