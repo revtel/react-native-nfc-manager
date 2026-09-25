@@ -64,18 +64,36 @@ declare module 'react-native-nfc-manager' {
   type TNF = 0x0 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07;
 
   export interface NdefRecord {
-    id?: number[];
+    /** Android returns a hex string; iOS returns a byte array. */
+    id?: number[] | string;
     tnf: TNF;
     type: number[] | string;
     payload: number[];
   }
 
   export interface TagEvent {
-    ndefMessage: NdefRecord[];
+    /** Absent when no NDEF message is available; do not assume an empty array. */
+    ndefMessage?: NdefRecord[];
     maxSize?: number;
     type?: string;
     techTypes?: string[];
     id?: string;
+    /** Android NDEF tag metadata. */
+    isWritable?: boolean;
+    /** Android may return null when this capability cannot be determined. */
+    canMakeReadOnly?: boolean | null;
+    /** iOS tag technology name. */
+    tech?: string;
+    /** iOS FeliCa metadata. */
+    idm?: string;
+    systemCode?: string;
+    /** iOS ISO 7816 metadata. */
+    initialSelectedAID?: string;
+    historicalBytes?: number[];
+    applicationData?: number[];
+    /** iOS ISO 15693 metadata. */
+    icManufacturerCode?: number;
+    icSerialNumber?: number[];
   }
 
   export interface RegisterTagEventOpts {

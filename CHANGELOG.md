@@ -1,5 +1,11 @@
 ## Unreleased
 
+### TypeScript tag results
+
+- Corrected `TagEvent.ndefMessage` to be optional: native `getTag()` and discovery results can omit it. TypeScript consumers that iterate records should use `tag.ndefMessage ?? []` or check for its presence. This is a TypeScript source-compatibility change; JavaScript and native payloads are unchanged.
+- Declared existing Android NDEF writability/read-only fields and iOS technology-specific tag fields. No new NFC metadata is collected and the TurboModule Codegen contract is unchanged.
+- Corrected `NdefRecord.id` to accept Android's hexadecimal string or iOS's byte array. TypeScript consumers that assumed only byte arrays must narrow the value first.
+
 ### Expo Development Build support
 
 - Hardened the packaged Expo config plugin for repeated evaluation, explicit permission opt-out, and current Expo Gradle layouts.

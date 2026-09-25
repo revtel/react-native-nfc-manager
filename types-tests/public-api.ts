@@ -9,6 +9,7 @@ import NfcManager, {
   NfcError,
   NfcErrorIOS,
   type CancelTechReqOpts,
+  type NdefRecord,
   type RegisterTagEventOpts,
   type TagEvent,
 } from 'react-native-nfc-manager';
@@ -40,8 +41,44 @@ async function smoke() {
 
   NfcManager.setEventListener(NfcEvents.DiscoverTag, (evt: TagEvent) => {
     const id = evt.id;
+    const records = evt.ndefMessage ?? [];
+    const writable: boolean | undefined = evt.isWritable;
+    const canMakeReadOnly: boolean | null | undefined = evt.canMakeReadOnly;
+    const tech: string | undefined = evt.tech;
+    const idm: string | undefined = evt.idm;
+    const systemCode: string | undefined = evt.systemCode;
+    const initialSelectedAID: string | undefined = evt.initialSelectedAID;
+    const historicalBytes: number[] | undefined = evt.historicalBytes;
+    const applicationData: number[] | undefined = evt.applicationData;
+    const icManufacturerCode: number | undefined = evt.icManufacturerCode;
+    const icSerialNumber: number[] | undefined = evt.icSerialNumber;
     void id;
+    void records;
+    void writable;
+    void canMakeReadOnly;
+    void tech;
+    void idm;
+    void systemCode;
+    void initialSelectedAID;
+    void historicalBytes;
+    void applicationData;
+    void icManufacturerCode;
+    void icSerialNumber;
   });
+
+  const tagWithoutNdef: TagEvent = {id: '01234567', techTypes: ['NfcV']};
+  const tagWithNdef: TagEvent = {ndefMessage: []};
+  const tagWithUnknownReadOnlyCapability: TagEvent = {canMakeReadOnly: null};
+  const androidRecord: NdefRecord = {id: '01', tnf: 1, type: [0x54], payload: []};
+  const iosRecord: NdefRecord = {id: [0x01], tnf: 1, type: [0x54], payload: []};
+  const ndefRecords = tagWithoutNdef.ndefMessage ?? [];
+  // @ts-expect-error ndefMessage is absent from some native tag results
+  tagWithoutNdef.ndefMessage.map((record) => record.payload);
+  void tagWithNdef;
+  void tagWithUnknownReadOnlyCapability;
+  void androidRecord;
+  void iosRecord;
+  void ndefRecords;
 
   NfcManager.setEventListener(NfcEvents.SessionClosed, (error) => {
     if (error instanceof NfcError.UserCancel) {
