@@ -6,10 +6,10 @@
   "types": "index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/whitedogg13/react-native-nfc-manager.git"
+    "url": "https://github.com/revtel/react-native-nfc-manager.git"
   },
   "bugs": {
-    "url": "https://github.com/whitedogg13/react-native-nfc-manager/issues"
+    "url": "https://github.com/revtel/react-native-nfc-manager/issues"
   },
   "keywords": [
     "react-native",
@@ -100,8 +100,11 @@
     "verify:expo:ios": "node scripts/verify-expo-consumer.js --platform=ios",
     "prepare:expo:smoke": "node scripts/prepare-expo-smoke.js",
     "prepack": "npm run build",
-    "release": "dotenv -- release-it --",
-    "release:beta": "release-it --preRelease=beta --increment=prerelease"
+    "release": "dotenv -- node scripts/release.js stable",
+    "release:beta": "dotenv -- node scripts/release.js beta",
+    "test:example": "npm --prefix example test -- --runInBand --no-watchman",
+    "verify": "npm run build && npm run lint && npm run typecheck && npm test -- --runInBand --no-watchman && npm run test:example && node scripts/verify-package-contents.js",
+    "release:stable": "dotenv -- node scripts/release.js stable"
   },
   "codegenConfig": {
     "name": "NativeNfcManagerSpec",

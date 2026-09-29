@@ -66,7 +66,7 @@ from the earlier smoke record were not all repeated on 57.0.25.
 
 The Expo validator accepts the currently known React Native Directory warning that `react-native-nfc-manager` is not yet marked as New Architecture tested. This is external metadata, not build evidence. The metadata SHALL be updated in coordination with v4 becoming the default stable package so the legacy v3 line is not mislabeled prematurely.
 
-The representative Codegen rows record only the exact versions shown; they do not imply that every intervening React Native minor was compiled or tested. Routine CI uses Node.js 22 and validates install, TypeScript build, lint, root mocked Jest tests, type checking, packed-package contents, and Android/iOS Codegen generation for React Native 0.76.9, 0.77.3, and 0.84.0. It does not compile native applications. Example Jest is run separately and is mocked application-interaction coverage.
+The representative Codegen rows record only the exact versions shown; they do not imply that every intervening React Native minor was compiled or tested. Routine CI uses Node.js 22 and validates install, TypeScript build, lint, root and example mocked Jest tests, type checking, packed-package contents, and Android/iOS Codegen generation for React Native 0.76.9, 0.77.3, and 0.84.0. Separate CI jobs compile the RN 0.84 Android and unsigned iOS Simulator applications. Example Jest runs in the validation job and provides mocked application-interaction coverage. CI runs on pull requests and v4 pushes; workflow configuration is not itself proof of a successful hosted run.
 
 RN 0.76.9 native-build evidence is produced by the release-only support-floor validator, not routine CI. It installs the actual packed candidate into a generated consumer and checks both application artifacts. On Xcode 26+, the iOS run reports and applies the narrow `fmt` compatibility adjustment described above inside the disposable Pods directory.
 
@@ -109,3 +109,11 @@ For each release candidate:
   - React Native support window changes
   - CI matrix changes
   - architecture support expectations change
+
+## Stable preparation and branch policy
+
+`v4` is the active development and release branch; `main` currently retains v3.
+The package remains a beta until a separately reviewed stable publication.
+See [Migration](./MIGRATING_V3_TO_V4.md) and the
+[stable cutover procedure](./RELEASING.md#stable-cutover-procedure).
+GitHub default-branch selection and npm `latest` are independent operations.

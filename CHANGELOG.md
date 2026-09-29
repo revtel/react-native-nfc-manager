@@ -1,5 +1,11 @@
 ## Unreleased
 
+### Release preparation
+
+- Hardened v4 release entrypoints with automatic next-beta selection within the current series, explicit stable/new-series versions, unpublished-version checks, safe option forwarding, branch checks, and basic quality gates before publication.
+- Added separate RN 0.84 Android/iOS CI build jobs and example mocked tests; hosted execution is recorded separately from local validation.
+- Added v3-to-v4 migration and stable cutover guidance, corrected clean-checkout example setup, and updated introductory NFC lifecycle handling. The package remains a beta pending separate stable-candidate validation and publication.
+
 ### Android tag metadata
 
 - Added optional cached NFC-A (`atqa`, `sak`), NFC-V (`dsfid`, `responseFlags`), and ISO-DEP (`historicalBytes`, `hiLayerResponse`) fields to Android tag results. These are discovery-time values; reading them does not start another NFC exchange. NFC-A fields were observed on Android 12 with NTAG215; NFC-V and ISO-DEP metadata remain unverified on hardware.

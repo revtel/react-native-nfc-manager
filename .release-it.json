@@ -1,10 +1,14 @@
 {
   "git": {
     "commitMessage": "chore: release ${version}",
-    "tagName": "v${version}"
+    "tagName": "v${version}",
+    "requireBranch": "v4",
+    "requireCleanWorkingDir": true,
+    "requireUpstream": true
   },
   "npm": {
-    "publish": true
+    "publish": true,
+    "allowSameVersion": true
   },
   "github": {
     "release": true

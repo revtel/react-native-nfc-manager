@@ -18,16 +18,20 @@ It validates the local library integration and core NFC flows on native iOS/Andr
 From repository root:
 
 ```sh
+npm ci
+npm run build
 cd example
-npm install
+npm ci
 ```
 
-For iOS:
+Use Node.js 22 (22.11 or later) and Java 17 for Android. Install the SDK/NDK versions from `android/build.gradle`. The root build above creates `dist/src/index.js`, required by the local `file:..` dependency. Repeat `npm run build` from the root after changing library TypeScript.
+
+For iOS, select Ruby 3.1.2 through rbenv and Bundler 2.3.7:
 
 ```sh
+RBENV_VERSION=3.1.2 rbenv exec bundle _2.3.7_ install
 cd ios
-bundle install
-bundle exec pod install
+RBENV_VERSION=3.1.2 rbenv exec bundle _2.3.7_ exec pod install
 cd ..
 ```
 
@@ -39,7 +43,7 @@ Start Metro:
 npm start
 ```
 
-In another terminal:
+In another terminal, from `example/`:
 
 ```sh
 # Android
@@ -88,8 +92,8 @@ It is usually caused by incompatible `ar/ranlib` toolchain binaries in `PATH` (f
 Use:
 
 ```sh
-bundle config unset --local force_ruby_platform
-AR=/usr/bin/ar RANLIB=/usr/bin/ranlib bundle install
+rbenv exec bundle config unset --local force_ruby_platform
+AR=/usr/bin/ar RANLIB=/usr/bin/ranlib rbenv exec bundle install
 ```
 
 Then run:

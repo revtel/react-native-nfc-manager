@@ -4,40 +4,132 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - v4
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
+    name: Validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-
-      - name: Install dependencies
+          cache-dependency-path: |
+            package-lock.json
+            example/package-lock.json
+      - name: Install library dependencies
         run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test -- --runInBand
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Verify package contents
-        run: npm run verify:package
-
-      - name: Verify React Native Codegen compatibility
+      - name: Install example dependencies
+        run: npm ci --prefix example
+      - name: Build, lint, types, mocked root/example tests and package contents
+        run: npm run verify
+      - name: Packed React Native Codegen matrix
         run: npm run verify:codegen
+
+  android:
+    name: Android New Architecture
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            example/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned Android components
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;27.1.12297006' 'cmake;3.22.1'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: Install and build library
+        run: npm ci && npm run build
+      - name: Install example
+        run: npm ci --prefix example
+      - name: Assemble application (compiler evidence only)
+        working-directory: example/android
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee "$RUNNER_TEMP/nfc-android.log"
+          test -s app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload compiler log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-log
+          path: ${{ runner.temp }}/nfc-android.log
+          if-no-files-found: ignore
+
+  ios:
+    name: iOS New Architecture
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            example/package-lock.json
+      - name: Select Ruby and Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.2
+          bundler: 2.3.7
+          working-directory: example
+          bundler-cache: true
+      - name: Show compiler toolchain
+        run: xcodebuild -version && ruby --version && bundle --version
+      - name: Install and build library
+        run: npm ci && npm run build
+      - name: Install example
+        run: npm ci --prefix example
+      - name: Install Pods
+        working-directory: example/ios
+        run: |
+          set -o pipefail
+          bundle exec pod install 2>&1 | tee "$RUNNER_TEMP/nfc-pods.log"
+      - name: Build unsigned Simulator application (compiler evidence only)
+        working-directory: example/ios
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace NfcManagerExample.xcworkspace \
+            -scheme NfcManagerExample \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/nfc-ios-derived-data" \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee "$RUNNER_TEMP/nfc-ios.log"
+          test -d "$RUNNER_TEMP/nfc-ios-derived-data/Build/Products/Debug-iphonesimulator/NfcManagerExample.app"
+      - name: Upload compiler logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-logs
+          path: |
+            ${{ runner.temp }}/nfc-pods.log
+            ${{ runner.temp }}/nfc-ios.log
+          if-no-files-found: ignore

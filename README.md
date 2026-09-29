@@ -1,8 +1,8 @@
 # react-native-nfc-manager
 
 [![npm version](https://img.shields.io/npm/v/react-native-nfc-manager.svg?style=flat)](https://www.npmjs.com/package/react-native-nfc-manager)
-[![CI](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml)
-[![issues](https://img.shields.io/github/issues/whitedogg13/react-native-nfc-manager.svg?style=flat)](https://github.com/whitedogg13/react-native-nfc-manager/issues)
+[![CI](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml/badge.svg?branch=v4)](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml)
+[![issues](https://img.shields.io/github/issues/revtel/react-native-nfc-manager.svg?style=flat)](https://github.com/revtel/react-native-nfc-manager/issues)
 
 Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) and [react-native-ble-manager](https://github.com/innoveit/react-native-ble-manager)
 
@@ -19,8 +19,8 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 
 ## Support Policy
 
-- See [Support Policy](./docs/SUPPORT_POLICY.md) for official React Native version window, architecture targets, and verification matrix.
-- Maintainers should follow [Release Validation](./docs/RELEASING.md) for Codegen, compiler, simulator, and physical-device evidence gates.
+- See [Support Policy](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/SUPPORT_POLICY.md) for official React Native version window, architecture targets, and verification matrix.
+- Maintainers should follow [Release Validation](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/RELEASING.md) for Codegen, compiler, simulator, and physical-device evidence gates.
 
 ## Table of Contents
 
@@ -41,10 +41,12 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 <a name="installation"></a>
 
 ```shell
-npm i --save react-native-nfc-manager
+npm install react-native-nfc-manager@beta
 ```
 
-To evaluate the v4 beta, install an explicit `4.0.0-beta.x` version rather than relying on the default npm tag.
+This branch documents v4, which is still a prerelease. `@beta` selects the published v4 beta; pin its exact version in your application for reproducible installs. Changes on this branch may be newer than the published beta. An unqualified install currently selects v3 via npm `latest`. Legacy Architecture applications should use `npm install react-native-nfc-manager@3`.
+
+See the [v3 → v4 migration guide](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/MIGRATING_V3_TO_V4.md) before upgrading.
 
 ### Expo Development Builds
 
@@ -87,9 +89,9 @@ npx expo run:android
 
 An EAS Development Build is also a valid deployment path, but a new native build is still required after native dependency or plugin configuration changes. The config plugin generates project files; Apple provisioning must still permit the NFC capability for the selected App ID.
 
-Repository maintainers can prepare a packed-package [Expo NFC device smoke app](example-expo/README.md) with `npm run prepare:expo:smoke`. Its build checks do not replace physical-device NFC scans.
+Repository maintainers can prepare a packed-package [Expo NFC device smoke app](https://github.com/revtel/react-native-nfc-manager/blob/v4/example-expo/README.md) with `npm run prepare:expo:smoke`. Its build checks do not replace physical-device NFC scans.
 
-See the [2026-09-29 Expo physical-device smoke record](docs/EXPO_SMOKE_2026-09-29.md) for tested iPhone/Android flows and remaining validation gaps. The Android smoke app provides a cancellable scan prompt through tag I/O and cleanup.
+See the [2026-09-29 Expo physical-device smoke record](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/EXPO_SMOKE_2026-09-29.md) for tested iPhone/Android flows and remaining validation gaps. The Android smoke app provides a cancellable scan prompt through tag I/O and cleanup.
 
 ### iOS
 
@@ -113,7 +115,7 @@ It should be properly auto-linked, so you don't need to do anything.
 
 1. In [apple developer site](https://developer.apple.com/), enable capability for NFC
 
-![enable capability](./images/enable-capability.png "enable capability")
+![enable capability](https://raw.githubusercontent.com/revtel/react-native-nfc-manager/v4/images/enable-capability.png "enable capability")
 
 2. in Xcode, add `NFCReaderUsageDescription` into your `info.plist`, for example:
 
@@ -155,15 +157,15 @@ An incomplete list of aid's can be found here. [Application identifier](https://
 
 3. in Xcode's `Signing & Capabilities` tab, make sure `Near Field Communication Tag Reading` capability had been added, like this:
 
-![xcode-add-capability](./images/xcode-capability.png "xcode capability")
+![xcode-add-capability](https://raw.githubusercontent.com/revtel/react-native-nfc-manager/v4/images/xcode-capability.png "xcode capability")
 
 If this is the first time you toggle the capabilities, the Xcode will generate a `<your-project>.entitlement` file for you:
 
-![xcode-add-entitlement](./images/xcode-entitlement.png "xcode entitlement")
+![xcode-add-entitlement](https://raw.githubusercontent.com/revtel/react-native-nfc-manager/v4/images/xcode-entitlement.png "xcode entitlement")
 
 4. in Xcode, review the generated entitlement. It should look like this:
 
-![edit entitlement](./images/edit-entitlement.png "edit entitlement")
+![edit entitlement](https://raw.githubusercontent.com/revtel/react-native-nfc-manager/v4/images/edit-entitlement.png "edit entitlement")
 
 More info on Apple's [doc](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_nfc_readersession_formats?language=objc)
 
@@ -175,27 +177,7 @@ Simple add `uses-permission` into your `AndroidManifest.xml`:
  <uses-permission android:name="android.permission.NFC" />
 ```
 
-#### **Support Android 12**
-
-We start to support Android 12 from `v3.11.1`, and you will need to update `compileSdkVersion` to `31`, otherwise the build will fail:
-
-```
-buildscript {
-    ext {
-        ...
-        compileSdkVersion = 31
-        ...
-    }
-    ...
-}
-```
-
-The reason for this is because Android puts new limitation on [PendingIntent](https://developer.android.com/reference/android/app/PendingIntent#FLAG_MUTABLE) which says `Starting with Build.VERSION_CODES.S, it will be required to explicitly specify the mutability of PendingIntents`
-
-> The original issue is [here](https://github.com/revtel/react-native-nfc-manager/issues/469)
-
-If you don't care about **Android 12** for now, you can use **`v3.11.0`** as a short term solution.
-
+Use the Android SDK, build tools, NDK, and Java versions required by your React Native version. Do not lower `compileSdkVersion` to an old v3 example value. The development example uses React Native 0.84 with the New Architecture enabled; its toolchain is documented in [example/README.md](https://github.com/revtel/react-native-nfc-manager/blob/v4/example/README.md).
 
 ## Getting Started
 
@@ -204,32 +186,47 @@ If you don't care about **Android 12** for now, you can use **`v3.11.0`** as a s
 The simplest (and most common) use case for this library is to read `NFC` tags containing `NDEF`, which can be achieved via the following codes:
 
 ```javascript
-import React from 'react';
+import React, {useRef, useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 
-// Pre-step, call this before any NFC operations
-NfcManager.start();
-
 function App() {
+  const scanning = useRef(false);
+  const [busy, setBusy] = useState(false);
+
   async function readNdef() {
+    // A ref also blocks rapid taps before React renders the disabled button.
+    if (scanning.current) return;
+    scanning.current = true;
+    setBusy(true);
+    let requestAttempted = false;
     try {
-      // register for the NFC tag with NDEF in it
+      await NfcManager.start();
+      requestAttempted = true;
       await NfcManager.requestTechnology(NfcTech.Ndef);
-      // the resolved tag object will contain `ndefMessage` property
       const tag = await NfcManager.getTag();
-      console.warn('Tag found', tag);
+      console.warn('NDEF records', tag?.ndefMessage ?? []);
     } catch (ex) {
-      console.warn('Oops!', ex);
+      // Includes initialization, request, cancellation and tag-I/O failures.
+      console.warn('NFC scan ended', ex);
     } finally {
-      // stop the nfc scanning
-      NfcManager.cancelTechnologyRequest();
+      try {
+        if (requestAttempted) {
+          // Await cleanup before permitting a subsequent scan.
+          await NfcManager.cancelTechnologyRequest();
+        }
+      } catch (cleanupError) {
+        console.warn('NFC cleanup failed', cleanupError);
+      } finally {
+        scanning.current = false;
+        setBusy(false);
+      }
     }
   }
 
   return (
     <View style={styles.wrapper}>
-      <TouchableOpacity onPress={readNdef}>
+      <TouchableOpacity onPress={readNdef} disabled={busy}>
         <Text>Scan a Tag</Text>
       </TouchableOpacity>
     </View>
@@ -259,13 +256,13 @@ Check the full documentation that contains `examples`, `faq`, and other topics i
 
 <a name="development-example"></a>
 
-For local library development and physical-device NFC testing, use the React Native 0.84 New Architecture example app in [`example/`](./example). See [example/README.md](./example/README.md).
+For local library development and physical-device NFC testing, use the React Native 0.84 New Architecture example app in [`example/`](https://github.com/revtel/react-native-nfc-manager/tree/v4/example). See [example/README.md](https://github.com/revtel/react-native-nfc-manager/blob/v4/example/README.md).
 
 The example Jest suite mocks the native module and verifies application interactions only. It does not verify NFC hardware. Android and iOS compiler builds and physical-device checks are separate release gates.
 
 ### Build (TypeScript)
 
-This project now uses a TypeScript build flow and emits distributable JavaScript to [`dist/`](./dist):
+This project now uses a TypeScript build flow and emits distributable JavaScript to `dist/`:
 
 ```shell
 npm run build
@@ -275,7 +272,7 @@ For package publishing, `prepack` runs the build automatically.
 
 ### Routine CI
 
-Routine CI uses Node.js 22 and runs dependency installation, the TypeScript build, lint, root Jest tests, and type checking. It deliberately does not run Android or iOS builds.
+CI on pull requests and `v4` pushes uses Node.js 22 for build, lint, public type checking, root and example mocked tests, package contents, and the RN 0.76.9 / 0.77.3 / 0.84.0 packed Codegen matrix. Separate Android and iOS jobs compile the RN 0.84 New Architecture example. These are compiler checks, not NFC hardware tests. Packed support-floor and Expo consumer builds remain additional release gates; see [Release Validation](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/RELEASING.md).
 
 ## Nfc Compatibility
 
@@ -295,7 +292,7 @@ Routine CI uses Node.js 22 and runs dependency installation, the TypeScript buil
 | `Iso15693IOS`     | ❌      | ✅   |
 | `FelicaIOS`       | ❌      | ✅   |
 
-This table describes the intended platform API availability. It is not a record of the devices, OS versions, or tag technologies verified for a particular release; see the [Support Policy](./docs/SUPPORT_POLICY.md) for evidence labels and limitations.
+This table describes the intended platform API availability. It is not a record of the devices, OS versions, or tag technologies verified for a particular release; see the [Support Policy](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/SUPPORT_POLICY.md) for evidence labels and limitations.
 
 ## Usage concept
 
@@ -303,13 +300,13 @@ This table describes the intended platform API availability. It is not a record 
 
 In higher level, there're 4 steps to use this library:
 
-0. (Recommended but not necessary) Before all next steps, use `NfcManager.start()` to start listen a tag.
+0. Await `NfcManager.start()` to initialize the native module before requesting a technology. Initialization alone does not start a tag scan.
 
 
 1. Request your particular NFC technologies through `NfcManager.requestTechnology`. Let's request `Ndef` techonogy.
 
 ```javascript
-NfcManager.requestTechnology(NfcTech.Ndef);
+await NfcManager.requestTechnology(NfcTech.Ndef);
 ```
 
 2. Select the proper NFC technology handler, which is implemented as getter in main `NfcManager` object.
@@ -321,13 +318,13 @@ NfcManager.ndefHandler
 3. Call specific methods on the NFC technology handler.
 
 ```javascript
-NfcManager.ndefHandler.getNdefMessage()
+await NfcManager.ndefHandler.getNdefMessage();
 ```
 
 4. Clean up your tech registration through:
 
 ```javascript
-NfcManager.cancelTechnologyRequest()
+await NfcManager.cancelTechnologyRequest();
 ```
 
 
@@ -347,7 +344,7 @@ Android tag results from discovery and `getTag()` may include these optional, di
 
 Byte values are unsigned (0–255). An unsupported or unavailable field is omitted; check for its presence before using it. These values come from Android's cached tag discovery data and do not trigger another NFC command. The new NFC-A and NFC-V fields and `hiLayerResponse` are Android-only; `historicalBytes` can also be reported by iOS ISO 7816 tags. Compiler and mock tests do not establish physical-device behavior, so verify each technology with suitable hardware before relying on it in a release.
 
-The [2026-09-29 device record](docs/V4_RELEASE_VALIDATION_2026-09-29.md) observed NFC-A `atqa: [68, 0]` and `sak: 0` on Samsung SM-N975U1 / Android 12 with NTAG215. NFC-V and ISO-DEP metadata were not verified on hardware in that session.
+The [2026-09-29 device record](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/V4_RELEASE_VALIDATION_2026-09-29.md) observed NFC-A `atqa: [68, 0]` and `sak: 0` on Samsung SM-N975U1 / Android 12 with NTAG215. NFC-V and ISO-DEP metadata were not verified on hardware in that session.
 
 The following table shows the handler for each technology, so if you need to use a technology, go to [index.d.ts](index.d.ts) and search for it.
 
@@ -373,13 +370,13 @@ The following table shows the handler for each technology, so if you need to use
 We have a full featured NFC utility app using this library available for download. The source code is here: [**React Native NFC ReWriter App**](https://github.com/revtel/react-native-nfc-rewriter)
 
 <a href='https://apps.apple.com/tw/app/nfc-rewriter/id1551243964' target='_blank'>
-<img alt="react-native-nfc-rewriter" src="./images/Apple-App-Store-Icon.png" width="250">
+<img alt="react-native-nfc-rewriter" src="https://raw.githubusercontent.com/revtel/react-native-nfc-manager/v4/images/Apple-App-Store-Icon.png" width="250">
 </a>
 
 </br>
 
 <a href='https://play.google.com/store/apps/details?id=com.washow.nfcopenrewriter' target='_blank'>
-<img alt="react-native-nfc-rewriter" src="./images/google-play-icon.jpeg" width="250">
+<img alt="react-native-nfc-rewriter" src="https://raw.githubusercontent.com/revtel/react-native-nfc-manager/v4/images/google-play-icon.jpeg" width="250">
 </a>
 
 ## Learn

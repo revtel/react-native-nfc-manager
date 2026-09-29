@@ -9,7 +9,7 @@ the eventual stable tarball must be recorded separately.
 
 ## Routine validation
 
-Run the Node.js checks from the repository root:
+Install root and example dependencies with `npm ci` and `npm ci --prefix example`. Run all basic checks with `npm run verify`, or the individual Node.js checks below from the repository root:
 
 ```sh
 npm run build
@@ -73,7 +73,7 @@ iOS Pods and unsigned Simulator application:
 )
 ```
 
-These builds remain separate from routine Codegen CI and must be recorded as compiler or simulator evidence, not hardware NFC evidence.
+These builds run as separate routine CI jobs alongside the Node/Codegen job. Record them as compiler or simulator evidence, not hardware NFC evidence.
 
 Before promoting v4 to stable while React Native 0.76 remains the support floor, run the packed-package native consumer gate from the repository root:
 
@@ -122,6 +122,8 @@ Local prebuild and compiler success are not hosted EAS Build evidence and do not
 
 Prepare the source-controlled smoke screen from the current checkout with `npm run prepare:expo:smoke`. The command prints the temporary consumer path and device installation commands. Follow [the Expo smoke test guide](../example-expo/README.md), and record the tarball/version, device/OS, tag, event counts, errors, cancellation, repeated-request, timeout, and background/resume results. This is a separate gate from `verify:expo`; preparing the app alone leaves all hardware rows pending.
 
+The following is a **blank per-candidate checklist**, not a summary of previously completed tests. Copy it into the new candidate record and link the actual evidence. Earlier records retain their original versions and coverage.
+
 | Platform | Device / OS | Tag technology | Required flow | Status |
 |---|---|---|---|---|
 | Android | Record exact device and OS | NDEF | `start()`, support/enabled checks, request, tag read, cancel | Pending |
@@ -133,6 +135,147 @@ Record background/resume behavior and event occurrence counts on both platforms.
 
 When v4 becomes the default stable npm line, update the package's React Native Directory entry to the appropriate New Architecture classification and confirm that Expo Doctor no longer reports the metadata warning. Do not apply a package-wide classification early if it would misrepresent legacy v3 consumers.
 
-## Release operation
+## Release entrypoints
 
-Only after all applicable gates are recorded should the maintainer run the beta release command. Confirm the intended prerelease version and npm `beta` dist-tag before publishing; commit, tag, push, GitHub release creation, and npm publication remain separately reviewable release actions.
+The supported entrypoints all load `.env` through dotenv and require a clean
+working tree on `v4`. They run `npm run verify` before starting release-it.
+Release-it also retains its clean-tree and upstream checks. Stable requires an exact v4 version. Beta accepts an exact version or increments
+the current package.json beta counter when the version is omitted. Both accept `--dry-run`, `--ci`, `--verbose`, `-V`, or `-VV`;
+configuration, channel, branch, and skip-check overrides are rejected.
+
+The commands below are **release operations**, not routine validation. Run them
+only with explicit release authorization and after reviewing the applicable
+candidate gates. Preview commands still run basic checks and may query remote
+services; they do not commit, tag, push, publish, or create a GitHub release.
+
+```sh
+# Preview the next beta in the current series (beta.9 becomes beta.10).
+npm run release:beta -- --dry-run
+# An explicit version starts a new series or keeps a prepared candidate fixed.
+npm run release:beta -- 4.1.0-beta.0 --dry-run
+# Preview the separately prepared stable candidate.
+npm run release:stable -- 4.0.0 --dry-run
+```
+
+`npm run release` is an alias of `release:stable`. Actual publication uses the
+same selected version without `--dry-run`: stable publishes to `latest`, beta to
+`beta`. `--ci` removes interactive prompts; it does not bypass preflight checks.
+Automatic increment applies only when package.json already contains a v4
+`-beta.N` version. After stable (or another prerelease channel), explicitly select
+the new beta series. The selected version is printed and checked against the
+configured npm registry before basic checks. An existing version, lookup failure,
+or malformed response stops the operation; it never silently skips to another
+version. Registry publication remains the final authority if a concurrent release
+occurs after preflight.
+
+Record the exact previewed version and use it explicitly for candidate
+preparation, validation, and publication. Once package.json is bumped to that
+candidate, omitting the version would select its successor. For example, after
+preparing beta.10, use `npm run release:beta -- 4.0.0-beta.10`, not the automatic
+form. Invoke these entrypoints instead
+of calling release-it or npm publish directly, which bypasses wrapper policy.
+
+`prepack` builds only; it is not the full release gate. Native consumer and
+physical-device gates remain explicit checks outside the basic wrapper.
+
+## Changelog ownership
+
+`CHANGELOG.md` is maintained manually. The conventional-changelog plugin drafts
+release notes but has no `infile`, so it does not edit this file. During candidate
+preparation, move the applicable Unreleased entries into the selected version's
+section, retain historical entries, and review the cumulative v3-to-v4 migration
+story rather than only commits since the last beta. Review generated GitHub
+release notes against this text before publication. Keep the main README honest
+about beta availability until npm stable promotion actually occurs.
+
+## Hosted CI and branch protection
+
+The workflow on `v4` runs on pull requests and pushes to `v4`. The v3 `main`
+branch retains its own workflow; this change does not edit that branch. The
+stable check names to require after the first successful hosted run are:
+
+- `Validate`: Node 22, root/example mocked tests, package and Codegen checks.
+- `Android New Architecture`: Ubuntu 24.04, Java 17, SDK/build-tools 36,
+  NDK 27.1.12297006, full RN 0.84 debug application assembly.
+- `iOS New Architecture`: macOS 15, explicitly selected Xcode 26.2,
+  Ruby 3.1.2, Bundler 2.3.7, Pods and unsigned simulator application build.
+
+GitHub's [runner image inventory](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-arm64-Readme.md)
+lists Xcode 26.2; runner contents can change, so a missing toolchain is a failed
+check requiring review, not a reason to silently skip compilation. CI uses
+`ruby/setup-ruby` to select Ruby directly; local commands use rbenv. Both use the
+committed Gemfile.lock. npm downloads, Ruby gems and Gradle dependencies are
+cached; PR Gradle caches are read-only. Native logs are uploaded even on failure.
+The workflow needs only read access to repository contents and no release
+secrets. Fork PRs use `pull_request`, never privileged `pull_request_target`.
+
+A Pod-only fallback is useful for local diagnosis but cannot satisfy the full
+iOS CI check. Local builds and workflow syntax checks do not establish hosted
+success. Apply branch protections only through a separately authorized GitHub
+settings change, with verified check names from an actual run.
+
+## Stable cutover procedure
+
+Preparation of scripts and documentation does not authorize the following
+operations. Keep each candidate and operation reviewable, and record completed
+steps if the process stops midway.
+
+1. **Publish the branch changes for CI, when authorized.** Recheck remote tips,
+   push `v4` without force, collect all three hosted check results, and inspect
+   protection rules and open PR targets. Keep `main` available as the v3 line;
+   do not merge its old architecture code or delete `v4-refactor` as a side effect.
+2. **Prepare the exact candidate, when authorized.** Choose an unpublished beta
+   or stable version. Update package.json and package-lock.json, reviewed
+   changelog, and any affected example Pod lock metadata, then commit only that
+   candidate's changes. Do not announce stable availability before publication.
+   The release configuration permits the already-prepared version
+   (`allowSameVersion`) so publication need not change the version after testing.
+   Do not reuse an already published version. A later fix requires a new version.
+3. **Record final-candidate evidence.** Record commit, version, tarball filename,
+   SHA-256, toolchain versions, commands and outcomes. Run `npm run verify`,
+   `npm run verify:codegen`, both RN 0.84 example builds above,
+   `npm run verify:native:support-floor`, and `npm run verify:expo`. Pack the
+   candidate and verify entrypoints and contents. After any candidate change,
+   identify affected gates and rerun them before promotion. Retain the tarball
+   for comparison with the published package; require matching file content,
+   rather than assuming equal version strings imply equal packages.
+4. **Review hardware evidence separately.** Use the table above and record
+   `start()`, support/enabled checks, request/cancel, NDEF reads, Android NfcA,
+   applicable iOS ISO 15693, configured timeout, repeated requests,
+   background/resume, event occurrence counts, and failed-I/O cleanup/recovery.
+   Compare the candidate with prior tested code and identify required retests.
+   Record device/OS/tag/flow/result and original candidate identity for every
+   reused record. Do not turn malformed-command recovery into timeout evidence,
+   or relabel beta tests as tests of the stable artifact. Unavailable hardware
+   remains unverified; review remaining limitations explicitly before promotion.
+5. **Preview and publish, when authorized.** Confirm npm ownership/authentication
+   and GitHub release access without printing secrets. Run the chosen preview
+   above and review exact version, branch, tag and release notes. After approval
+   for actual release, use the exact validated version explicitly without dry-run (including for beta). Verify the npm
+   version/dist-tags, download and compare the published package with the tested
+   contents, and smoke-install it into a clean supported consumer. Verify the
+   Git tag/commit and GitHub release, not just command exit status.
+6. **Switch the default branch independently, when authorized.** Set GitHub's
+   default to `v4`, verify a fresh clone uses it, and review open PR targets,
+   branch protections and links. No branch rename or merge is required. This
+   operation alone does not change npm `latest`.
+7. **Update public claims.** Once npm latest actually resolves to stable v4,
+   update README installation/status and release links, preserving the `@3`
+   legacy path. Coordinate React Native Directory metadata and repeat Expo
+   Doctor review to verify removal of the known external metadata warning.
+
+Before any future v3 release, configure that line to publish explicitly under
+`legacy` (or another agreed non-latest tag). Do not copy v4's release command to
+main. Existing consumers pinned to v3 remain on their selected version/range.
+Creating a legacy tag or updating the v3 workflow is a separate operation.
+
+## Partial failure and recovery
+
+Stop remaining cutover operations and record which steps succeeded. GitHub's
+default can be restored independently. With explicit authorization, npm latest
+can be pointed to the known prior stable version, but this does not downgrade
+existing installs or remove the published v4 version. Provide explicit version
+pinning and native rebuild instructions for consumers needing a downgrade, or
+publish a new corrective version. Never force-push release history or unpublish
+a version automatically. A changed channel pointer is not evidence that a
+consumer's installed package changed.
