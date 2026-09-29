@@ -47,7 +47,14 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 
 | Expo | React Native | Architecture | Prebuild | Android | iOS | Status |
 |---|---|---|---|---|---|---|
-| 57.0.21 | 0.86.3 | New Architecture | Packed-package plugin output verified | Generated consumer APK compiled | Pods, Codegen, and unsigned Simulator app compiled | Local Development Build integration verified; hardware and hosted EAS unverified |
+| 57.0.21 | 0.86.3 | New Architecture | Packed-package plugin output verified | Generated consumer APK compiled | Pods, Codegen, unsigned Simulator app, and signed device app compiled | Local Development Build integration and recorded basic device smoke flows verified; Expo Doctor gate incomplete; hosted EAS unverified |
+
+The [2026-09-29 physical-device smoke record](./EXPO_SMOKE_2026-09-29.md)
+covers iPhone 15 Plus / iOS 26.6.1 NDEF flows and Samsung SM-N975U1 / Android 12
+NDEF flows plus NTAG215 NfcA reads. It records a local beta.9 working-tree
+candidate, user-reported scan results, and untested flows. Expo Doctor also
+reported that the pinned Expo 57.0.21 differs from the expected ~57.0.25;
+this additional failure leaves the Doctor gate incomplete.
 
 The Expo validator accepts the currently known React Native Directory warning that `react-native-nfc-manager` is not yet marked as New Architecture tested. This is external metadata, not build evidence. The metadata SHALL be updated in coordination with v4 becoming the default stable package so the legacy v3 line is not mislabeled prematurely.
 

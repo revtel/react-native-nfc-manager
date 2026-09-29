@@ -12,6 +12,8 @@ Connect an NFC-capable phone, then run one of the printed `npx expo run:ios --de
 
 The upper log and lower actions scroll independently. With a compatible tag, run:
 
+Android shows an app-managed scan prompt for NDEF reads, NfcA operations, and one-shot tag events. It stays visible through tag I/O and cleanup. Cancel or the Android back button closes the active request/event; the cancellation action is disabled while cleanup is pending. iOS uses its native NFC sheet. Also test manual prompt cancellation followed by a fresh read; the 2.5-second action separately tests automatic cancellation.
+
 1. Start + support checks, then Read NDEF. Record `requestTechnology`, `getTag`, cleanup, and any `discoverTag`/`sessionClosed` lines.
 2. Run Cancel pending NDEF without scanning, then Read NDEF again. Record rejection, cancellation, repeated-request result, and whether any duplicate events occurred.
 3. Run One-shot tag event and scan once. Record discovery and session-close counts; use Stop one-shot event if the session remains active.

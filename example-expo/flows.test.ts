@@ -16,9 +16,17 @@ jest.mock('react-native-nfc-manager', () => ({
 
 import {Platform} from 'react-native';
 import NfcManager from 'react-native-nfc-manager';
-import {cancelPendingNdef, readNdef, readNfcA, startNfc} from './flows';
+import {cancelPendingNdef, errorText, readNdef, readNfcA, startNfc} from './flows';
 
 const manager = NfcManager as jest.Mocked<typeof NfcManager>;
+
+test('identifies NFC error subclasses without a message', () => {
+  class FirstNdefInvalid extends Error {}
+  class Timeout extends Error {}
+  expect(errorText(new FirstNdefInvalid())).toBe('FirstNdefInvalid');
+  expect(errorText(new Timeout())).toBe('Timeout');
+  expect(errorText(new Error('read failed'))).toBe('read failed');
+});
 
 beforeEach(() => {
   jest.resetAllMocks();

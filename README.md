@@ -89,6 +89,8 @@ An EAS Development Build is also a valid deployment path, but a new native build
 
 Repository maintainers can prepare a packed-package [Expo NFC device smoke app](example-expo/README.md) with `npm run prepare:expo:smoke`. Its build checks do not replace physical-device NFC scans.
 
+See the [2026-09-29 Expo physical-device smoke record](docs/EXPO_SMOKE_2026-09-29.md) for tested iPhone/Android flows and remaining validation gaps. The Android smoke app provides a cancellable scan prompt through tag I/O and cleanup.
+
 ### iOS
 
 This library use native-modules, so you will need to do `pod install` for iOS:

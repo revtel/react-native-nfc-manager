@@ -12,6 +12,7 @@
 
 ### Expo Development Build support
 
+- Added an Android scan prompt to the Expo smoke app with shared cancellation and cleanup handling, plus error-subclass logging. Recorded basic iPhone and Android physical-device smoke results, including NTAG215 NfcA reads; remaining validation gaps are listed in the test record.
 - Hardened the packaged Expo config plugin for repeated evaluation, explicit permission opt-out, and current Expo Gradle layouts.
 - Added a pinned packed-package Expo SDK 57 / React Native 0.86 New Architecture consumer validator for prebuild, Expo Doctor, Android, and iOS release gates.
 - Documented Expo Development Builds as the supported Expo path; Expo Go remains unsupported, and local compilation is not presented as hosted EAS or physical-device NFC evidence.
