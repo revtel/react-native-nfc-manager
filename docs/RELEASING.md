@@ -65,7 +65,7 @@ Run the documented physical-device smoke tests before a release candidate whenev
 
 ## Expo stable-promotion gate
 
-The representative Expo consumer uses Expo SDK 57.0.21, React Native 0.86.3, and the New Architecture. It installs the packed candidate rather than the repository checkout.
+The representative Expo consumer uses Expo SDK 57.0.25, React Native 0.86.3, and the New Architecture. It installs the packed candidate rather than the repository checkout.
 
 Run configuration generation without native compilation:
 
