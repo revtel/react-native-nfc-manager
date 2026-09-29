@@ -272,7 +272,7 @@ For package publishing, `prepack` runs the build automatically.
 
 ### Routine CI
 
-CI on pull requests and `v4` pushes uses Node.js 22 for build, lint, public type checking, root and example mocked tests, package contents, and the RN 0.76.9 / 0.77.3 / 0.84.0 packed Codegen matrix. Separate Android and iOS jobs compile the RN 0.84 New Architecture example. These are compiler checks, not NFC hardware tests. Packed support-floor and Expo consumer builds remain additional release gates; see [Release Validation](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/RELEASING.md).
+CI on pull requests and `v4` pushes uses Node.js 22 for build, lint, public type checking, root and example mocked tests, package contents, and the RN 0.76.9 / 0.77.3 / 0.84.0 packed Codegen matrix. Separate Android and iOS jobs compile the RN 0.84 New Architecture example when relevant files change; documentation-only changes skip them. Manual CI runs force both builds for release candidates. These are compiler checks, not NFC hardware tests. Packed support-floor and Expo consumer builds remain additional release gates; see [Release Validation](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/RELEASING.md).
 
 ## Nfc Compatibility
 

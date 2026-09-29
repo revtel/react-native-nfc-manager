@@ -7,6 +7,14 @@ gradle
 gradlew
 gradlew.bat
 
+# Keep the example build reproducible from a clean checkout.
+!example/android/gradlew
+!example/android/gradlew.bat
+!example/android/gradle/
+!example/android/gradle/wrapper/
+!example/android/gradle/wrapper/gradle-wrapper.jar
+!example/android/gradle/wrapper/gradle-wrapper.properties
+
 node_modules
 dist/
 
