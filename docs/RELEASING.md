@@ -45,7 +45,35 @@ cd example
 npm test -- --runInBand
 ```
 
-Before a release, compile the React Native 0.84 New Architecture example for Android and iOS using the commands in `AGENTS.md`. These builds remain separate from routine Codegen CI and must be recorded as compiler or simulator evidence, not hardware NFC evidence.
+Before a release, compile the React Native 0.84 New Architecture example for Android and iOS. Run each block from the repository root, using Node.js 22, Java 17, and Ruby 3.1.2 through rbenv with Bundler 2.3.7.
+
+Android:
+
+```sh
+(
+  cd example/android &&
+  ./gradlew :app:assembleDebug --no-daemon
+)
+```
+
+iOS Pods and unsigned Simulator application:
+
+```sh
+(
+  cd example/ios &&
+  rbenv exec bundle exec pod install &&
+  xcodebuild \
+    -workspace NfcManagerExample.xcworkspace \
+    -scheme NfcManagerExample \
+    -configuration Debug \
+    -sdk iphonesimulator \
+    -destination 'generic/platform=iOS Simulator' \
+    CODE_SIGNING_ALLOWED=NO \
+    build
+)
+```
+
+These builds remain separate from routine Codegen CI and must be recorded as compiler or simulator evidence, not hardware NFC evidence.
 
 Before promoting v4 to stable while React Native 0.76 remains the support floor, run the packed-package native consumer gate from the repository root:
 

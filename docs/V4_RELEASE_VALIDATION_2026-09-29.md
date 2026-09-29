@@ -42,9 +42,26 @@ recovery passed. Stable version preparation remains a separate step.
 | RN 0.76.9 / 0.77.3 / 0.84.0 Codegen, Android and iOS | `npm run verify:codegen` | All three entries passed |
 | RN 0.84 Android New Architecture application | `cd example/android && ./gradlew :app:assembleDebug --no-daemon` | Pass |
 | RN 0.84 iOS Pods | `cd example/ios && rbenv exec bundle exec pod install` | Pass |
-| RN 0.84 iOS Simulator application | AGENTS.md unsigned Simulator `xcodebuild` command | Pass |
+| RN 0.84 iOS Simulator application | Unsigned Simulator build command below | Pass |
 | RN 0.76.9 clean native consumer, Android | Support-floor validator, with the cache-seeding driver described below | Pass; arm64 Debug APK produced |
 | RN 0.76.9 clean native consumer, iOS | Same validator run | Pass; Pods, Codegen, unsigned Simulator app produced |
+
+The RN 0.84 unsigned iOS Simulator build used the following command, shown from
+the repository root:
+
+```sh
+(
+  cd example/ios &&
+  xcodebuild \
+    -workspace NfcManagerExample.xcworkspace \
+    -scheme NfcManagerExample \
+    -configuration Debug \
+    -sdk iphonesimulator \
+    -destination 'generic/platform=iOS Simulator' \
+    CODE_SIGNING_ALLOWED=NO \
+    build
+)
+```
 
 The first Codegen attempt hit a sandbox npm-cache write error during packing.
 The complete successful rerun used an isolated npm cache and dependency-download
