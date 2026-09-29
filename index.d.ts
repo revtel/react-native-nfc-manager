@@ -82,6 +82,16 @@ declare module 'react-native-nfc-manager' {
     isWritable?: boolean;
     /** Android may return null when this capability cannot be determined. */
     canMakeReadOnly?: boolean | null;
+    /** Android NFC-A discovery metadata; bytes are unsigned (0–255). */
+    atqa?: number[];
+    /** Android NFC-A discovery metadata. */
+    sak?: number;
+    /** Android NFC-V discovery metadata; unsigned byte (0–255). */
+    dsfid?: number;
+    /** Android NFC-V discovery metadata; unsigned byte (0–255). */
+    responseFlags?: number;
+    /** Android ISO-DEP discovery metadata; bytes are unsigned (0–255). */
+    hiLayerResponse?: number[];
     /** iOS tag technology name. */
     tech?: string;
     /** iOS FeliCa metadata. */
@@ -89,7 +99,9 @@ declare module 'react-native-nfc-manager' {
     systemCode?: string;
     /** iOS ISO 7816 metadata. */
     initialSelectedAID?: string;
+    /** iOS ISO 7816 or Android ISO-DEP discovery metadata. */
     historicalBytes?: number[];
+    /** iOS ISO 7816 metadata. */
     applicationData?: number[];
     /** iOS ISO 15693 metadata. */
     icManufacturerCode?: number;

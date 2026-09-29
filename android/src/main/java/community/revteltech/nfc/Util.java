@@ -5,7 +5,10 @@ import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.Tag;
+import android.nfc.tech.IsoDep;
 import android.nfc.tech.Ndef;
+import android.nfc.tech.NfcA;
+import android.nfc.tech.NfcV;
 import android.os.Build;
 import android.util.Log;
 
@@ -163,8 +166,7 @@ public class Util {
                 Tag tag = ndef.getTag();
                 // tag is going to be null for NDEF_FORMATABLE until NfcUtil.parseMessage is refactored
                 if (tag != null) {
-                    json.put("id", bytesToHex(tag.getId()));
-                    json.put("techTypes", new JSONArray(Arrays.asList(tag.getTechList())));
+                    json = tagToJSON(tag);
                 }
 
                 json.put("type", translateType(ndef.getType()));
@@ -199,8 +201,78 @@ public class Util {
             } catch (JSONException e) {
                 Log.e(TAG, "Failed to convert tag into json: " + tag, e);
             }
+
+            addCachedTechnologyMetadata(json, tag);
         }
         return json;
+    }
+
+    private static void addCachedTechnologyMetadata(JSONObject json, Tag tag) {
+        NfcA nfcA = null;
+        try {
+            nfcA = NfcA.get(tag);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "Failed to obtain cached NFC-A metadata", e);
+        }
+        if (nfcA != null) {
+            try {
+                byte[] atqa = nfcA.getAtqa();
+                if (atqa != null) {
+                    json.put("atqa", byteArrayToJSON(atqa));
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to read cached NFC-A ATQA", e);
+            }
+            try {
+                json.put("sak", nfcA.getSak() & 0xFFFF);
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to read cached NFC-A SAK", e);
+            }
+        }
+
+        NfcV nfcV = null;
+        try {
+            nfcV = NfcV.get(tag);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "Failed to obtain cached NFC-V metadata", e);
+        }
+        if (nfcV != null) {
+            try {
+                json.put("dsfid", nfcV.getDsfId() & 0xFF);
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to read cached NFC-V DSFID", e);
+            }
+            try {
+                json.put("responseFlags", nfcV.getResponseFlags() & 0xFF);
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to read cached NFC-V response flags", e);
+            }
+        }
+
+        IsoDep isoDep = null;
+        try {
+            isoDep = IsoDep.get(tag);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "Failed to obtain cached ISO-DEP metadata", e);
+        }
+        if (isoDep != null) {
+            try {
+                byte[] historicalBytes = isoDep.getHistoricalBytes();
+                if (historicalBytes != null) {
+                    json.put("historicalBytes", byteArrayToJSON(historicalBytes));
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to read cached ISO-DEP historical bytes", e);
+            }
+            try {
+                byte[] hiLayerResponse = isoDep.getHiLayerResponse();
+                if (hiLayerResponse != null) {
+                    json.put("hiLayerResponse", byteArrayToJSON(hiLayerResponse));
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to read cached ISO-DEP higher-layer response", e);
+            }
+        }
     }
 
     static WritableMap tagToReact(Tag tag) {

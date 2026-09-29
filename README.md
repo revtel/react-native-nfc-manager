@@ -333,6 +333,18 @@ NfcManager.cancelTechnologyRequest()
 
 <a name="api"></a>
 
+### Android cached tag metadata
+
+Android tag results from discovery and `getTag()` may include these optional, discovery-time fields when the tag supports the corresponding technology:
+
+| Technology | Fields |
+| --- | --- |
+| NFC-A | `atqa: number[]`, `sak: number` |
+| NFC-V | `dsfid: number`, `responseFlags: number` |
+| ISO-DEP | `historicalBytes: number[]`, `hiLayerResponse: number[]` |
+
+Byte values are unsigned (0–255). An unsupported or unavailable field is omitted; check for its presence before using it. These values come from Android's cached tag discovery data and do not trigger another NFC command. The new NFC-A and NFC-V fields and `hiLayerResponse` are Android-only; `historicalBytes` can also be reported by iOS ISO 7816 tags. Compiler and mock tests do not establish physical-device behavior, so verify each technology with suitable hardware before relying on it in a release.
+
 The following table shows the handler for each technology, so if you need to use a technology, go to [index.d.ts](index.d.ts) and search for it.
 
 |NFC Technologies   | Handlers |

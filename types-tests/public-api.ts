@@ -44,6 +44,11 @@ async function smoke() {
     const records = evt.ndefMessage ?? [];
     const writable: boolean | undefined = evt.isWritable;
     const canMakeReadOnly: boolean | null | undefined = evt.canMakeReadOnly;
+    const atqa: number[] | undefined = evt.atqa;
+    const sak: number | undefined = evt.sak;
+    const dsfid: number | undefined = evt.dsfid;
+    const responseFlags: number | undefined = evt.responseFlags;
+    const hiLayerResponse: number[] | undefined = evt.hiLayerResponse;
     const tech: string | undefined = evt.tech;
     const idm: string | undefined = evt.idm;
     const systemCode: string | undefined = evt.systemCode;
@@ -56,6 +61,11 @@ async function smoke() {
     void records;
     void writable;
     void canMakeReadOnly;
+    void atqa;
+    void sak;
+    void dsfid;
+    void responseFlags;
+    void hiLayerResponse;
     void tech;
     void idm;
     void systemCode;
@@ -69,6 +79,14 @@ async function smoke() {
   const tagWithoutNdef: TagEvent = {id: '01234567', techTypes: ['NfcV']};
   const tagWithNdef: TagEvent = {ndefMessage: []};
   const tagWithUnknownReadOnlyCapability: TagEvent = {canMakeReadOnly: null};
+  const androidCachedMetadata: TagEvent = {
+    atqa: [0x44, 0x00],
+    sak: 0x00,
+    dsfid: 0xff,
+    responseFlags: 0x80,
+    historicalBytes: [0x80],
+    hiLayerResponse: [0xff],
+  };
   const androidRecord: NdefRecord = {id: '01', tnf: 1, type: [0x54], payload: []};
   const iosRecord: NdefRecord = {id: [0x01], tnf: 1, type: [0x54], payload: []};
   const ndefRecords = tagWithoutNdef.ndefMessage ?? [];
@@ -76,6 +94,7 @@ async function smoke() {
   tagWithoutNdef.ndefMessage.map((record) => record.payload);
   void tagWithNdef;
   void tagWithUnknownReadOnlyCapability;
+  void androidCachedMetadata;
   void androidRecord;
   void iosRecord;
   void ndefRecords;

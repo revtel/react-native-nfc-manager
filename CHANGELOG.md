@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Android tag metadata
+
+- Added optional cached NFC-A (`atqa`, `sak`), NFC-V (`dsfid`, `responseFlags`), and ISO-DEP (`historicalBytes`, `hiLayerResponse`) fields to Android tag results. These are discovery-time values; reading them does not start another NFC exchange. Physical-device verification remains a release gate.
+
 ### TypeScript tag results
 
 - Corrected `TagEvent.ndefMessage` to be optional: native `getTag()` and discovery results can omit it. TypeScript consumers that iterate records should use `tag.ndefMessage ?? []` or check for its presence. This is a TypeScript source-compatibility change; JavaScript and native payloads are unchanged.
