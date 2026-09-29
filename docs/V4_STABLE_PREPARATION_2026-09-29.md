@@ -1,5 +1,11 @@
 # v4 stable preparation — 2026-09-29
 
+This report records the original local preparation phase. Commits, pushes and
+hosted CI repair were subsequently authorized; see
+[CI verification](./CI_VERIFICATION.md) and its linked PR checks for that
+follow-up. Statements below about uncommitted source or missing hosted evidence
+describe the original phase, not the later PR state.
+
 This is local preparation evidence, not a stable release announcement or final
 4.0.0 tarball validation. The source is the uncommitted preparation changes on
 `v4`, based on `a710c6c`; package version remains `4.0.0-beta.9`. No commit,
