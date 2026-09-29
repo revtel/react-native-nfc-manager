@@ -73,7 +73,7 @@ iOS Pods and unsigned Simulator application:
 )
 ```
 
-These builds run as separate routine CI jobs alongside the Node/Codegen job. Record them as compiler or simulator evidence, not hardware NFC evidence.
+These builds run as separate CI jobs for relevant changes alongside the always-running Node/Codegen job. Manual candidate validation forces both platforms. Record them as compiler or simulator evidence, not hardware NFC evidence.
 
 Before promoting v4 to stable while React Native 0.76 remains the support floor, run the packed-package native consumer gate from the repository root:
 
@@ -192,11 +192,17 @@ about beta availability until npm stable promotion actually occurs.
 
 The workflow on `v4` runs on pull requests and pushes to `v4`. The v3 `main`
 branch retains its own workflow; this change does not edit that branch. The
-stable check names to require after the first successful hosted run are:
+stable check names to require after successful hosted verification are `Validate` and
+`Native build gate`. The gate requires every selected native build to succeed,
+fails on selection errors or cancelled/failed selected jobs, and succeeds when
+no native build is needed. Do not use workflow-level path filters that leave
+required checks pending. The jobs are:
 
 - `Validate`: Node 22, root/example mocked tests, package and Codegen checks.
 - `Android New Architecture`: Ubuntu 24.04, Java 17, SDK/build-tools 36,
   NDK 27.1.12297006, full RN 0.84 debug application assembly.
+- `Native build gate`: always reports the selected builds' outcomes, including
+  explicit skips for irrelevant changes.
 - `iOS New Architecture`: macOS 15, explicitly selected Xcode 26.2,
   Ruby 3.1.2, Bundler 2.3.7, Pods and unsigned simulator application build.
 
@@ -205,7 +211,7 @@ lists Xcode 26.2; runner contents can change, so a missing toolchain is a failed
 check requiring review, not a reason to silently skip compilation. CI uses
 `ruby/setup-ruby` to select Ruby directly; local commands use rbenv. Both use the
 committed Gemfile.lock. npm downloads, Ruby gems and Gradle dependencies are
-cached; PR Gradle caches are read-only. Native logs are uploaded even on failure.
+cached; PR Gradle caches are read-only. Native logs are uploaded even on failure and retained for seven days.
 The workflow needs only read access to repository contents and no release
 secrets. Fork PRs use `pull_request`, never privileged `pull_request_target`.
 
@@ -221,7 +227,7 @@ operations. Keep each candidate and operation reviewable, and record completed
 steps if the process stops midway.
 
 1. **Publish the branch changes for CI, when authorized.** Recheck remote tips,
-   push `v4` without force, collect all three hosted check results, and inspect
+   push `v4` without force, collect Validate, platform build, and Native build gate results, and inspect
    protection rules and open PR targets. Keep `main` available as the v3 line;
    do not merge its old architecture code or delete `v4-refactor` as a side effect.
 2. **Prepare the exact candidate, when authorized.** Choose an unpublished beta
@@ -279,3 +285,28 @@ pinning and native rebuild instructions for consumers needing a downgrade, or
 publish a new corrective version. Never force-push release history or unpublish
 a version automatically. A changed channel pointer is not evidence that a
 consumer's installed package changed.
+
+## Native CI selection and verification
+
+Basic validation runs for every PR and v4 push. Native selection compares the
+entire PR against its merge base, or the before/after range of a push. Deletions
+and both sides of renames count. Markdown, docs/, images/, and openspec/ changes
+alone do not require native builds. android/ and example/android/ select Android;
+ios/, example/ios/, podspecs, and example/Gemfile or Gemfile.lock select iOS.
+Shared source, Codegen, dependencies, workflow changes and unclassified files
+select both. Missing history or an unreadable diff also selects both.
+
+The whole PR diff matters: adding a docs-only commit to a PR that still contains
+native changes does not skip its native builds. To verify skip behavior, use a
+PR whose entire diff is documentation-only (for example a follow-up PR based on
+the already-verified CI repair branch), and check that Validate passes, both
+platform jobs are skipped, and Native build gate succeeds.
+
+`workflow_dispatch` forces both native builds regardless of changed files. Once
+this workflow is available on the GitHub default branch, use Actions → CI → Run
+workflow and select the exact candidate branch/ref, or `gh workflow run ci.yml
+--ref <candidate-ref>`. While main remains the default without this manual
+trigger, use a candidate PR with relevant changes or wait for the authorized
+default-branch switch. Do not count a docs-only green gate as final-candidate
+native verification; release requires successful Android and iOS jobs for the
+candidate, not skipped jobs. The manual trigger never publishes the package.

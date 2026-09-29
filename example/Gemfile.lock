@@ -101,6 +101,7 @@ GEM
       rexml (>= 3.3.6, < 4.0)
 
 PLATFORMS
+  arm64-darwin-22
   arm64-darwin-23
 
 DEPENDENCIES

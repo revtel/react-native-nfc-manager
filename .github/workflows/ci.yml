@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -14,6 +15,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Select native builds
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      android: ${{ steps.select.outputs.android }}
+      ios: ${{ steps.select.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: select
+        run: node scripts/select-native-ci.js
+
   validate:
     name: Validate
     runs-on: ubuntu-24.04
@@ -37,6 +55,8 @@ jobs:
         run: npm run verify:codegen
 
   android:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
     name: Android New Architecture
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -54,6 +74,9 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - name: Install pinned Android components
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;27.1.12297006' 'cmake;3.22.1'
       - uses: gradle/actions/setup-gradle@v4
@@ -76,8 +99,11 @@ jobs:
           name: android-build-log
           path: ${{ runner.temp }}/nfc-android.log
           if-no-files-found: ignore
+          retention-days: 7
 
   ios:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
     name: iOS New Architecture
     runs-on: macos-15
     timeout-minutes: 60
@@ -133,3 +159,31 @@ jobs:
             ${{ runner.temp }}/nfc-pods.log
             ${{ runner.temp }}/nfc-ios.log
           if-no-files-found: ignore
+          retention-days: 7
+
+  native-gate:
+    name: Native build gate
+    needs: [changes, android, ios]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require selected builds to succeed
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          node <<'NODE'
+          const needs = JSON.parse(process.env.NEEDS_JSON);
+          if (needs.changes.result !== 'success') {
+            throw new Error('Native build selection did not succeed');
+          }
+          for (const platform of ['android', 'ios']) {
+            const selected = needs.changes.outputs[platform];
+            const actual = needs[platform].result;
+            const expected = selected === 'true' ? 'success' : 'skipped';
+            if (!['true', 'false'].includes(selected) || actual !== expected) {
+              throw new Error(`${platform}: selected=${selected}, result=${actual}`);
+            }
+            console.log(`${platform}: ${actual}${selected === 'false' ? ' (no relevant changes; not compiled)' : ''}`);
+          }
+          NODE
