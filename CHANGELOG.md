@@ -2,7 +2,7 @@
 
 ### Android tag metadata
 
-- Added optional cached NFC-A (`atqa`, `sak`), NFC-V (`dsfid`, `responseFlags`), and ISO-DEP (`historicalBytes`, `hiLayerResponse`) fields to Android tag results. These are discovery-time values; reading them does not start another NFC exchange. Physical-device verification remains a release gate.
+- Added optional cached NFC-A (`atqa`, `sak`), NFC-V (`dsfid`, `responseFlags`), and ISO-DEP (`historicalBytes`, `hiLayerResponse`) fields to Android tag results. These are discovery-time values; reading them does not start another NFC exchange. NFC-A fields were observed on Android 12 with NTAG215; NFC-V and ISO-DEP metadata remain unverified on hardware.
 
 ### TypeScript tag results
 

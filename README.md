@@ -347,6 +347,8 @@ Android tag results from discovery and `getTag()` may include these optional, di
 
 Byte values are unsigned (0–255). An unsupported or unavailable field is omitted; check for its presence before using it. These values come from Android's cached tag discovery data and do not trigger another NFC command. The new NFC-A and NFC-V fields and `hiLayerResponse` are Android-only; `historicalBytes` can also be reported by iOS ISO 7816 tags. Compiler and mock tests do not establish physical-device behavior, so verify each technology with suitable hardware before relying on it in a release.
 
+The [2026-09-29 device record](docs/V4_RELEASE_VALIDATION_2026-09-29.md) observed NFC-A `atqa: [68, 0]` and `sak: 0` on Samsung SM-N975U1 / Android 12 with NTAG215. NFC-V and ISO-DEP metadata were not verified on hardware in that session.
+
 The following table shows the handler for each technology, so if you need to use a technology, go to [index.d.ts](index.d.ts) and search for it.
 
 |NFC Technologies   | Handlers |

@@ -2,6 +2,11 @@
 
 This checklist separates package, Codegen, native compiler, simulator, and physical-device evidence. Passing a lower layer does not establish a higher one.
 
+The [2026-09-29 beta.9 validation checkpoint](./V4_RELEASE_VALIDATION_2026-09-29.md)
+records the current package checks, Codegen matrix, RN 0.76/0.84 compiler checks,
+linked Expo device evidence, and remaining stable-promotion work. Validation of
+the eventual stable tarball must be recorded separately.
+
 ## Routine validation
 
 Run the Node.js checks from the repository root:

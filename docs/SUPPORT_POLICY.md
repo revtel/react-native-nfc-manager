@@ -72,6 +72,13 @@ RN 0.76.9 native-build evidence is produced by the release-only support-floor va
 
 Compiler and simulator evidence does not establish physical-device NFC behavior. No Android or iOS device, OS, or tag technology is considered verified until a release record names it and records the tested flow and outcome.
 
+The [2026-09-29 beta.9 validation checkpoint](./V4_RELEASE_VALIDATION_2026-09-29.md)
+also records successful RN 0.76/0.84 compiler checks and RN 0.84 Android
+malformed-NfcA-command rejection, cleanup, and subsequent NDEF read recovery on
+Samsung SM-N975U1 / Android 12 / NTAG215. Cached NFC-A `atqa` and `sak` were
+observed in the recovery payload. Other technology metadata and specifically
+configured transceive timeouts were not verified by that test.
+
 ## Release Quality Gates
 
 For each release candidate:
