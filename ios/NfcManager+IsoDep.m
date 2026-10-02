@@ -28,6 +28,7 @@ RCT_EXPORT_METHOD(sendCommandAPDUBytes:(NSArray *)bytes callback: (nonnull RCTRe
                     return;
                 } else {
                     callback(@[@"not an iso7816 tag", [NSNull null]]);
+                    return;
                 }
             }
             callback(@[@"Not connected", [NSNull null]]);
@@ -69,6 +70,7 @@ RCT_EXPORT_METHOD(sendCommandAPDU:(NSDictionary *)apduData callback: (nonnull RC
                     return;
                 } else {
                     callback(@[@"not an iso7816 tag", [NSNull null]]);
+                    return;
                 }
             }
             callback(@[@"Not connected", [NSNull null]]);

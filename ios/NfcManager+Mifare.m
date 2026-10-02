@@ -29,6 +29,7 @@ RCT_EXPORT_METHOD(sendMifareCommand:(NSArray *)bytes callback: (nonnull RCTRespo
                     return;
                 } else {
                     callback(@[@"not a mifare tag", [NSNull null]]);
+                    return;
                 }
             }
             callback(@[@"Not connected", [NSNull null]]);

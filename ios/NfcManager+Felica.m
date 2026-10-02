@@ -29,6 +29,7 @@ RCT_EXPORT_METHOD(sendFelicaCommand:(NSArray *)bytes callback: (nonnull RCTRespo
                     return;
                 } else {
                     callback(@[@"not a felica tag", [NSNull null]]);
+                    return;
                 }
             }
             callback(@[@"Not connected", [NSNull null]]);
