@@ -1,3 +1,10 @@
+## Unreleased
+
+### Fixed
+
+- Prevent duplicate iOS error callbacks when MIFARE, FeliCa, or ISO7816 command methods receive a mismatched tag type.
+- Accept Buffer and Uint8Array inputs in `Ndef.decodeMessage()`, including subarrays, without modifying input data. DataView and non-byte typed arrays are unsupported. Align the public TypeScript declaration with the supported inputs.
+
 ## [3.0.2](https://github.com/whitedogg13/react-native-nfc-manager/compare/v3.0.1...v3.0.2) (2021-02-22)
 
 

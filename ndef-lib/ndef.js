@@ -126,15 +126,14 @@ function decodeNdefMessage(ndefBytes) {
 
   // ndefBytes can be an array of bytes e.g. [0x03, 0x31, 0xd1] or a Buffer
   let bytes;
-  if (Array.isArray(ndefBytes) || ArrayBuffer.isView(ndefBytes)) {
+  if (Array.isArray(ndefBytes) || ndefBytes instanceof Uint8Array) {
     bytes = Array.from(ndefBytes);
   } else {
     throw new Error(
-      'ndef.decodeMessage requires a Buffer or an Array of bytes',
+      'ndef.decodeMessage requires a Buffer, Uint8Array, or an Array of bytes',
     );
   }
 
-  bytes = bytes.slice(0); // clone since parsing is destructive
   let ndef_message = [],
     tnf_byte,
     header,
