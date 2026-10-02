@@ -126,8 +126,8 @@ function decodeNdefMessage(ndefBytes) {
 
   // ndefBytes can be an array of bytes e.g. [0x03, 0x31, 0xd1] or a Buffer
   let bytes;
-  if (ndefBytes instanceof Array) {
-    bytes = ndefBytes.slice(0);
+  if (Array.isArray(ndefBytes) || ArrayBuffer.isView(ndefBytes)) {
+    bytes = Array.from(ndefBytes);
   } else {
     throw new Error(
       'ndef.decodeMessage requires a Buffer or an Array of bytes',
