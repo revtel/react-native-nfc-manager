@@ -128,6 +128,21 @@ test('build and parse text', () => {
   expect(ndef.text.decodePayload(message[0].payload)).toEqual(text);
 });
 
+test('build and parse text outside the basic multilingual plane', () => {
+  const text = 'hello \u{1f44b}';
+  let message = [ndef.textRecord(text)];
+
+  let encoded = ndef.encodeMessage(message);
+  let decodedMessage = ndef.decodeMessage(encoded);
+
+  expect(ndef.text.decodePayload(decodedMessage[0].payload)).toEqual(text);
+});
+
+test('reject utf-8 sequences that decode above the unicode maximum', () => {
+  // 0xf7 0xbf 0xbf 0xbf decodes to U+1FFFFF, which is not a valid code point
+  expect(ndef.util.bytesToString([0xf7, 0xbf, 0xbf, 0xbf])).toBeNull();
+});
+
 test('build and parse uri', () => {
   let message = [ndef.uriRecord('http://nodejs.org')];
 
