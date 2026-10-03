@@ -415,6 +415,7 @@ RCT_EXPORT_METHOD(getTag: (nonnull RCTResponseSenderBlock)callback)
             }
         } else {
             callback(@[@"No session available", [NSNull null]]);
+            return;
         }
         
         if (ndefTag) {
