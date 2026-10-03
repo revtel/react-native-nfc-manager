@@ -1,4 +1,4 @@
-## Unreleased
+## [3.17.3](https://github.com/revtel/react-native-nfc-manager/compare/v3.17.2...v3.17.3) (2026-10-03)
 
 ### Fixed
 
