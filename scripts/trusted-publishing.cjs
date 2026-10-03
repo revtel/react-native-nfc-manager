@@ -141,6 +141,20 @@ async function prepare(input, root, bundle) {
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Candidate\n\n- Branch: ${input.branch}\n- Version: ${input.version}\n- Commit: ${input.sha}\n- npm tag: ${selected.distTag}\n- Integrity: ${metadata.integrity}\n- Requested publication: ${process.env.PUBLISH === 'true'}\n`);
 }
 
+async function verifyPublication(input, metadata, lookup = request, pause = ms => new Promise(resolve => setTimeout(resolve, ms))) {
+  // npm accepts the upload before the version and dist-tag become readable.
+  for (let attempt = 0; attempt < 18; attempt++) {
+    const published = await lookup(`${registry}/${packageName}/${input.version}`, {}, true);
+    if (published) {
+      assert.equal(published.dist.integrity, metadata.integrity, 'Published package differs from the verified candidate');
+      const tags = await lookup(`${registry}/-/package/${packageName}/dist-tags`, {}, true);
+      if (tags?.[metadata.distTag] === input.version) return;
+    }
+    if (attempt < 17) await pause(10000);
+  }
+  throw new Error('npm publication is still processing; inspect the registry and rerun the failed job once available');
+}
+
 async function publish(input, bundle, execute = run) {
   assert.equal(process.env.PUBLISH, 'true', 'Publication was not requested');
   assert(process.env.ACTIONS_ID_TOKEN_REQUEST_URL && process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN, 'Publication requires GitHub Actions OIDC');
@@ -159,10 +173,7 @@ async function publish(input, bundle, execute = run) {
   } else {
     execute('npm', ['publish', tarballPath, '--ignore-scripts', '--tag', metadata.distTag, '--access', 'public', '--registry', registry], bundle);
   }
-  const published = await request(versionUrl);
-  assert.equal(published.dist.integrity, metadata.integrity, 'Published package differs from the verified candidate');
-  const tags = await request(`${registry}/-/package/${packageName}/dist-tags`);
-  assert.equal(tags[metadata.distTag], input.version, 'npm dist-tag did not select the candidate; inspect before recovery');
+  await verifyPublication(input, metadata);
   if (!tag) await github('git/refs', {method: 'POST', body: JSON.stringify({ref: `refs/tags/v${input.version}`, sha: input.sha})});
   const release = await github(`releases/tags/v${input.version}`, {}, true);
   if (!release) {
@@ -187,4 +198,4 @@ async function main() {
 }
 
 if (require.main === module) main().catch(error => {console.error(error.message); process.exitCode = 1;});
-module.exports = {candidate, validateCi, digest, validateBundle, request, publish, changelogStart};
+module.exports = {candidate, validateCi, digest, validateBundle, request, publish, changelogStart, verifyPublication};

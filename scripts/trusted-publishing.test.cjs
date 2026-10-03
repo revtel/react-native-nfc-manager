@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const {candidate, validateCi, digest, validateBundle, request, publish, changelogStart} = require('./trusted-publishing.cjs');
+const {candidate, validateCi, digest, validateBundle, request, publish, changelogStart, verifyPublication} = require('./trusted-publishing.cjs');
 const sha = 'a'.repeat(40);
 const input = {branch: 'main', version: '3.17.3', sha};
 const manifest = {name: 'react-native-nfc-manager', version: input.version, repository: {url: 'https://github.com/revtel/react-native-nfc-manager.git'}};
@@ -148,4 +148,26 @@ test('changelog accepts linked and plain exact version headings', () => {
   }
   assert.equal(changelogStart('## [3.17.30](https://example.com)\n', '3.17.3'), -1);
   assert.equal(changelogStart('## Unreleased\n', '3.17.3'), -1);
+});
+
+
+test('publication verification waits for npm indexing and the expected dist-tag', async () => {
+  const metadata = {integrity: 'sha512-expected', distTag: 'latest'};
+  let reads = 0;
+  let waits = 0;
+  const lookup = async url => {
+    if (url.endsWith('/dist-tags')) return {latest: reads < 3 ? '3.17.2' : input.version};
+    reads++;
+    return reads === 1 ? null : {dist: {integrity: metadata.integrity}};
+  };
+  await verifyPublication(input, metadata, lookup, async ms => { assert.equal(ms, 10000); waits++; });
+  assert.equal(reads, 3);
+  assert.equal(waits, 2);
+  await assert.rejects(verifyPublication(input, metadata, async () => ({dist: {integrity: 'different'}})), /differs/);
+});
+
+test('publication verification stops after a bounded wait', async () => {
+  let waits = 0;
+  await assert.rejects(verifyPublication(input, {integrity: 'expected', distTag: 'latest'}, async () => null, async () => { waits++; }), /still processing/);
+  assert.equal(waits, 17);
 });
