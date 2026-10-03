@@ -1,6 +1,8 @@
-## Unreleased
+## [4.0.0-beta.10](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.9...v4.0.0-beta.10) (2026-10-03)
 
 ### Release preparation
+
+- Added GitHub Actions publishing through npm Trusted Publisher with exact-commit validation, complete Android/iOS CI gates, verified package artifacts, and provenance.
 
 - Hardened v4 release entrypoints with automatic next-beta selection within the current series, explicit stable/new-series versions, unpublished-version checks, safe option forwarding, branch checks, and basic quality gates before publication.
 - Added separate RN 0.84 Android/iOS CI build jobs and example mocked tests; hosted execution is recorded separately from local validation.

@@ -1,6 +1,6 @@
 {
   "name": "react-native-nfc-manager",
-  "version": "4.0.0-beta.9",
+  "version": "4.0.0-beta.10",
   "description": "A NFC module for react native.",
   "main": "dist/src/index.js",
   "types": "index.d.ts",
@@ -104,7 +104,8 @@
     "release:beta": "dotenv -- node scripts/release.js beta",
     "test:example": "npm --prefix example test -- --runInBand --no-watchman",
     "verify": "npm run build && npm run lint && npm run typecheck && npm test -- --runInBand --no-watchman && npm run test:example && node scripts/verify-package-contents.js",
-    "release:stable": "dotenv -- node scripts/release.js stable"
+    "release:stable": "dotenv -- node scripts/release.js stable",
+    "test:publishing": "node --test scripts/trusted-publishing.test.cjs"
   },
   "codegenConfig": {
     "name": "NativeNfcManagerSpec",
