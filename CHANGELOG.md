@@ -4,6 +4,7 @@
 
 - Preserve emoji and other supplementary Unicode characters when decoding NDEF text and URI records; reject decoded values above the Unicode maximum. Fixes #851 via #852.
 - Keep the repository Babel configuration out of the published package so consumer Babel setups do not inherit it. Integrates #835.
+- Exclude local Android build outputs and machine-specific configuration from published packages.
 
 ### Maintenance
 
