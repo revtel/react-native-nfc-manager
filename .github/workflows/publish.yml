@@ -1,0 +1,136 @@
+name: Publish npm package
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Prepared candidate branch (v4 stable uses the separate cutover process)
+        type: choice
+        options: [main, v4]
+        default: main
+        required: true
+      version:
+        description: Exact version already committed in package.json and CHANGELOG.md
+        type: string
+        required: true
+      commit:
+        description: Complete 40-character SHA of the candidate branch tip
+        type: string
+        required: true
+      publish:
+        description: Publish to npm and create the GitHub tag/release (false only validates)
+        type: boolean
+        default: false
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-react-native-nfc-manager-release
+  cancel-in-progress: false
+
+env:
+  CANDIDATE_BRANCH: ${{ inputs.branch }}
+  CANDIDATE_VERSION: ${{ inputs.version }}
+  CANDIDATE_SHA: ${{ inputs.commit }}
+  PUBLISH: ${{ inputs.publish }}
+  BUNDLE_DIR: ${{ github.workspace }}/release-bundle
+
+jobs:
+  validate:
+    if: github.repository == 'revtel/react-native-nfc-manager' && github.ref == format('refs/heads/{0}', inputs.branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Check out publishing controller
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          persist-credentials: false
+      - name: Validate input before checking out candidate
+        env:
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          node - <<'NODE'
+          const {candidate} = require('./controller/scripts/trusted-publishing.cjs');
+          const input = {branch: process.env.CANDIDATE_BRANCH, version: process.env.CANDIDATE_VERSION, sha: process.env.CANDIDATE_SHA};
+          candidate(input, {name: 'react-native-nfc-manager', version: input.version, repository: {url: 'https://github.com/revtel/react-native-nfc-manager.git'}});
+          require('node:assert/strict').equal(input.sha, process.env.WORKFLOW_SHA, 'Dispatch from the exact candidate commit for provenance');
+          NODE
+      - name: Check out exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit }}
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+      - name: Install pinned OIDC-capable npm
+        run: npm install --global npm@11.21.0
+      - name: Controller regression tests
+        run: node --test controller/scripts/trusted-publishing.test.cjs
+      - name: Install candidate dependencies
+        working-directory: candidate
+        run: npm ci
+      - name: Validate v3 candidate
+        if: inputs.branch == 'main'
+        working-directory: candidate
+        run: |
+          npm run lint
+          npm run typecheck
+          npm test -- --runInBand --no-watchman
+      - name: Validate v4 candidate
+        if: inputs.branch == 'v4'
+        working-directory: candidate
+        run: |
+          npm ci --prefix example
+          npm run verify
+          npm run verify:codegen
+      - name: Pack, check exact branch/CI, and preview npm publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_DIR: ${{ github.workspace }}/candidate
+        run: node controller/scripts/trusted-publishing.cjs prepare
+      - name: Retain the verified candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate
+          path: release-bundle/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: validate
+    if: inputs.publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: npm-publish
+    permissions:
+      contents: write
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+      - name: Install pinned OIDC-capable npm
+        run: npm install --global npm@11.21.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-candidate
+          path: release-bundle
+      - name: Publish the verified artifact with OIDC and finish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node controller/scripts/trusted-publishing.cjs publish
