@@ -1,3 +1,9 @@
+## [3.17.4](https://github.com/revtel/react-native-nfc-manager/compare/v3.17.3...v3.17.4) (2026-10-03)
+
+### Fixed
+
+- Return after the iOS `getTag()` error callback when no NFC session is available, preventing a second callback and possible New Architecture app termination. Fixes #833 via #836.
+
 ## [3.17.3](https://github.com/revtel/react-native-nfc-manager/compare/v3.17.2...v3.17.3) (2026-10-03)
 
 ### Fixed
