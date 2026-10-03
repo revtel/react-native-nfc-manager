@@ -141,7 +141,7 @@ function encodeNdefMessage(ndefRecords: NdefRecord[]): ByteArray {
   return encoded;
 }
 
-function decodeNdefMessage(ndefBytes: ByteArray): NdefRecord[] {
+function decodeNdefMessage(ndefBytes: ByteArray | Uint8Array): NdefRecord[] {
   const decodeTnf = (tnf_byte: number): TnfHeader => ({
     mb: (tnf_byte & 0x80) !== 0,
     me: (tnf_byte & 0x40) !== 0,
@@ -151,17 +151,16 @@ function decodeNdefMessage(ndefBytes: ByteArray): NdefRecord[] {
     tnf: tnf_byte & 0x7,
   });
 
-  // ndefBytes can be an array of bytes e.g. [0x03, 0x31, 0xd1] or a Buffer
+  // Buffer extends Uint8Array; copy only the supplied view before parsing.
   let bytes: ByteArray;
-  if (ndefBytes instanceof Array) {
-    bytes = ndefBytes.slice(0);
+  if (Array.isArray(ndefBytes) || ndefBytes instanceof Uint8Array) {
+    bytes = Array.from(ndefBytes);
   } else {
     throw new Error(
-      'ndef.decodeMessage requires a Buffer or an Array of bytes',
+      'ndef.decodeMessage requires a Buffer, Uint8Array, or an Array of bytes',
     );
   }
 
-  bytes = bytes.slice(0); // clone since parsing is destructive
   let ndef_message: NdefRecord[] = [],
     tnf_byte,
     header,

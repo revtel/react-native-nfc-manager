@@ -138,6 +138,46 @@ test('build and parse uri', () => {
   expect(message[0]).toEqual(decodedMessage[0]);
 });
 
+test.each([
+  ['Array', (bytes) => bytes.slice()],
+  ['Buffer', (bytes) => Buffer.from(bytes)],
+  ['Uint8Array', (bytes) => Uint8Array.from(bytes)],
+])('decode %s bytes without changing the input', (_name, createBytes) => {
+  const input = createBytes(multipleRecordMessage);
+  const before = Array.from(input);
+  const expected = ndef.decodeMessage(multipleRecordMessage);
+
+  expect(ndef.decodeMessage(input)).toEqual(expected);
+  expect(Array.from(input)).toEqual(before);
+  expect(ndef.decodeMessage(input)).toEqual(expected);
+});
+
+test.each([
+  ['Buffer', (bytes) => Buffer.from(bytes)],
+  ['Uint8Array', (bytes) => Uint8Array.from(bytes)],
+])('decode only the supplied %s subarray', (_name, createBytes) => {
+  const backing = createBytes([0xff, ...textMessageHelloWorld, 0xff]);
+  const before = Array.from(backing);
+  const input = backing.subarray(1, backing.length - 1);
+
+  expect(ndef.decodeMessage(input)).toEqual(
+    ndef.decodeMessage(textMessageHelloWorld),
+  );
+  expect(Array.from(backing)).toEqual(before);
+});
+
+test.each([
+  new DataView(new ArrayBuffer(3)),
+  new Uint16Array([0xd0, 0x00, 0x00]),
+  new ArrayBuffer(3),
+  {0: 0xd0, length: 3},
+  null,
+])('reject unsupported NDEF input %p', (input) => {
+  expect(() => ndef.decodeMessage(input)).toThrow(
+    'ndef.decodeMessage requires a Buffer, Uint8Array, or an Array of bytes',
+  );
+});
+
 test('build and parse multiple records', () => {
   var message = [
     ndef.textRecord('hello, world'),

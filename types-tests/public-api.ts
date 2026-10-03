@@ -135,6 +135,10 @@ async function smoke() {
   void mifareTypeUnknown;
 
   const _ = Ndef.TNF_WELL_KNOWN;
+  Ndef.decodeMessage([0xd0, 0x00, 0x00]);
+  Ndef.decodeMessage(new Uint8Array([0xd0, 0x00, 0x00]));
+  // @ts-expect-error DataView is not a supported byte-array input.
+  Ndef.decodeMessage(new DataView(new ArrayBuffer(3)));
   const __ = NdefStatus.ReadWrite;
   const ___ = NfcAdapter.FLAG_READER_NFC_A;
   const ____ = Nfc15693RequestFlagIOS.HighDataRate;

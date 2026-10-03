@@ -26,6 +26,7 @@
 
 ### Fixed
 
+- Fixed `Ndef.decodeMessage()` to accept Buffer and Uint8Array inputs, including subarrays, without modifying the input. DataView and non-byte typed arrays remain unsupported.
 - Aligned the iOS ISO 15693 `getSystemInfo` bridge parameter with the generated TurboModule scalar protocol while preserving the existing internal NSNumber call.
 
 ## [4.0.0-beta.9](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.8...v4.0.0-beta.9) (2026-09-08)
