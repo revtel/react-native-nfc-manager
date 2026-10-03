@@ -1,3 +1,14 @@
+## [3.17.5](https://github.com/revtel/react-native-nfc-manager/compare/v3.17.4...v3.17.5) (2026-10-03)
+
+### Fixed
+
+- Preserve emoji and other supplementary Unicode characters when decoding NDEF text and URI records; reject decoded values above the Unicode maximum. Fixes #851 via #852.
+- Keep the repository Babel configuration out of the published package so consumer Babel setups do not inherit it. Integrates #835.
+
+### Maintenance
+
+- Update locked brace-expansion, socks/ip-address, js-yaml and @xmldom/xmldom development dependencies. Integrates #850, #844, #841 and #837.
+
 ## [3.17.4](https://github.com/revtel/react-native-nfc-manager/compare/v3.17.3...v3.17.4) (2026-10-03)
 
 ### Fixed

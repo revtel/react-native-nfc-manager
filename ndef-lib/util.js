@@ -25,9 +25,18 @@ function _utf8ArrayToStr(data) {
 
         ch = (ch << 6) | (chx & 0x3f);
       }
+
+      // A four-byte sequence can decode above the Unicode maximum, which is
+      // not a valid code point. Reject it like the other malformed cases
+      // rather than letting String.fromCodePoint throw a RangeError.
+      if (ch > 0x10ffff) {
+        return null;
+      }
     }
 
-    str += String.fromCharCode(ch);
+    // fromCharCode truncates to 16 bits, which silently corrupts anything
+    // outside the BMP: U+1F4A9 would come back as U+F4A9.
+    str += String.fromCodePoint(ch);
   }
 
   return str;

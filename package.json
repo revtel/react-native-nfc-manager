@@ -1,6 +1,6 @@
 {
   "name": "react-native-nfc-manager",
-  "version": "3.17.4",
+  "version": "3.17.5",
   "description": "A NFC module for react native.",
   "main": "src/index.js",
   "repository": {
@@ -32,16 +32,6 @@
   },
   "jest": {
     "testEnvironment": "node"
-  },
-  "babel": {
-    "presets": [
-      "@babel/preset-env",
-      "@babel/preset-react"
-    ],
-    "plugins": [
-      "@babel/plugin-proposal-class-properties",
-      "@babel/plugin-transform-runtime"
-    ]
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

@@ -128,6 +128,21 @@ test('build and parse text', () => {
   expect(ndef.text.decodePayload(message[0].payload)).toEqual(text);
 });
 
+test('build and parse text outside the basic multilingual plane', () => {
+  const text = 'hello \u{1f44b}';
+  let message = [ndef.textRecord(text)];
+
+  let encoded = ndef.encodeMessage(message);
+  let decodedMessage = ndef.decodeMessage(encoded);
+
+  expect(ndef.text.decodePayload(decodedMessage[0].payload)).toEqual(text);
+});
+
+test('reject utf-8 sequences that decode above the unicode maximum', () => {
+  // 0xf7 0xbf 0xbf 0xbf decodes to U+1FFFFF, which is not a valid code point
+  expect(ndef.util.bytesToString([0xf7, 0xbf, 0xbf, 0xbf])).toBeNull();
+});
+
 test('build and parse uri', () => {
   let message = [ndef.uriRecord('http://nodejs.org')];
 
@@ -206,4 +221,38 @@ test('build and parse wifi simple payload', () => {
   expect(parsed.ssid).toEqual(wifiCredentials.ssid);
   expect(parsed.networkKey).toEqual(wifiCredentials.networkKey);
   expect(parsed.authType).toEqual(ndef.wifiSimple.authTypes.WPA2_PSK);
+});
+
+
+test.each([
+  [[0x00], '\u0000'],
+  [[0xc2, 0x80], '\u0080'],
+  [[0xdf, 0xbf], '\u07ff'],
+  [[0xe0, 0xa0, 0x80], '\u0800'],
+  [[0xef, 0xbf, 0xbf], '\uffff'],
+  [[0xf0, 0x90, 0x80, 0x80], '\u{10000}'],
+  [[0xf0, 0x9f, 0x92, 0xa9], '\u{1f4a9}'],
+  [[0xf4, 0x8f, 0xbf, 0xbf], '\u{10ffff}'],
+])('decode known UTF-8 bytes %p without truncating Unicode', (bytes, text) => {
+  expect(ndef.util.bytesToString(bytes)).toBe(text);
+});
+
+test.each([
+  [0x80],
+  [0xf0, 0x9f, 0x92],
+  [0xf0, 0x9f, 0x41, 0xa9],
+  [0xf4, 0x90, 0x80, 0x80],
+])('return null for malformed or out-of-range UTF-8 %p', (...bytes) => {
+  expect(ndef.util.bytesToString(bytes)).toBeNull();
+});
+
+test('round-trip NDEF text and URI with mixed Unicode and joined emoji', () => {
+  const text = 'café 中文 👩🏽‍💻 𝐀 𠀀';
+  const uri = `https://example.com/${text}`;
+  const records = ndef.decodeMessage(ndef.encodeMessage([
+    ndef.textRecord(text),
+    ndef.uriRecord(uri),
+  ]));
+  expect(ndef.text.decodePayload(records[0].payload)).toBe(text);
+  expect(ndef.uri.decodePayload(records[1].payload)).toBe(uri);
 });
