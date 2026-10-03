@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const {candidate, validateCi, digest, validateBundle, request, publish} = require('./trusted-publishing.cjs');
+const {candidate, validateCi, digest, validateBundle, request, publish, changelogStart} = require('./trusted-publishing.cjs');
 const sha = 'a'.repeat(40);
 const input = {branch: 'main', version: '3.17.3', sha};
 const manifest = {name: 'react-native-nfc-manager', version: input.version, repository: {url: 'https://github.com/revtel/react-native-nfc-manager.git'}};
@@ -139,4 +139,13 @@ test('publishes verified artifact before creating tag/release and recovers an id
   moved = true;
   await assert.rejects(publish(input, bundle, execute), /Branch advanced/);
   assert.equal(executions.length, 1);
+});
+
+
+test('changelog accepts linked and plain exact version headings', () => {
+  for (const heading of ['## [3.17.3](https://example.com/compare) (2026-10-03)', '## [3.17.3]', '## 3.17.3 (2026-10-03)']) {
+    assert.equal(changelogStart(`${heading}\n\n### Fixed\n`, '3.17.3'), 0);
+  }
+  assert.equal(changelogStart('## [3.17.30](https://example.com)\n', '3.17.3'), -1);
+  assert.equal(changelogStart('## Unreleased\n', '3.17.3'), -1);
 });

@@ -105,6 +105,11 @@ function run(command, args, cwd, encoding) {
   return execFileSync(command, args, {cwd, encoding, stdio: encoding ? ['ignore', 'pipe', 'inherit'] : 'inherit'});
 }
 
+function changelogStart(changelog, version) {
+  const heading = new RegExp(`^## (?:\\[${version.replace(/\./g, '\\.')}\\](?:\\([^\\n]*\\))?|${version.replace(/\./g, '\\.')})(?:\\s|$)`, 'm');
+  return changelog.search(heading);
+}
+
 async function prepare(input, root, bundle) {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json')));
   const selected = candidate(input, manifest);
@@ -126,8 +131,7 @@ async function prepare(input, root, bundle) {
   for (const required of ['index.d.ts', 'app.plugin.js', 'react-native-nfc-manager.podspec']) assert(files.includes(required), `Missing ${required}`);
   assert(!files.some(file => /(^|\/)(\.env|\.npmrc|node_modules|Pods|DerivedData)(\/|$)/.test(file)), 'Unexpected sensitive/generated package files');
   const changelog = fs.readFileSync(path.join(root, 'CHANGELOG.md'), 'utf8');
-  const heading = new RegExp(`^## (?:\\[${input.version.replace(/\./g, '\\.')}\\]|${input.version.replace(/\./g, '\\.')})(?:\\s|$)`, 'm');
-  const start = changelog.search(heading);
+  const start = changelogStart(changelog, input.version);
   if (process.env.PUBLISH === 'true') assert(start >= 0, 'Commit a reviewed changelog section for this version');
   const notes = start >= 0 ? changelog.slice(start).split(/\n## /)[0] : `Validation preview for ${packageName}@${input.version}. No publication requested.`;
   fs.writeFileSync(path.join(bundle, 'release-notes.md'), `${notes}\n\nCandidate: ${input.sha}\n`);
@@ -183,4 +187,4 @@ async function main() {
 }
 
 if (require.main === module) main().catch(error => {console.error(error.message); process.exitCode = 1;});
-module.exports = {candidate, validateCi, digest, validateBundle, request, publish};
+module.exports = {candidate, validateCi, digest, validateBundle, request, publish, changelogStart};
