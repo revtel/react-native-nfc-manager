@@ -53,6 +53,6 @@ Await `start()` before requesting a technology. Handle initialization/request/I/
 
 ## Verify the flows your application uses
 
-The [support policy](./SUPPORT_POLICY.md) distinguishes API availability, compiler evidence and device evidence. Recorded basic NDEF and Android NTAG215 flows do not establish coverage for every tag. iOS ISO 15693, configured transceive timeout, and NFC-V/ISO-DEP metadata have outstanding hardware coverage in the current record. Exercise your application's technologies, repeated requests, cancellation, background/resume, and failure recovery on physical devices before rollout.
+The [support policy](./SUPPORT_POLICY.md) distinguishes API availability, compiler evidence and device evidence. Recorded basic NDEF and Android NTAG215 flows do not establish coverage for every tag. Android NFC-V and ISO-DEP over NFC-A cached metadata have [physical-device evidence](./ANDROID_TAG_METADATA_VALIDATION_2026-10-09.md). iOS ISO 15693, configured transceive timeout, and ISO-DEP over NFC-B metadata remain unverified on hardware. Exercise your application's technologies, repeated requests, cancellation, background/resume, and failure recovery on physical devices before rollout.
 
 To stay on v3, keep the `@3` version range and rebuild the application after native dependency changes. Existing lockfiles/ranges do not automatically cross the major-version boundary when npm latest changes.
