@@ -70,7 +70,7 @@ Use the entitlement formats appropriate for your app and Apple's current require
 
 ## Finding current documentation
 
-[#806](https://github.com/revtel/react-native-nfc-manager/issues/806) highlights confusion between Expo and Expo Go instructions. The v4 README and this guide are the canonical v4 integration entrypoints. The existing default main branch still documents v3 until the separately reviewed default-line cutover. The legacy line will retain a notice pointing to v4 documentation at that time.
+[#806](https://github.com/revtel/react-native-nfc-manager/issues/806) highlights confusion between Expo and Expo Go instructions. The v4 README and this guide are the canonical v4 integration entrypoints. The default `main` branch contains v4 documentation; the `v3` legacy branch retains a notice pointing to it. npm installation still uses `@beta` until a stable v4 release is published.
 
 ## Reporting an integration problem
 

@@ -1,6 +1,6 @@
 # API and technology handlers
 
-Use the [safe scan lifecycle](../guide/reading-ndef.md#session-lifecycle) before technology-specific operations. The [public TypeScript declarations](https://github.com/revtel/react-native-nfc-manager/blob/v4/index.d.ts) define method signatures, results and platform availability.
+Use the [safe scan lifecycle](../guide/reading-ndef.md#session-lifecycle) before technology-specific operations. The [public TypeScript declarations](https://github.com/revtel/react-native-nfc-manager/blob/main/index.d.ts) define method signatures, results and platform availability.
 
 ## Lifecycle and handlers
 

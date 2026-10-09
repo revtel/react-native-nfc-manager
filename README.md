@@ -1,7 +1,7 @@
 # react-native-nfc-manager
 
 [![npm version](https://img.shields.io/npm/v/react-native-nfc-manager.svg?style=flat)](https://www.npmjs.com/package/react-native-nfc-manager)
-[![CI](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml/badge.svg?branch=v4)](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml)
+[![CI](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml)
 
 NFC for React Native, built for the **New Architecture** and **Expo Development Builds**.
 

@@ -133,7 +133,7 @@ Expo Doctor currently reports that the package is untested on the New Architectu
 
 Local prebuild and compiler success are not hosted EAS Build evidence and do not exercise NFC. Before stable promotion, review historical Expo device records and candidate differences under [the risk policy](#hardware-retesting-by-change-risk); record focused retests or attributed reuse for applicable rows:
 
-Prepare the source-controlled smoke screen from the current checkout with `npm run prepare:expo:smoke`. The command prints the temporary consumer path and device installation commands. Follow [the Expo smoke test guide](https://github.com/revtel/react-native-nfc-manager/blob/v4/example-expo/README.md), and record the tarball/version, device/OS, tag, event counts, errors, cancellation, repeated-request, timeout, and background/resume results. This is a separate gate from `verify:expo`; preparing the app alone supplies no hardware evidence.
+Prepare the source-controlled smoke screen from the current checkout with `npm run prepare:expo:smoke`. The command prints the temporary consumer path and device installation commands. Follow [the Expo smoke test guide](https://github.com/revtel/react-native-nfc-manager/blob/main/example-expo/README.md), and record the tarball/version, device/OS, tag, event counts, errors, cancellation, repeated-request, timeout, and background/resume results. This is a separate gate from `verify:expo`; preparing the app alone supplies no hardware evidence.
 
 The following is a **blank per-candidate review checklist**, not a summary of previously completed tests or a mandatory full rerun. Replace Pending with a retest result, an attributed reuse decision, or an explicit unverified assessment. Earlier records retain their original versions and coverage.
 
@@ -203,7 +203,7 @@ about beta availability until npm stable promotion actually occurs.
 
 ## Hosted CI and branch protection
 
-The v4 workflow runs on pull requests and pushes to `v4` or `main`, so it continues after promotion. Current remote main still contains v3 and retains its own workflow until renaming; this preparation does not edit that history. The
+The v4 workflow runs on pull requests and pushes to `main` (and transitional `v4`). The v3 legacy history is maintained separately on `v3`. The
 stable check names to require after successful hosted verification are `Validate` and
 `Native build gate`. The gate requires every selected native build to succeed,
 fails on selection errors or cancelled/failed selected jobs, and succeeds when
@@ -240,26 +240,26 @@ steps if the process stops midway.
 
 1. **Publish reviewed preparation, when authorized.** Commit/push v4 without force and collect full CI evidence. Record remote v3/main and v4 tip SHAs and a recovery plan. Pause publishing while branch names and settings are being reconciled.
 2. **Rename the histories, when authorized.** Rename existing `main` to `v3`, then `v4` to `main`. Explicitly verify the GitHub default branch is the new main and that each history is preserved. Do not merge v4 into old main, force-replace either tip or delete other branches. A GitHub rename alone does not promote npm `latest`.
-3. **Reconcile branch infrastructure before resuming releases.** The new publishing policy permits v4 stable from main under latest, v4 beta from main or transitional v4 under beta, and v3 stable from v3 under legacy. Port only `.github/workflows/publish.yml`, `scripts/release-policy.cjs`, `scripts/trusted-publishing.cjs`, `scripts/trusted-publishing.test.cjs` and `docs/GITHUB_ACTIONS_PUBLISHING.md` onto v3; preserve its package/source/native/dependency history and its own CI. Do not copy the v4 release-it entrypoint into v3. Verify the npm-publish environment's deployment branch restrictions, npm Trusted Publisher repository/workflow/environment identity and any additional branch rules. Require `Validate` and `Native build gate` on main after a successful full run. Review existing v3 PR bases, source/edit links, README badge URLs, local upstreams and local AGENTS/OpenSpec guidance.
+3. **Reconcile branch infrastructure before resuming releases.** The new publishing policy permits v4 stable from main under latest, v4 beta from main or transitional v4 under beta, and v3 stable from v3 under legacy. Port only `.github/workflows/publish.yml`, `scripts/release-policy.cjs`, `scripts/trusted-publishing.cjs`, `scripts/trusted-publishing.test.cjs` and `docs/GITHUB_ACTIONS_PUBLISHING.md` onto v3; preserve its package/source/native/dependency history and its own CI. Do not copy the v4 release-it entrypoint into v3. Restrict the existing v3 release-it configuration to `v3`/`legacy` and disable automatic GitHub releases so a local legacy release cannot replace the latest GitHub release. Verify the npm-publish environment's deployment branch restrictions, npm Trusted Publisher repository/workflow/environment identity and any additional branch rules. Require `Validate` and `Native build gate` on main after a successful full run. Review existing v3 PR bases, source/edit links, README badge URLs, local upstreams and local AGENTS/OpenSpec guidance.
 4. **Verify the renamed development line.** Check a fresh clone contains v4 history, version and New Architecture sources. Run full CI on main; evidence from v4 at the same SHA does not qualify for the new branch's publisher. Preview an appropriate prepared candidate with `publish=false` after the infrastructure/settings review. The preview does not prove OIDC publishing authority. v3 publication must use its installed legacy controller; never use its older main/latest publisher during the transition.
 5. **Prepare and validate stable separately, when authorized.** Choose an unpublished exact version, update package/lock metadata and reviewed changelog, and commit that candidate. Record SHA, version, packed tarball and hash. Run root/package/Codegen checks, full RN 0.84 native builds, RN 0.76 support-floor and Expo packed compiler gates. Keep the final tarball for published-content comparison. Compare hardware behavior changes against attributed records and perform only required focused retests; assess missing hardware explicitly. Hosted EAS/App Store gathering remains deferred. After any candidate change, rerun affected gates.
 6. **Preview and publish the exact candidate, when authorized.** Review the selected main SHA/version/channel and notes, then publish the tested artifact using an explicitly authorized operation. Verify npm integrity/dist-tags, Git tag/commit and GitHub release, and install the published artifact into a clean supported consumer. GitHub default and npm latest are independent; beta remains the v4 installation path until stable publication is verified.
 7. **Update public claims after verified publication.** Update README installation/status, migration and release links, retaining the `@3` legacy path. Add a short legacy maintenance notice to v3. Coordinate React Native Directory metadata and repeat Expo Doctor review. Pages deployment is separate from both branch rename and npm publication.
 
-The policy table is explicit: `main + 4.x.y → latest`; `main/v4 + 4.x.y-beta.N → beta`; `v3 + 3.x.y → legacy`. Stable 4.x.y on transitional v4 and v3 versions on main are rejected by the new controller. Old remote main's existing controller remains unchanged until the later infrastructure port. Keep publishing paused through that mixed state. None of these operations is authorized merely by implementing the tooling.
+The policy table is explicit: `main + 4.x.y → latest`; `main/v4 + 4.x.y-beta.N → beta`; `v3 + 3.x.y → legacy`. Stable 4.x.y on transitional v4 and v3 versions on main are rejected by the new controller. The v3 branch uses the legacy controller; its local release-it configuration is restricted to `v3` and the `legacy` npm tag, with automatic GitHub releases disabled. None of these operations is authorized merely by implementing the tooling.
 
 ## Default-line cutover acceptance checklist
 
-This is a future operation checklist, not authorization or a record of completed cutover. Complete it during release review; current main still contains v3.
+The GitHub development-line rename was performed on 2026-10-09: old main at `cce637113135c343d90e3a3f8b714e50cc39f273` became `v3`; v4 at `4a19f11429156746eb6eae80cf4661b460c96e61` became the default `main`. Neither history was merged or force-replaced. The pre-rename [full CI run](https://github.com/revtel/react-native-nfc-manager/actions/runs/37897589429) passed both native builds. Existing PRs #831, #832 and #839 now target `v3`; the npm-publish environment permits `main` and `v3`. A new full main CI run and fresh-clone verification complete the infrastructure review.
 
-- [ ] Record remote v3/v4 tip SHAs, the final names main and v3 and the recovery plan. Preserve the original v3 history and maintenance access; promote the v4 line without a v4-to-v3 merge or force replacement.
-- [ ] Inventory branch-bound references before any rename: release preflight, release config, CI/publish triggers, npm Trusted Publisher configuration, documentation links/badges and local guidance. Reconcile and validate affected tooling before releasing from a renamed branch. The local wrapper requires main for stable v4 and main/v4 for beta; v3 uses hosted legacy publishing.
-- [ ] Record exact stable candidate and packed artifact identity; attach basic/package/Codegen, RN 0.84, RN 0.76 support-floor and Expo compiler evidence. Review hardware differences, focused retests, attributed reuse and accepted gaps separately. Older beta records alone do not pass a final candidate's compiler gates.
-- [ ] Verify required `Validate` and `Native build gate` protection/rules on the intended development branch and review open PR bases. Do not blindly retarget v3 dependency updates to v4.
-- [ ] Verify stable npm publication and `latest` independently from GitHub default-line changes. Preserve `@3`; install the legacy controller on v3 before another v3 release. Verify the published package against the reviewed contents.
-- [ ] Verify the GitHub default branch and a fresh clone contain the v4 history. Confirm a fresh unqualified npm install resolves stable v4 and a separate `@3` install resolves v3.
-- [ ] Once publication is verified, update the v4 README/channel guidance and migration guide. Add a legacy maintenance notice on the preserved v3 line pointing to current docs. Coordinate Directory metadata and review Expo Doctor afterward.
-- [ ] Review historical Expo issue response drafts against the actual published version and link the current guide/release when separately authorized to post. Keep EAS/App Store and missing hardware outcomes unverified.
+This does not promote npm: `latest` remains `3.17.5` and `beta` remains `4.0.0-beta.11`. Stable candidate preparation, publishing preview/publication, consumer verification and Pages deployment remain separate operations. For branch recovery, preserve all newer commits and explicitly review renaming the lines back and restoring the default/environment restrictions; never reset or force-push either history.
+
+Complete the remaining stable-release checks during release review:
+
+- [ ] Record the exact stable candidate and packed artifact identity; attach basic/package/Codegen, RN 0.84, RN 0.76 support-floor and Expo compiler evidence. Review hardware differences, focused retests, attributed reuse and accepted gaps separately.
+- [ ] Preview the unpublished candidate with `publish=false` after a full successful main CI run. Existing beta.11/3.17.5 release tags point to their original commits, so they cannot serve as new-candidate previews at the renamed branch tips. Verify OIDC publishing authority during an explicitly authorized publication.
+- [ ] Verify stable npm publication and `latest` independently from GitHub default-line changes. Compare the published package with the reviewed artifact; confirm an unqualified install resolves stable v4 and `@3` resolves v3.
+- [ ] After verified publication, update README/channel guidance, migration links and React Native Directory metadata; review Expo Doctor and historical issue response drafts against the actual released version. Posting issue responses requires separate authorization.
 
 ## Partial failure and recovery
 
@@ -274,7 +274,7 @@ consumer's installed package changed.
 
 ## Native CI selection and verification
 
-Basic validation runs for every PR and v4 push. Native selection compares the
+Basic validation runs for every PR and main push (also transitional v4 pushes). Native selection compares the
 entire PR against its merge base, or the before/after range of a push. Deletions
 and both sides of renames count. Markdown, docs/, images/, and openspec/ changes
 alone do not require native builds. android/ and example/android/ select Android;

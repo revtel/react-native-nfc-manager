@@ -15,6 +15,6 @@ If your app manages these settings itself, add the permission in its `AndroidMan
 
 ## Toolchain and device
 
-Use the Android SDK, build tools, NDK and Java versions required by your React Native version. The development example uses RN 0.84; see its [toolchain guide](https://github.com/revtel/react-native-nfc-manager/blob/v4/example/README.md).
+Use the Android SDK, build tools, NDK and Java versions required by your React Native version. The development example uses RN 0.84; see its [toolchain guide](https://github.com/revtel/react-native-nfc-manager/blob/main/example/README.md).
 
 Use `isSupported()` to check hardware support and `isEnabled()` to check the adapter state. NFC scans require a physical NFC-capable Android device. Continue with [reading NDEF tags](./reading-ndef.md).

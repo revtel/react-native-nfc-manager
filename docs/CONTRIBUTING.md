@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions are welcome. The primary development app is the [RN 0.84 New Architecture example](https://github.com/revtel/react-native-nfc-manager/tree/v4/example); its [README](https://github.com/revtel/react-native-nfc-manager/blob/v4/example/README.md) covers local setup and physical-device testing.
+Contributions are welcome. The primary development app is the [RN 0.84 New Architecture example](https://github.com/revtel/react-native-nfc-manager/tree/main/example); its [README](https://github.com/revtel/react-native-nfc-manager/blob/main/example/README.md) covers local setup and physical-device testing.
 
 ## Build and checks
 

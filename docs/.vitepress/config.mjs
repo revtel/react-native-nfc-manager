@@ -1,6 +1,6 @@
 import {defineConfig} from 'vitepress';
 
-const branch = process.env.DOCS_SOURCE_BRANCH || 'v4';
+const branch = process.env.DOCS_SOURCE_BRANCH || 'main';
 const repository = 'https://github.com/revtel/react-native-nfc-manager';
 const maintainers = [
   {text: 'Maintaining', items: [

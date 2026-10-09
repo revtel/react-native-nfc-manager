@@ -45,7 +45,7 @@ for (const record of tag?.ndefMessage ?? []) {
 }
 ```
 
-These declaration corrections can require source changes even where native payloads are unchanged. Consult [CHANGELOG](https://github.com/revtel/react-native-nfc-manager/blob/v4/CHANGELOG.md) for the release containing each change; the declaration and Expo hardening changes are recorded in beta.10, and Unicode/live-read fixes in beta.11.
+These declaration corrections can require source changes even where native payloads are unchanged. Consult [CHANGELOG](https://github.com/revtel/react-native-nfc-manager/blob/main/CHANGELOG.md) for the release containing each change; the declaration and Expo hardening changes are recorded in beta.10, and Unicode/live-read fixes in beta.11.
 
 ## Preserve the asynchronous lifecycle
 
