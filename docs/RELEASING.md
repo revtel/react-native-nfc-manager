@@ -3,7 +3,7 @@
 This checklist separates package, Codegen, native compiler, simulator, and physical-device evidence. Passing a lower layer does not establish a higher one.
 
 The [2026-09-29 beta.9 validation checkpoint](./V4_RELEASE_VALIDATION_2026-09-29.md)
-records the current package checks, Codegen matrix, RN 0.76/0.84 compiler checks,
+records historical beta.9 package checks, Codegen matrix, RN 0.76/0.84 compiler checks,
 linked Expo device evidence, and remaining stable-promotion work. Validation of
 the eventual stable tarball must be recorded separately.
 
@@ -94,7 +94,20 @@ RN 0.76.9 pins `fmt` 11.0.2, whose consteval detection is incompatible with Appl
 
 Temporary consumers, caches, tarballs, Pods, DerivedData, and build outputs are removed on success or failure. Add `-- --keep-temp` to a root command only while diagnosing a failure. Release evidence must record the command, candidate version/tarball, RN and toolchain versions, completed phase, expected artifact, and outcome. A failed Android or iOS gate blocks stable promotion until corrected or until the declared support floor is explicitly raised.
 
-Run the documented physical-device smoke tests before a release candidate whenever runtime JavaScript, native NFC behavior, session state, callbacks, events, errors, cancellation, timeout, or cleanup changes. A tooling-only Codegen matrix change does not by itself require repeating physical-device NFC tests.
+## Hardware retesting by change risk
+
+Every release review records a risk assessment against the last relevant device evidence. A new version alone does not require a complete physical-device suite. Keep package, Codegen and required native compiler gates; select hardware work by affected behavior:
+
+| Candidate changes | Physical-device work |
+| --- | --- |
+| Documentation or release tooling only; runtime/integration unchanged | Reuse relevant evidence with the original candidate and reason; no device rerun required |
+| NFC request/read/write/transceive or runtime logic | Test the affected technology and platform, success and relevant failure/recovery paths |
+| Session, callbacks, events, cancellation, timeout or cleanup | Test affected cancellation/repeat/event-count/background/cleanup paths; include timeout when that behavior is affected |
+| Expo plugin, SDK or relevant native dependencies | Validate affected configuration/builds and basic Development Build start/read/cancel/re-read on affected platforms |
+
+For each assessment record candidate commit/version, differences from the cited evidence, selected retests and outcomes, reused records with reasons, and unverified flows. Keep Android NfcA, iOS ISO 15693 and other technology checks proportional to affected code and available hardware. A malformed-command rejection is not a configured-timeout test.
+
+First stable promotion requires a baseline evidence review across startup/support/enabled checks, NDEF request/read/cancel, repeated requests, events, background/resume and cleanup, plus applicable technology-specific flows. Compare the final candidate to historical tests and perform focused retests where behavior changed. Broader testing is appropriate for extensive session/native changes or unexplained regressions, not mandatory for every version. Missing hardware stays unverified with an explicit maintainer assessment; do not convert old evidence into tests of a new artifact. Final packed-consumer compiler gates remain separate. Hosted EAS and App Store evidence gathering is deferred and is not an added stable blocker.
 
 ## Expo stable-promotion gate
 
@@ -118,11 +131,11 @@ The validator runs prebuild and Expo Doctor for every mode, verifies the generat
 
 Expo Doctor currently reports that the package is untested on the New Architecture because React Native Directory lacks v4 metadata. Record that single accepted external warning. Any additional Doctor failure, prebuild failure, duplicate config-plugin runtime, Codegen warning from `NfcManager`, or missing native artifact fails the gate.
 
-Local prebuild and compiler success are not hosted EAS Build evidence and do not exercise NFC. Before stable promotion, use a custom Expo Development Build on physical devices and record each applicable row:
+Local prebuild and compiler success are not hosted EAS Build evidence and do not exercise NFC. Before stable promotion, review historical Expo device records and candidate differences under [the risk policy](#hardware-retesting-by-change-risk); record focused retests or attributed reuse for applicable rows:
 
-Prepare the source-controlled smoke screen from the current checkout with `npm run prepare:expo:smoke`. The command prints the temporary consumer path and device installation commands. Follow [the Expo smoke test guide](../example-expo/README.md), and record the tarball/version, device/OS, tag, event counts, errors, cancellation, repeated-request, timeout, and background/resume results. This is a separate gate from `verify:expo`; preparing the app alone leaves all hardware rows pending.
+Prepare the source-controlled smoke screen from the current checkout with `npm run prepare:expo:smoke`. The command prints the temporary consumer path and device installation commands. Follow [the Expo smoke test guide](../example-expo/README.md), and record the tarball/version, device/OS, tag, event counts, errors, cancellation, repeated-request, timeout, and background/resume results. This is a separate gate from `verify:expo`; preparing the app alone supplies no hardware evidence.
 
-The following is a **blank per-candidate checklist**, not a summary of previously completed tests. Copy it into the new candidate record and link the actual evidence. Earlier records retain their original versions and coverage.
+The following is a **blank per-candidate review checklist**, not a summary of previously completed tests or a mandatory full rerun. Replace Pending with a retest result, an attributed reuse decision, or an explicit unverified assessment. Earlier records retain their original versions and coverage.
 
 | Platform | Device / OS | Tag technology | Required flow | Status |
 |---|---|---|---|---|
@@ -131,7 +144,7 @@ The following is a **blank per-candidate checklist**, not a summary of previousl
 | iOS | Record exact device and OS | NDEF | `start()`, support checks, request, tag read, cancel/session close | Pending |
 | iOS | Record exact device and OS | ISO 15693 when available | command, timeout, cancellation, cleanup | Pending |
 
-Record background/resume behavior and event occurrence counts on both platforms. Unavailable hardware remains explicitly unverified. A hosted EAS Development Build can be recorded as additional evidence but is not inferred from these local commands.
+Record background/resume behavior and event occurrence counts when retested, or cite the original applicable record and reason for reuse. Unavailable hardware remains explicitly unverified. A hosted EAS Development Build can be recorded as additional evidence but is not inferred from these local commands.
 
 When v4 becomes the default stable npm line, update the package's React Native Directory entry to the appropriate New Architecture classification and confirm that Expo Doctor no longer reports the metadata warning. Do not apply a package-wide classification early if it would misrepresent legacy v3 consumers.
 
@@ -261,10 +274,14 @@ steps if the process stops midway.
    version/dist-tags, download and compare the published package with the tested
    contents, and smoke-install it into a clean supported consumer. Verify the
    Git tag/commit and GitHub release, not just command exit status.
-6. **Switch the default branch independently, when authorized.** Set GitHub's
-   default to `v4`, verify a fresh clone uses it, and review open PR targets,
-   branch protections and links. No branch rename or merge is required. This
-   operation alone does not change npm `latest`.
+6. **Promote the v4 development line independently, when authorized.** Preserve
+   the v3 tip/history as a legacy maintenance line and make the v4 line the
+   GitHub default. Do not merge v4 into existing v3 main or overwrite the v3
+   history. Review the final branch names before execution: retaining the name
+   `v4` as default avoids a rename; naming the new line `main` requires first
+   preserving v3 under the agreed legacy name, then reconciling branch-bound
+   tooling and links. Verify a fresh clone, open PR bases and protections after
+   the selected operation. This operation alone does not change npm `latest`.
 7. **Update public claims.** Once npm latest actually resolves to stable v4,
    update README installation/status and release links, preserving the `@3`
    legacy path. Coordinate React Native Directory metadata and repeat Expo
@@ -274,6 +291,19 @@ Before any future v3 release, configure that line to publish explicitly under
 `legacy` (or another agreed non-latest tag). Do not copy v4's release command to
 main. Existing consumers pinned to v3 remain on their selected version/range.
 Creating a legacy tag or updating the v3 workflow is a separate operation.
+
+## Default-line cutover acceptance checklist
+
+This is a future operation checklist, not authorization or a record of completed cutover. Complete it during release review; current main still contains v3.
+
+- [ ] Record remote v3/v4 tip SHAs, chosen final branch names and the recovery plan. Preserve the original v3 history and maintenance access; promote the v4 line without a v4-to-v3 merge or force replacement.
+- [ ] Inventory branch-bound references before any rename: release preflight, release config, CI/publish triggers, npm Trusted Publisher configuration, documentation links/badges and local guidance. Reconcile and validate affected tooling before releasing from a renamed branch. Current release scripts require `v4`.
+- [ ] Record exact stable candidate and packed artifact identity; attach basic/package/Codegen, RN 0.84, RN 0.76 support-floor and Expo compiler evidence. Review hardware differences, focused retests, attributed reuse and accepted gaps separately. Older beta records alone do not pass a final candidate's compiler gates.
+- [ ] Verify required `Validate` and `Native build gate` protection/rules on the intended development branch and review open PR bases. Do not blindly retarget v3 dependency updates to v4.
+- [ ] Verify stable npm publication and `latest` independently from GitHub default-line changes. Preserve `@3`; configure future v3 publication under an agreed non-latest tag before another v3 release. Verify the published package against the reviewed contents.
+- [ ] Verify the GitHub default branch and a fresh clone contain the v4 history. Confirm a fresh unqualified npm install resolves stable v4 and a separate `@3` install resolves v3.
+- [ ] Once publication is verified, update the v4 README/channel guidance and migration guide. Add a legacy maintenance notice on the preserved v3 line pointing to current docs. Coordinate Directory metadata and review Expo Doctor afterward.
+- [ ] Review historical Expo issue response drafts against the actual published version and link the current guide/release when separately authorized to post. Keep EAS/App Store and missing hardware outcomes unverified.
 
 ## Partial failure and recovery
 

@@ -23,7 +23,7 @@ npm install react-native-nfc-manager@beta
 
 Run your application's CocoaPods installation on iOS, then rebuild the native application on both platforms. A Metro refresh or JavaScript-only update cannot replace the native module. Review NFC capabilities, provisioning, iOS usage-description/identifier settings, and Android permissions in the [README](../README.md).
 
-Expo applications require prebuild and a custom Development Build. Expo Go cannot load this native module. Follow the [Expo instructions](../README.md#expo-development-builds), rebuild after plugin changes, and distinguish local build verification from hosted EAS verification.
+Expo applications require prebuild and a custom Development Build. Expo Go cannot load this native module. Follow the [Expo instructions](../README.md#expo-development-builds), rebuild after plugin changes, and use [Expo troubleshooting](./EXPO_TROUBLESHOOTING.md) for dependency, rebuild and entitlement problems. Local build verification remains separate from hosted EAS verification.
 
 An unqualified install currently selects v3 through `latest`. The release procedure will update this guidance when stable v4 actually becomes `latest`; changing the GitHub default branch does not change npm resolution.
 
@@ -45,7 +45,7 @@ for (const record of tag?.ndefMessage ?? []) {
 }
 ```
 
-These declaration corrections can require source changes even where native payloads are unchanged. Consult [CHANGELOG](../CHANGELOG.md) for the release containing each change; some corrections currently remain Unreleased.
+These declaration corrections can require source changes even where native payloads are unchanged. Consult [CHANGELOG](../CHANGELOG.md) for the release containing each change; the declaration and Expo hardening changes are recorded in beta.10, and Unicode/live-read fixes in beta.11.
 
 ## Preserve the asynchronous lifecycle
 

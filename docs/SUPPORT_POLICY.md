@@ -81,19 +81,22 @@ configured transceive timeouts were not verified by that test.
 
 ## Release Quality Gates
 
-For each release candidate:
+For each release candidate, keep automated/compiler gates and record the hardware risk assessment:
 
 - Required: packed-package Android/iOS Codegen matrix for RN 0.76.9, 0.77.3, and 0.84.0
 - Required before stable promotion while RN 0.76 remains supported: clean packed-package RN 0.76.9 New Architecture Android and iOS application builds
 - Required before stable promotion: clean packed-package Expo SDK 57.0.25 / RN 0.86.3 prebuild, Expo Doctor review, Android application build, and iOS pod/Codegen/application build
 - Required: RN 0.84 New Architecture Android and iOS compiler checks
 - Optional: older React Native lines only when the release claims them
-- Required physical-device flows:
-  - `start()` and `isSupported()`
-  - `requestTechnology()` + `cancelTechnologyRequest()`
-  - NDEF read path (`getTag()` / `getNdefMessage()`)
+- Required hardware review: compare candidate changes with attributed physical-device evidence and select affected flows for focused retesting. Releasing a version alone does not require a full device suite.
+- Baseline flows reviewed before first stable promotion: startup/support/enabled checks, NDEF request/read/cancel, repeated requests, event counts, background/resume and cleanup; applicable technology-specific flows remain separately recorded.
+- Documentation/release-tool-only changes can reuse evidence with a recorded reason. NFC/session changes require affected success/failure/recovery retests; Expo plugin/SDK or relevant native dependency changes require affected integration checks and basic Development Build device flows.
+- Reused evidence retains its original candidate identity. Unavailable tags/devices remain unverified, with limitations assessed during release review.
 - Required physical-device records include platform, device, OS, tag technology, flow, and outcome.
 - Required before claiming Expo hardware verification: physical-device Expo Development Build records for the applicable NFC flows
+- Hosted EAS and App Store validation remain deferred, not additional release blockers; do not claim those paths as tested.
+
+See [hardware retesting by change risk](./RELEASING.md#hardware-retesting-by-change-risk) for selection and evidence fields, and [Expo troubleshooting](./EXPO_TROUBLESHOOTING.md) for historical integration problems.
 
 ## Known Constraints
 

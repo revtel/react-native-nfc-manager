@@ -4,7 +4,9 @@
 [![CI](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml/badge.svg?branch=v4)](https://github.com/revtel/react-native-nfc-manager/actions/workflows/ci.yml)
 [![issues](https://img.shields.io/github/issues/revtel/react-native-nfc-manager.svg?style=flat)](https://github.com/revtel/react-native-nfc-manager/issues)
 
-Bring NFC feature to React Native. Inspired by [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) and [react-native-ble-manager](https://github.com/innoveit/react-native-ble-manager)
+NFC for React Native, with v4 built for the **New Architecture** and **Expo Development Builds**.
+
+Inspired by [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) and [react-native-ble-manager](https://github.com/innoveit/react-native-ble-manager)
 
 Contributions are welcome!
 
@@ -12,15 +14,7 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 
 > Special thanks to [javix64](https://github.com/javix64) for restructuring the documentation!
 
-## Version Notes
-
-- `v3` only supports legacy architecture (`v3.x.y`).
-- `v4` targets the New Architecture and remains beta (`v4.0.0-beta.x`). Its support floor is React Native 0.76 with the New Architecture enabled; React Native 0.82 and newer are New Architecture only.
-
-## Support Policy
-
-- See [Support Policy](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/SUPPORT_POLICY.md) for official React Native version window, architecture targets, and verification matrix.
-- Maintainers should follow [Release Validation](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/RELEASING.md) for Codegen, compiler, simulator, and physical-device evidence gates.
+Requires **React Native 0.76+ with the New Architecture**. Expo apps require a **Development Build**.
 
 ## Table of Contents
 
@@ -28,13 +22,13 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 2. [Expo Development Builds](#expo-development-builds)
 3. [Getting Started](#gettingstarted)
 4. [Setup](#setup)
-4. [Documentation](#docs)
-5. [Nfc compatibility](#nfccompatibility)
-6. [Usage Concept](#usageconcept)
-7. [API](#api)
-8. [App demo](#appdemo)
-9. [Learn](#learn)
-10. [Development Example](#development-example)
+5. [Documentation](#docs)
+6. [Nfc compatibility](#nfccompatibility)
+7. [Usage Concept](#usageconcept)
+8. [API](#api)
+9. [App demo](#appdemo)
+10. [Learn](#learn)
+11. [Development Example](#development-example)
 
 ## Installation
 
@@ -44,9 +38,7 @@ Made with ❤️ by [whitedogg13](https://github.com/whitedogg13) and [revteltec
 npm install react-native-nfc-manager@beta
 ```
 
-This branch documents v4, which is still a prerelease. `@beta` selects the published v4 beta; pin its exact version in your application for reproducible installs. Changes on this branch may be newer than the published beta. An unqualified install currently selects v3 via npm `latest`. Legacy Architecture applications should use `npm install react-native-nfc-manager@3`.
-
-See the [v3 → v4 migration guide](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/MIGRATING_V3_TO_V4.md) before upgrading.
+v4 is currently in beta. Pin the resolved version for reproducible installs. See the [migration guide](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/MIGRATING_V3_TO_V4.md) when upgrading an existing application.
 
 ### Expo Development Builds
 
@@ -61,10 +53,7 @@ Install the package and add its config plugin to `app.json`:
       [
         "react-native-nfc-manager",
         {
-          "nfcPermission": "Allow this app to scan nearby NFC tags",
-          "includeNdefEntitlement": true,
-          "selectIdentifiers": ["A0000002471001"],
-          "systemCodes": ["8008"]
+          "nfcPermission": "Allow this app to scan nearby NFC tags"
         }
       ]
     ]
@@ -74,24 +63,24 @@ Install the package and add its config plugin to `app.json`:
 
 - `nfcPermission` sets the iOS `NFCReaderUsageDescription` and enables the Android NFC permission. Omit it to use the default description.
 - `nfcPermission: false` is an advanced opt-out: it omits the iOS usage description and blocks the Android permission contributed by the library manifest. NFC cannot be used until the application supplies equivalent native configuration itself.
-- `includeNdefEntitlement` defaults to `true`; set it to `false` to generate only the iOS `TAG` reader-session format.
-- `selectIdentifiers` supplies iOS ISO 7816 application identifiers.
-- `systemCodes` supplies iOS FeliCa system codes.
+- `includeNdefEntitlement` defaults to `true`; set it to `false` to add only the iOS `TAG` reader-session format. This does not remove NDEF already supplied by other configuration; see the entitlement troubleshooting guide.
+- `selectIdentifiers` supplies iOS ISO 7816 application identifiers required by your target cards; these are application-specific.
+- `systemCodes` supplies iOS FeliCa system codes required by your target cards.
 
-Generate and build the native application after adding or changing the plugin:
+Install the development client, then generate and build the native application:
 
 ```shell
+npx expo install expo-dev-client
 npx expo prebuild
-npx expo run:ios
+npx expo run:ios --device
 # or
-npx expo run:android
+npx expo run:android --device
+npx expo start --dev-client
 ```
 
-An EAS Development Build is also a valid deployment path, but a new native build is still required after native dependency or plugin configuration changes. The config plugin generates project files; Apple provisioning must still permit the NFC capability for the selected App ID.
+Rebuild the native app after changing native dependencies or plugin options; a Metro refresh cannot apply those changes. Use an NFC-capable physical device to test scans. On iOS, your App ID and provisioning must permit NFC.
 
-Repository maintainers can prepare a packed-package [Expo NFC device smoke app](https://github.com/revtel/react-native-nfc-manager/blob/v4/example-expo/README.md) with `npm run prepare:expo:smoke`. Its build checks do not replace physical-device NFC scans.
-
-See the [2026-09-29 Expo physical-device smoke record](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/EXPO_SMOKE_2026-09-29.md) for tested iPhone/Android flows and remaining validation gaps. The Android smoke app provides a cancellable scan prompt through tag I/O and cleanup.
+For dependency, rebuild or entitlement problems, see [Expo troubleshooting](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/EXPO_TROUBLESHOOTING.md). Supported versions and recorded validation are in the [support policy](https://github.com/revtel/react-native-nfc-manager/blob/v4/docs/SUPPORT_POLICY.md).
 
 ### iOS
 

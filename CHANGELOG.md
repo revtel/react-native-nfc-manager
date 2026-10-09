@@ -4,6 +4,12 @@
 
 - Add one-time development warnings for unsupported React Native versions and missing New Architecture runtime signals on RN 0.76–0.81, before native initialization. Missing native modules now report linking/rebuild and Expo Development Build guidance.
 
+### Documentation
+
+- Make New Architecture and Expo Development Builds the primary v4 entrypoints; add Expo troubleshooting for native rebuilds, plugin dependencies, Android SDK warnings, Directory metadata and iOS entitlements.
+- Define change-risk-based hardware retesting and attributed evidence reuse; retain first-stable evidence review and final-candidate compiler gates.
+- Document promotion of the v4 development line while preserving v3 as legacy, independent npm/GitHub checks and branch-bound tooling review. No stable publication or default-line switch is announced.
+
 ## [4.0.0-beta.11](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.10...v4.0.0-beta.11) (2026-10-09)
 
 ### Example
