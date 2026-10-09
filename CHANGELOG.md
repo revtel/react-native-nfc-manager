@@ -6,6 +6,8 @@
 
 ### Documentation
 
+- Shorten the README and organize v4 setup, usage and API guides into a searchable static documentation site with isolated VitePress tooling and a documentation-only build check.
+
 - Make New Architecture and Expo Development Builds the primary v4 entrypoints; add Expo troubleshooting for native rebuilds, plugin dependencies, Android SDK warnings, Directory metadata and iOS entitlements.
 - Define change-risk-based hardware retesting and attributed evidence reuse; retain first-stable evidence review and final-candidate compiler gates.
 - Document promotion of the v4 development line while preserving v3 as legacy, independent npm/GitHub checks and branch-bound tooling review. No stable publication or default-line switch is announced.

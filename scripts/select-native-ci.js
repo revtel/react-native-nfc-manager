@@ -6,7 +6,7 @@ const {readFileSync, appendFileSync} = require('fs');
 function selectPlatforms(files) {
   const result = {android: false, ios: false};
   for (const file of files) {
-    if (/\.md$/i.test(file) || /^(docs|images|openspec)\//.test(file)) {
+    if (/\.md$/i.test(file) || /^(docs|images|openspec)\//.test(file) || file === '.github/workflows/docs.yml') {
       continue;
     }
     if (/^(android|example\/android)\//.test(file)) {

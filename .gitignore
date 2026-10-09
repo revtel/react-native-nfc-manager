@@ -50,3 +50,9 @@ tags
 
 # dotenv
 .env
+
+# VitePress documentation build and dev cache
+/docs/.vitepress/cache/
+/docs/.vitepress/dist/
+# Keep the API documentation; the unrelated root reference checkout stays ignored.
+!/docs/reference/

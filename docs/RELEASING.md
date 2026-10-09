@@ -133,7 +133,7 @@ Expo Doctor currently reports that the package is untested on the New Architectu
 
 Local prebuild and compiler success are not hosted EAS Build evidence and do not exercise NFC. Before stable promotion, review historical Expo device records and candidate differences under [the risk policy](#hardware-retesting-by-change-risk); record focused retests or attributed reuse for applicable rows:
 
-Prepare the source-controlled smoke screen from the current checkout with `npm run prepare:expo:smoke`. The command prints the temporary consumer path and device installation commands. Follow [the Expo smoke test guide](../example-expo/README.md), and record the tarball/version, device/OS, tag, event counts, errors, cancellation, repeated-request, timeout, and background/resume results. This is a separate gate from `verify:expo`; preparing the app alone supplies no hardware evidence.
+Prepare the source-controlled smoke screen from the current checkout with `npm run prepare:expo:smoke`. The command prints the temporary consumer path and device installation commands. Follow [the Expo smoke test guide](https://github.com/revtel/react-native-nfc-manager/blob/v4/example-expo/README.md), and record the tarball/version, device/OS, tag, event counts, errors, cancellation, repeated-request, timeout, and background/resume results. This is a separate gate from `verify:expo`; preparing the app alone supplies no hardware evidence.
 
 The following is a **blank per-candidate review checklist**, not a summary of previously completed tests or a mandatory full rerun. Replace Pending with a retest result, an attributed reuse decision, or an explicit unverified assessment. Earlier records retain their original versions and coverage.
 

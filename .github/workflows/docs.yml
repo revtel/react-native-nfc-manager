@@ -1,0 +1,48 @@
+name: Documentation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'images/**'
+      - 'README.md'
+      - '.github/workflows/docs.yml'
+  push:
+    branches: [v4, main]
+    paths:
+      - 'docs/**'
+      - 'images/**'
+      - 'README.md'
+      - '.github/workflows/docs.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build documentation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - name: Install documentation dependencies
+        run: npm ci --prefix docs
+      - name: Build documentation
+        run: npm run build --prefix docs
+      - name: Upload static preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-site
+          path: docs/.vitepress/dist
+          if-no-files-found: error
+          retention-days: 7

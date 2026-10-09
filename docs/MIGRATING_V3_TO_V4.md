@@ -21,9 +21,9 @@ Before stable promotion, install the beta channel, then lock the exact resolved 
 npm install react-native-nfc-manager@beta
 ```
 
-Run your application's CocoaPods installation on iOS, then rebuild the native application on both platforms. A Metro refresh or JavaScript-only update cannot replace the native module. Review NFC capabilities, provisioning, iOS usage-description/identifier settings, and Android permissions in the [README](../README.md).
+Run your application's CocoaPods installation on iOS, then rebuild the native application on both platforms. A Metro refresh or JavaScript-only update cannot replace the native module. Review NFC capabilities, provisioning, iOS usage-description/identifier settings, and Android permissions in the [platform setup guides](./guide/installation.md#choose-your-setup).
 
-Expo applications require prebuild and a custom Development Build. Expo Go cannot load this native module. Follow the [Expo instructions](../README.md#expo-development-builds), rebuild after plugin changes, and use [Expo troubleshooting](./EXPO_TROUBLESHOOTING.md) for dependency, rebuild and entitlement problems. Local build verification remains separate from hosted EAS verification.
+Expo applications require prebuild and a custom Development Build. Expo Go cannot load this native module. Follow the [Expo instructions](./guide/expo.md), rebuild after plugin changes, and use [Expo troubleshooting](./EXPO_TROUBLESHOOTING.md) for dependency, rebuild and entitlement problems. Local build verification remains separate from hosted EAS verification.
 
 An unqualified install currently selects v3 through `latest`. The release procedure will update this guidance when stable v4 actually becomes `latest`; changing the GitHub default branch does not change npm resolution.
 
@@ -45,11 +45,11 @@ for (const record of tag?.ndefMessage ?? []) {
 }
 ```
 
-These declaration corrections can require source changes even where native payloads are unchanged. Consult [CHANGELOG](../CHANGELOG.md) for the release containing each change; the declaration and Expo hardening changes are recorded in beta.10, and Unicode/live-read fixes in beta.11.
+These declaration corrections can require source changes even where native payloads are unchanged. Consult [CHANGELOG](https://github.com/revtel/react-native-nfc-manager/blob/v4/CHANGELOG.md) for the release containing each change; the declaration and Expo hardening changes are recorded in beta.10, and Unicode/live-read fixes in beta.11.
 
 ## Preserve the asynchronous lifecycle
 
-Await `start()` before requesting a technology. Handle initialization/request/I/O errors, avoid overlapping requests, and await `cancelTechnologyRequest()` in cleanup before allowing the next scan. Follow the [introductory example](../README.md#gettingstarted). Existing cancellation, error, event, and timeout contracts remain applicable; an Android tag-wait timeout is not implied by a transceive timeout.
+Await `start()` before requesting a technology. Handle initialization/request/I/O errors, avoid overlapping requests, and await `cancelTechnologyRequest()` in cleanup before allowing the next scan. Follow the [introductory example](./guide/reading-ndef.md). Existing cancellation, error, event, and timeout contracts remain applicable; an Android tag-wait timeout is not implied by a transceive timeout.
 
 ## Verify the flows your application uses
 

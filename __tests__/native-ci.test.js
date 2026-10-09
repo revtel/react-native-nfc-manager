@@ -4,6 +4,9 @@ const {selectPlatforms, selectForEvent} = require('../scripts/select-native-ci')
 
 it.each([
   [['README.md', 'docs/RELEASING.md'], {android: false, ios: false}],
+  [['docs/package-lock.json', 'docs/.vitepress/config.mjs', '.github/workflows/docs.yml'], {android: false, ios: false}],
+  [['.github/workflows/publish.yml'], {android: true, ios: true}],
+  [['.github/workflows/docs.yml', 'ios/RNNfcManager.swift'], {android: false, ios: true}],
   [['images/example.png'], {android: false, ios: false}],
   [['android/README.md'], {android: false, ios: false}],
   [['android/src/main/java/NfcManager.java'], {android: true, ios: false}],

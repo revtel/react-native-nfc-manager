@@ -1,6 +1,6 @@
 # Expo integration and troubleshooting
 
-This guide describes v4. Install `react-native-nfc-manager@beta` until stable promotion, and lock the resolved version. An unqualified install currently selects v3. Use the [README setup](../README.md#expo-development-builds) and [migration guide](./MIGRATING_V3_TO_V4.md).
+This guide describes v4. Install `react-native-nfc-manager@beta` until stable promotion, and lock the resolved version. An unqualified install currently selects v3. Use the [Expo setup](./guide/expo.md) and [migration guide](./MIGRATING_V3_TO_V4.md).
 
 ## What is supported and tested
 
