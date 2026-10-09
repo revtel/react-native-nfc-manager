@@ -28,7 +28,7 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 ### Example app policy
 
 - Primary development example: **React Native CLI** (`example/`)
-- Representative secondary consumer: pinned **Expo SDK 57.0.25 / React Native 0.86.3** prebuild + custom Development Build
+- Representative secondary consumer: pinned **Expo SDK 57.0.27 / React Native 0.86.3** prebuild + custom Development Build
 - Expo Go is unsupported because it cannot load this package's custom native module
 
 ## Verification Matrix
@@ -49,6 +49,7 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 |---|---|---|---|---|---|---|
 | 57.0.21 | 0.86.3 | New Architecture | Packed-package plugin output verified | Generated consumer APK compiled | Pods, Codegen, unsigned Simulator app, and signed device app compiled | Local Development Build integration and recorded basic device smoke flows verified; Expo Doctor gate incomplete; hosted EAS unverified |
 | 57.0.25 | 0.86.3 | New Architecture | Packed-package plugin output verified | Clean consumer and Development Build APKs compiled | Pods, Codegen, unsigned Simulator app and signed device app compiled | Full local consumer gate and basic iPhone/Android regressions passed with the accepted Directory metadata warning; hosted EAS unverified |
+| 57.0.27 | 0.86.3 | New Architecture | Packed-package plugin output and Doctor verified | Clean consumer APK compiled | Pods, Codegen and complete unsigned arm64 Simulator app compiled | Local unpublished 4.0.0 compiler gate passed; new SDK patch device integration, hosted EAS and x86_64 unverified |
 
 The [2026-09-29 physical-device smoke record](./EXPO_SMOKE_2026-09-29.md)
 covers iPhone 15 Plus / iOS 26.6.1 NDEF flows and Samsung SM-N975U1 / Android 12
@@ -63,6 +64,8 @@ was resolved and the local compiler/Doctor gate passed. Basic iPhone and Android
 reads, cancellation, and subsequent reads also passed on the updated Development
 Build, including Android NTAG215 NfcA reads and scan-prompt closure. Broader flows
 from the earlier smoke record were not all repeated on 57.0.25.
+
+The [October 9 stable candidate review](./V4_CANDIDATE_VALIDATION_2026-10-09.md) records the 57.0.27 packed consumer and RN 0.76.9 application compiler gates. Earlier hardware records retain their original versions; no physical-device flows were rerun for 57.0.27.
 
 The Expo validator accepts the currently known React Native Directory warning that `react-native-nfc-manager` is not yet marked as New Architecture tested. This is external metadata, not build evidence. The metadata SHALL be updated in coordination with v4 becoming the default stable package so the legacy v3 line is not mislabeled prematurely.
 
@@ -85,7 +88,7 @@ For each release candidate, keep automated/compiler gates and record the hardwar
 
 - Required: packed-package Android/iOS Codegen matrix for RN 0.76.9, 0.77.3, and 0.84.0
 - Required before stable promotion while RN 0.76 remains supported: clean packed-package RN 0.76.9 New Architecture Android and iOS application builds
-- Required before stable promotion: clean packed-package Expo SDK 57.0.25 / RN 0.86.3 prebuild, Expo Doctor review, Android application build, and iOS pod/Codegen/application build
+- Required before stable promotion: clean packed-package Expo SDK 57.0.27 / RN 0.86.3 prebuild, Expo Doctor review, Android application build, and iOS pod/Codegen/application build
 - Required: RN 0.84 New Architecture Android and iOS compiler checks
 - Optional: older React Native lines only when the release claims them
 - Required hardware review: compare candidate changes with attributed physical-device evidence and select affected flows for focused retesting. Releasing a version alone does not require a full device suite.

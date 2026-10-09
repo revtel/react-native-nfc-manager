@@ -18,7 +18,7 @@ const {packLibrary, runCommand, runNpm} = require('./codegen-compatibility');
 const EXPO_CONSUMER = Object.freeze({
   appName: 'NfcExpoConsumer',
   createExpoApp: 'create-expo-app@4.0.0',
-  expo: '57.0.25',
+  expo: '57.0.27',
   expoDoctor: 'expo-doctor@1.20.4',
   react: '19.2.3',
   reactNative: '0.86.3',

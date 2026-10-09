@@ -1,12 +1,24 @@
 ## Unreleased
 
+## 4.0.0
+
+### v3-to-v4 migration
+
+- Require React Native 0.76+ with the New Architecture enabled on RN 0.76–0.81; RN 0.82+ is New Architecture only. Expo consumers use Development Builds. v3 remains available through `@3`.
+- Move the native implementation to TurboModule/Codegen, focused Android handlers and Swift with an Objective-C++ bridge, preserving the documented v4 session, cancellation, event and API contract.
+- Ship compiled TypeScript with public declarations; account for optional NDEF payloads and platform-specific tag fields. See the [migration guide](https://github.com/revtel/react-native-nfc-manager/blob/main/docs/MIGRATING_V3_TO_V4.md).
+- Include beta-series fixes for RN 0.76/0.77 Codegen, NDEF Buffer/Uint8Array decoding and supplementary Unicode, Android live NDEF reads (PR #843), iOS ISO 15693 bridge scalar alignment, Expo config-plugin idempotence/permission opt-out and published-package Babel isolation. Individual beta entries below retain their original details and evidence.
+- Compiler checks and reused device records have separate identities. Hosted EAS/App Store, iOS ISO 15693 hardware and some technology-specific/timeout flows remain unverified; see the candidate review before publication.
+
 ### Changed
 
 - Add one-time development warnings for unsupported React Native versions and missing New Architecture runtime signals on RN 0.76–0.81, before native initialization. Missing native modules now report linking/rebuild and Expo Development Build guidance.
 
 ### Tooling
 
-- Prepare the v4-to-main and main-to-v3 cutover with shared branch/channel policy: v4 stable on main uses latest, beta on main/transitional v4 uses beta, and v3 uses legacy. Validate exact candidate-branch CI and preserve GitHub prerelease/latest classification. No branch rename or stable publication is announced.
+- Update the pinned Expo SDK 57 validation/smoke consumer from 57.0.25 to 57.0.27 to satisfy current Expo Doctor patch expectations; React Native remains 0.86.3. Historical device evidence retains its original Expo version.
+
+- Promote the v4 history to main and preserve the original main history on v3. Shared publication policy selects latest for v4 stable on main, beta for v4 beta, and legacy for v3. Validate exact candidate-branch CI and preserve GitHub prerelease/latest classification.
 
 ### Documentation
 
@@ -14,7 +26,7 @@
 
 - Make New Architecture and Expo Development Builds the primary v4 entrypoints; add Expo troubleshooting for native rebuilds, plugin dependencies, Android SDK warnings, Directory metadata and iOS entitlements.
 - Define change-risk-based hardware retesting and attributed evidence reuse; retain first-stable evidence review and final-candidate compiler gates.
-- Document promotion of the v4 development line while preserving v3 as legacy, independent npm/GitHub checks and branch-bound tooling review. No stable publication or default-line switch is announced.
+- Document v3 legacy maintenance, independent npm/GitHub verification, branch-bound tooling and recovery.
 
 ## [4.0.0-beta.11](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.10...v4.0.0-beta.11) (2026-10-09)
 

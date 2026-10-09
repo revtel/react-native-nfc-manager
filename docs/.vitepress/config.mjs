@@ -10,6 +10,7 @@ const maintainers = [
     {text: 'Publishing', link: '/GITHUB_ACTIONS_PUBLISHING'},
   ]},
   {text: 'Validation records', collapsed: true, items: [
+    {text: 'Stable candidate · Oct 9', link: '/V4_CANDIDATE_VALIDATION_2026-10-09'},
     {text: 'Android tag metadata · Oct 9', link: '/ANDROID_TAG_METADATA_VALIDATION_2026-10-09'},
     {text: 'Expo validation · Sep 29', link: '/EXPO_VALIDATION_2026-09-29'},
     {text: 'Expo smoke · Sep 29', link: '/EXPO_SMOKE_2026-09-29'},
