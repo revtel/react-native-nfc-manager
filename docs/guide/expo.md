@@ -1,6 +1,6 @@
 # Expo Development Builds
 
-Install the package with `npm install react-native-nfc-manager@beta`.
+Install the package with `npm install react-native-nfc-manager`.
 
 `react-native-nfc-manager` contains native code, so it does **not** work in Expo Go. Use an [Expo Development Build](https://docs.expo.dev/develop/development-builds/introduction/) generated locally or by EAS.
 

@@ -10,6 +10,7 @@ const maintainers = [
     {text: 'Publishing', link: '/GITHUB_ACTIONS_PUBLISHING'},
   ]},
   {text: 'Validation records', collapsed: true, items: [
+    {text: 'Stable release · Oct 9', link: '/V4_STABLE_RELEASE_2026-10-09'},
     {text: 'Stable candidate · Oct 9', link: '/V4_CANDIDATE_VALIDATION_2026-10-09'},
     {text: 'Android tag metadata · Oct 9', link: '/ANDROID_TAG_METADATA_VALIDATION_2026-10-09'},
     {text: 'Expo validation · Sep 29', link: '/EXPO_VALIDATION_2026-09-29'},
@@ -52,7 +53,7 @@ export default defineConfig({
   ignoreDeadLinks: false,
   transformPageData(page) {
     // Historical records retain their original claims and stay out of user search.
-    if (/VALIDATION_|SMOKE_|PREPARATION_|CI_VERIFICATION/.test(page.relativePath)) {
+    if (/VALIDATION_|SMOKE_|PREPARATION_|STABLE_RELEASE_|CI_VERIFICATION/.test(page.relativePath)) {
       page.frontmatter.search = false;
     }
   },
@@ -61,7 +62,7 @@ export default defineConfig({
       {text: 'Guide', link: '/guide/installation'},
       {text: 'Reference', link: '/reference/api'},
       {text: 'Maintainers', link: '/CONTRIBUTING'},
-      {text: 'v4 beta', link: `${repository}/blob/${branch}/CHANGELOG.md`},
+      {text: 'v4 releases', link: `${repository}/blob/${branch}/CHANGELOG.md`},
     ],
     sidebar,
     search: {provider: 'local'},

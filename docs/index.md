@@ -25,7 +25,7 @@ features:
     link: ./EXPO_TROUBLESHOOTING
 ---
 
-Requires React Native **0.76+ with the New Architecture** and an NFC-capable physical device for scans. Expo Go cannot load this module. Install `react-native-nfc-manager@beta` while v4 remains in beta.
+Requires React Native **0.76+ with the New Architecture** and an NFC-capable physical device for scans. Expo Go cannot load this module. Install `react-native-nfc-manager` for stable v4.
 
 [Support policy](./SUPPORT_POLICY.md) · [Migration](./MIGRATING_V3_TO_V4.md) · [Contributing](./CONTRIBUTING.md)
 

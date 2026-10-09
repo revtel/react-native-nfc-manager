@@ -10,10 +10,10 @@ Requires **React Native 0.76+ with the New Architecture**. Use an NFC-capable ph
 ## Installation
 
 ```sh
-npm install react-native-nfc-manager@beta
+npm install react-native-nfc-manager
 ```
 
-v4 is currently beta. Pin the resolved version for reproducible installs. See [migration](docs/MIGRATING_V3_TO_V4.md) when upgrading an existing app.
+v4 is available on npm `latest`. Pin the resolved version for reproducible installs. See [migration](docs/MIGRATING_V3_TO_V4.md) when upgrading an existing app.
 
 <a id="setup"></a>
 

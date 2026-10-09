@@ -1,6 +1,6 @@
 # Expo integration and troubleshooting
 
-This guide describes v4. Install `react-native-nfc-manager@beta` until stable promotion, and lock the resolved version. An unqualified install currently selects v3. Use the [Expo setup](./guide/expo.md) and [migration guide](./MIGRATING_V3_TO_V4.md).
+This guide describes v4. Install `react-native-nfc-manager` for stable v4, and lock the resolved version. Use the [Expo setup](./guide/expo.md) and [migration guide](./MIGRATING_V3_TO_V4.md).
 
 ## What is supported and tested
 
@@ -70,7 +70,7 @@ Use the entitlement formats appropriate for your app and Apple's current require
 
 ## Finding current documentation
 
-[#806](https://github.com/revtel/react-native-nfc-manager/issues/806) highlights confusion between Expo and Expo Go instructions. The v4 README and this guide are the canonical v4 integration entrypoints. The default `main` branch contains v4 documentation; the `v3` legacy branch retains a notice pointing to it. npm installation still uses `@beta` until a stable v4 release is published.
+[#806](https://github.com/revtel/react-native-nfc-manager/issues/806) highlights confusion between Expo and Expo Go instructions. The v4 README and this guide are the canonical v4 integration entrypoints. The default `main` branch contains v4 documentation; the `v3` legacy branch retains a notice pointing to it. An unqualified npm install selects stable v4; use `@3` for legacy applications.
 
 ## Reporting an integration problem
 

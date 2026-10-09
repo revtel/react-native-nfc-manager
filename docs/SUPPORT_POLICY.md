@@ -49,7 +49,7 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 |---|---|---|---|---|---|---|
 | 57.0.21 | 0.86.3 | New Architecture | Packed-package plugin output verified | Generated consumer APK compiled | Pods, Codegen, unsigned Simulator app, and signed device app compiled | Local Development Build integration and recorded basic device smoke flows verified; Expo Doctor gate incomplete; hosted EAS unverified |
 | 57.0.25 | 0.86.3 | New Architecture | Packed-package plugin output verified | Clean consumer and Development Build APKs compiled | Pods, Codegen, unsigned Simulator app and signed device app compiled | Full local consumer gate and basic iPhone/Android regressions passed with the accepted Directory metadata warning; hosted EAS unverified |
-| 57.0.27 | 0.86.3 | New Architecture | Packed-package plugin output and Doctor verified | Clean consumer APK compiled | Pods, Codegen and complete unsigned arm64 Simulator app compiled | Local unpublished 4.0.0 compiler gate passed; new SDK patch device integration, hosted EAS and x86_64 unverified |
+| 57.0.27 | 0.86.3 | New Architecture | Packed-package plugin output and Doctor verified | Clean consumer APK compiled | Pods, Codegen and complete unsigned arm64 Simulator app compiled | 4.0.0 compiler gate and focused Android/iPhone NDEF read/cancel/read integration passed; hosted EAS and x86_64 unverified |
 
 The [2026-09-29 physical-device smoke record](./EXPO_SMOKE_2026-09-29.md)
 covers iPhone 15 Plus / iOS 26.6.1 NDEF flows and Samsung SM-N975U1 / Android 12
@@ -65,9 +65,9 @@ reads, cancellation, and subsequent reads also passed on the updated Development
 Build, including Android NTAG215 NfcA reads and scan-prompt closure. Broader flows
 from the earlier smoke record were not all repeated on 57.0.25.
 
-The [October 9 stable candidate review](./V4_CANDIDATE_VALIDATION_2026-10-09.md) records the 57.0.27 packed consumer and RN 0.76.9 application compiler gates. Earlier hardware records retain their original versions; no physical-device flows were rerun for 57.0.27.
+The [October 9 stable candidate review](./V4_CANDIDATE_VALIDATION_2026-10-09.md) records the 57.0.27 packed consumer and RN 0.76.9 application compiler gates. The subsequent [stable release record](./V4_STABLE_RELEASE_2026-10-09.md) records focused 57.0.27 physical checks on both platforms. Earlier broader hardware records retain their original versions.
 
-The Expo validator accepts the currently known React Native Directory warning that `react-native-nfc-manager` is not yet marked as New Architecture tested. This is external metadata, not build evidence. The metadata SHALL be updated in coordination with v4 becoming the default stable package so the legacy v3 line is not mislabeled prematurely.
+Before stable publication, the Expo validator accepted only the known React Native Directory warning that this package was not yet marked as New Architecture tested. After 4.0.0 became npm latest, the same Expo 57.0.27 consumer passed all 21 Doctor checks with no Directory warning. The Directory entry still omits an explicit architecture field; no upstream metadata edit was made. Directory status is external metadata, not compiler or hardware evidence.
 
 The representative Codegen rows record only the exact versions shown; they do not imply that every intervening React Native minor was compiled or tested. Routine CI uses Node.js 22 and validates install, TypeScript build, lint, root and example mocked Jest tests, type checking, packed-package contents, and Android/iOS Codegen generation for React Native 0.76.9, 0.77.3, and 0.84.0. Separate CI jobs compile the RN 0.84 Android and unsigned iOS Simulator applications for relevant changes. Documentation-only changes skip native builds; manual candidate validation forces both. A successful aggregate gate on a documentation-only change is not compiler evidence. Example Jest runs in the validation job and provides mocked application-interaction coverage. The v4 CI workflow runs on pull requests and v4/main pushes; workflow configuration is not itself proof of a successful hosted run.
 
@@ -118,8 +118,8 @@ See [hardware retesting by change risk](./RELEASING.md#hardware-retesting-by-cha
 
 ## Stable preparation and branch policy
 
-`v4` is the active development and release branch; `main` currently retains v3.
-The package remains a beta until a separately reviewed stable publication.
+`main` is the active v4 development and release branch; `v3` preserves legacy maintenance.
+[4.0.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.0.0) is published on npm `latest`; the beta channel remains separate.
 See [Migration](./MIGRATING_V3_TO_V4.md) and the
 [stable cutover procedure](./RELEASING.md#stable-cutover-procedure).
 GitHub default-branch selection and npm `latest` are independent operations.

@@ -3,10 +3,10 @@
 v4 requires React Native 0.76+ with the New Architecture. On RN 0.76–0.81, enable the New Architecture in the native app; RN 0.82+ uses it exclusively. See the [support policy](../SUPPORT_POLICY.md) for the tested version window.
 
 ```sh
-npm install react-native-nfc-manager@beta
+npm install react-native-nfc-manager
 ```
 
-v4 is currently beta. Pin the resolved version for reproducible installs. When upgrading an existing application, follow the [migration guide](../MIGRATING_V3_TO_V4.md).
+v4 is available on npm `latest`. Pin the resolved version for reproducible installs. When upgrading an existing application, follow the [migration guide](../MIGRATING_V3_TO_V4.md).
 
 ## Choose your setup
 

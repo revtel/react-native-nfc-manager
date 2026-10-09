@@ -1,13 +1,13 @@
 # Migrating from v3 to v4
 
-v4 is still a prerelease. This guide describes the v4 branch; unpublished branch changes are not automatically included in the current npm beta. Confirm your installed version and its release notes before upgrading.
+v4 is available on npm `latest`. This guide describes the main development line; unpublished changes are not automatically included in a release. Confirm your installed version and its release notes before upgrading.
 
 ## Choose the architecture first
 
 | Application | Package line |
 | --- | --- |
 | Legacy Architecture | Keep v3: `npm install react-native-nfc-manager@3` |
-| RN 0.76–0.81 with New Architecture enabled | v4 beta; legacy mode is outside the v4 contract |
+| RN 0.76–0.81 with New Architecture enabled | v4; legacy mode is outside the v4 contract |
 | RN 0.82 or newer | New Architecture only; check the exact-version evidence in the support policy |
 | RN older than 0.76 | Outside v4 support |
 
@@ -15,17 +15,17 @@ The v4 minimum iOS deployment target is 15.1 and its Swift language baseline is 
 
 ## Install and rebuild
 
-Before stable promotion, install the beta channel, then lock the exact resolved version:
+Install stable v4, then lock the exact resolved version:
 
 ```sh
-npm install react-native-nfc-manager@beta
+npm install react-native-nfc-manager
 ```
 
 Run your application's CocoaPods installation on iOS, then rebuild the native application on both platforms. A Metro refresh or JavaScript-only update cannot replace the native module. Review NFC capabilities, provisioning, iOS usage-description/identifier settings, and Android permissions in the [platform setup guides](./guide/installation.md#choose-your-setup).
 
 Expo applications require prebuild and a custom Development Build. Expo Go cannot load this native module. Follow the [Expo instructions](./guide/expo.md), rebuild after plugin changes, and use [Expo troubleshooting](./EXPO_TROUBLESHOOTING.md) for dependency, rebuild and entitlement problems. Local build verification remains separate from hosted EAS verification.
 
-An unqualified install currently selects v3 through `latest`. The release procedure will update this guidance when stable v4 actually becomes `latest`; changing the GitHub default branch does not change npm resolution.
+An unqualified install selects stable v4 through `latest`. Existing legacy applications can explicitly install `react-native-nfc-manager@3`.
 
 ## TypeScript result corrections
 

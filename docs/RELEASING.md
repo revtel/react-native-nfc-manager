@@ -252,14 +252,14 @@ The policy table is explicit: `main + 4.x.y → latest`; `main/v4 + 4.x.y-beta.N
 
 The GitHub development-line rename was performed on 2026-10-09: old main at `cce637113135c343d90e3a3f8b714e50cc39f273` became `v3`; v4 at `4a19f11429156746eb6eae80cf4661b460c96e61` became the default `main`. Neither history was merged or force-replaced. The pre-rename [full CI run](https://github.com/revtel/react-native-nfc-manager/actions/runs/37897589429) passed both native builds. Existing PRs #831, #832 and #839 now target `v3`; the npm-publish environment permits `main` and `v3`. A new full main CI run and fresh-clone verification complete the infrastructure review.
 
-This does not promote npm: `latest` remains `3.17.5` and `beta` remains `4.0.0-beta.11`. Stable candidate preparation, publishing preview/publication, consumer verification and Pages deployment remain separate operations. For branch recovery, preserve all newer commits and explicitly review renaming the lines back and restoring the default/environment restrictions; never reset or force-push either history.
+At the branch rename checkpoint, npm was unchanged: `latest` was `3.17.5` and `beta` was `4.0.0-beta.11`. The subsequent [4.0.0 release record](./V4_STABLE_RELEASE_2026-10-09.md) documents verified stable publication and independent channel checks. Stable candidate preparation, publishing preview/publication, consumer verification and Pages deployment remain separate operations. For branch recovery, preserve all newer commits and explicitly review renaming the lines back and restoring the default/environment restrictions; never reset or force-push either history.
 
-Complete the remaining stable-release checks during release review:
+The stable release review completed the following checks:
 
-- [ ] Record the exact stable candidate and packed artifact identity; attach basic/package/Codegen, RN 0.84, RN 0.76 support-floor and Expo compiler evidence. Review hardware differences, focused retests, attributed reuse and accepted gaps separately.
-- [ ] Preview the unpublished candidate with `publish=false` after a full successful main CI run. Existing beta.11/3.17.5 release tags point to their original commits, so they cannot serve as new-candidate previews at the renamed branch tips. Verify OIDC publishing authority during an explicitly authorized publication.
-- [ ] Verify stable npm publication and `latest` independently from GitHub default-line changes. Compare the published package with the reviewed artifact; confirm an unqualified install resolves stable v4 and `@3` resolves v3.
-- [ ] After verified publication, update README/channel guidance, migration links and React Native Directory metadata; review Expo Doctor and historical issue response drafts against the actual released version. Posting issue responses requires separate authorization.
+- [x] Record the exact stable candidate and packed artifact identity; attach basic/package/Codegen, RN 0.84, RN 0.76 support-floor and Expo compiler evidence. Review hardware differences, focused retests, attributed reuse and accepted gaps separately.
+- [x] Preview the unpublished candidate with `publish=false` after a full successful main CI run. Existing beta.11/3.17.5 release tags point to their original commits, so they cannot serve as new-candidate previews at the renamed branch tips. Verify OIDC publishing authority during an explicitly authorized publication.
+- [x] Verify stable npm publication and `latest` independently from GitHub default-line changes. Compare the published package with the reviewed artifact; confirm an unqualified install resolves stable v4 and `@3` resolves v3.
+- [x] Update the post-publication README/channel and migration guidance. The post-publication Expo Doctor passed 21/21 without the former Directory warning; no upstream metadata edit was made. Historical issue replies remain a separate authorized follow-up.
 
 ## Partial failure and recovery
 

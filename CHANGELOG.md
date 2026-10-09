@@ -1,6 +1,6 @@
 ## Unreleased
 
-## 4.0.0
+## [4.0.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.0.0) (2026-10-09)
 
 ### v3-to-v4 migration
 
@@ -8,7 +8,7 @@
 - Move the native implementation to TurboModule/Codegen, focused Android handlers and Swift with an Objective-C++ bridge, preserving the documented v4 session, cancellation, event and API contract.
 - Ship compiled TypeScript with public declarations; account for optional NDEF payloads and platform-specific tag fields. See the [migration guide](https://github.com/revtel/react-native-nfc-manager/blob/main/docs/MIGRATING_V3_TO_V4.md).
 - Include beta-series fixes for RN 0.76/0.77 Codegen, NDEF Buffer/Uint8Array decoding and supplementary Unicode, Android live NDEF reads (PR #843), iOS ISO 15693 bridge scalar alignment, Expo config-plugin idempotence/permission opt-out and published-package Babel isolation. Individual beta entries below retain their original details and evidence.
-- Compiler checks and reused device records have separate identities. Hosted EAS/App Store, iOS ISO 15693 hardware and some technology-specific/timeout flows remain unverified; see the candidate review before publication.
+- Compiler checks and reused device records have separate identities. Hosted EAS/App Store, iOS ISO 15693 hardware and some technology-specific/timeout flows remain unverified; see the [release validation record](docs/V4_STABLE_RELEASE_2026-10-09.md).
 
 ### Changed
 
