@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # v4 stable candidate review — 2026-10-09
 
 This is an **unpublished 4.0.0 candidate**, prepared locally on main at `02c0280734da7ee1bebef976df596a47bae367de` with uncommitted package/lock version, example parent/Pod metadata, Expo fixture patch and changelog edits. No stable publication, release tag, commit, push or Pages deployment is recorded by this review. Installation guidance still selects the available beta until publication.

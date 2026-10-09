@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # Android cached tag metadata validation — 2026-10-09
 
 ## Candidate and device

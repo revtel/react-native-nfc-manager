@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # v4 stable release — 2026-10-09
 
 [4.0.0 is published](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.0.0) on npm `latest`. The release tag points to main candidate `9bfb5fd0a381a049f5f74439c08178d9ba62583d`. GitHub reports a regular release and selects it as latest. `beta` remains 4.0.0-beta.11; an explicit `@3` install resolves 3.17.5.

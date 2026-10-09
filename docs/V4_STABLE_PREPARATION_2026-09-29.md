@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # v4 stable preparation — 2026-09-29
 
 This report records the original local preparation phase. Commits, pushes and

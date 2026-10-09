@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # Verifying selective native CI
 
 Use the Actions run linked from a pull request's checks, and confirm its head

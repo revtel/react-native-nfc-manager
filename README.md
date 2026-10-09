@@ -104,7 +104,7 @@ See the [full technology and handler table](docs/reference/compatibility.md). Ac
 
 ## Documentation
 
-Start with the [v4 documentation index](docs/index.md).
+Read the [v4 documentation website](https://revtel.github.io/react-native-nfc-manager/). The [Markdown index](docs/index.md) is also available in this repository.
 
 - [Installation and runtime requirements](docs/guide/installation.md)
 - [Expo setup](docs/guide/expo.md) · [iOS setup](docs/guide/ios.md) · [Android setup](docs/guide/android.md)

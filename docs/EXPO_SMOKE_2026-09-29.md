@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # Expo Development Build physical-device smoke record — 2026-09-29
 
 The basic flows below passed on the recorded devices. Tag-scan outcomes were

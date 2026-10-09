@@ -24,7 +24,7 @@ The build fails on broken internal page links. Also check anchors, JSON/shell/co
 
 - Add user pages under `guide/` or `reference/`, then update `.vitepress/config.mjs`.
 - Keep current support, migration and Expo troubleshooting links available from the user sidebar.
-- Keep release/compiler/device evidence attributed to its original candidate. Records remain accessible from maintainer navigation and are excluded from local search.
+- Keep release/compiler/device evidence attributed to its original candidate. Records remain accessible from maintainer navigation. Set `search: false` in their Markdown frontmatter to exclude them from local search.
 - Use relative Markdown links and images so the same page works in GitHub and the site. Link to source files outside `docs/` using GitHub URLs.
 - Preserve existing file/anchor URLs when moving content, and update inbound links. The README's legacy anchors remain entrypoints to the corresponding guides.
 - Keep the root package's CommonJS configuration and dependencies independent from the site. `docs/package.json` is private. `.vitepress/dist/`, `.vitepress/cache/` and `node_modules/` are generated and ignored.
@@ -35,7 +35,7 @@ The `Documentation` workflow runs for documentation, image and workflow changes 
 
 ## Publishing the site
 
-The site uses GitHub Actions deployment with project base `/react-native-nfc-manager/`. To maintain the deployment:
+The public site is [revtel.github.io/react-native-nfc-manager](https://revtel.github.io/react-native-nfc-manager/), using GitHub Actions deployment with project base `/react-native-nfc-manager/`. To maintain the deployment:
 
 1. Review the built artifact before merging documentation changes to main.
 2. Keep Pages configured to use GitHub Actions and the `github-pages` environment restricted to main. The workflow uses official Pages artifact/deployment actions with `pages: write` and `id-token: write` only on the deployment job.

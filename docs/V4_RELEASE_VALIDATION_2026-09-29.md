@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # v4 stable-promotion validation checkpoint — 2026-09-29
 
 This records validation of the current beta.9 code before preparing a stable

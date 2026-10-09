@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # Expo 57.0.25 validation record — 2026-09-29
 
 The clean packed-package Expo consumer gate and basic iPhone/Android regressions

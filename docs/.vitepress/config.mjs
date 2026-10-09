@@ -51,12 +51,6 @@ export default defineConfig({
   base: '/react-native-nfc-manager/',
   // Markdown files are shared with GitHub; the build checks local links by default.
   ignoreDeadLinks: false,
-  transformPageData(page) {
-    // Historical records retain their original claims and stay out of user search.
-    if (/VALIDATION_|SMOKE_|PREPARATION_|STABLE_RELEASE_|CI_VERIFICATION/.test(page.relativePath)) {
-      page.frontmatter.search = false;
-    }
-  },
   themeConfig: {
     nav: [
       {text: 'Guide', link: '/guide/installation'},
