@@ -7,6 +7,7 @@ import android.nfc.NdefMessage;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
+import android.nfc.tech.TagTechnology;
 import android.os.Parcelable;
 import android.util.Log;
 
@@ -16,6 +17,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -81,8 +83,19 @@ class NdefHandler {
         }
 
         try {
-            Ndef ndef = Ndef.get(techRequest.getTagHandle());
-            WritableMap parsed = ndefToReact(techRequest.getTagHandle(), new NdefMessage[] { ndef.getNdefMessage() });
+            TagTechnology techHandle = techRequest.getTechHandle();
+            if (!(techHandle instanceof Ndef)) {
+                callback.invoke(ERR_API_NOT_SUPPORT);
+                return;
+            }
+
+            Ndef ndef = (Ndef) techHandle;
+            if (!ndef.isConnected()) {
+                callback.invoke(ERR_NO_TECH_REQ);
+                return;
+            }
+
+            WritableMap parsed = ndefToReact(ndef, ndef.getNdefMessage());
             callback.invoke(null, parsed);
         } catch (Exception ex) {
             Log.d(LOG_TAG, ex.toString());
@@ -313,6 +326,17 @@ class NdefHandler {
             technology.close();
         } catch (Exception ex) {
             Log.d(LOG_TAG, "fail to close NDEF technology: " + ex);
+        }
+    }
+
+    static WritableMap ndefToReact(Ndef ndef, NdefMessage message) {
+        try {
+            JSONObject json = Util.ndefToJSON(ndef);
+            json.put("ndefMessage", message == null ? new JSONArray() : Util.messageToJSON(message));
+            return Util.jsonToReact(json);
+        } catch (JSONException ex) {
+            Log.e(LOG_TAG, "Failed to convert ndef into json", ex);
+            return null;
         }
     }
 
