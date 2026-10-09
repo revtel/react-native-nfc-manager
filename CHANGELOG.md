@@ -1,4 +1,4 @@
-## Unreleased
+## [4.0.0-beta.11](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.10...v4.0.0-beta.11) (2026-10-09)
 
 ### Example
 
@@ -6,9 +6,15 @@
 
 ### Fixed
 
+- Merge contributor PR #843 (fixes #842): Android `getNdefMessage()` now reads through the connected NDEF handle and returns current tag contents instead of discovery-time cached contents. The cached API and discovery behavior remain unchanged; a tag with no NDEF message returns `ndefMessage: []` on the live-read path.
 - Preserve emoji and other supplementary Unicode characters when decoding NDEF text and URI records; reject decoded values above the Unicode maximum. Ports the main #852 fix to v4.
 - Keep repository Babel configuration out of published packages, retaining the TypeScript preset for local tests. Ports the main #835 fix to v4.
 - Reject published Babel configuration in the package-content verification gate.
+
+### Verification
+
+- Record Android 12 / Samsung SM-N975U1 physical-device NFC-V and ISO-DEP over NFC-A discovery/getTag metadata agreement and cleanup. ISO-DEP over NFC-B remains unverified.
+- PR #843 includes contributor-reported same-session write/read evidence on Galaxy A53 / Android 16 / MIFARE Ultralight. Maintainer read-only testing passed; maintainer same-session write/read validation remains pending a writable NDEF tag.
 
 ## [4.0.0-beta.10](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.9...v4.0.0-beta.10) (2026-10-03)
 
