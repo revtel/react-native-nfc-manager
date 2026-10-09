@@ -17,6 +17,7 @@ import {
 import NfcManager, {
   NfcEvents,
   NfcTech,
+  NfcAdapter,
   type TagEvent,
 } from 'react-native-nfc-manager';
 
@@ -139,8 +140,87 @@ function App(): React.JSX.Element {
     }
   };
 
+  const readAndroidMetadata = async (tech: string, readerFlags: number) => {
+    await NfcManager.start();
+    try {
+      await requestTechnologyWithPrompt(
+        `Read ${tech} metadata: hold card still`,
+        () =>
+          NfcManager.requestTechnology(tech, {
+            isReaderModeEnabled: true,
+            readerModeFlags:
+              readerFlags | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+          }),
+      );
+      const tag = await NfcManager.getTag();
+      if (!tag) {
+        throw new Error('getTag() returned no tag');
+      }
+      const metadata = {
+        techTypes: tag.techTypes,
+        atqa: tag.atqa,
+        sak: tag.sak,
+        dsfid: tag.dsfid,
+        responseFlags: tag.responseFlags,
+        historicalBytes: tag.historicalBytes,
+        hiLayerResponse: tag.hiLayerResponse,
+      };
+      const message = `${tech} getTag metadata: ${JSON.stringify(metadata)}`;
+      appendLog(message);
+      console.log(`[NFC metadata] ${message}`);
+    } finally {
+      await cancelTechnologyWithPrompt();
+      appendLog(`${tech} request closed; remove the card before repeating`);
+    }
+  };
+
   const actions = useMemo(
     () => [
+      ...(Platform.OS === 'android'
+        ? [
+            {
+              label: 'Read NFC-V Metadata (Read Only)',
+              testID: 'action-read-nfcv-metadata',
+              run: () =>
+                readAndroidMetadata(NfcTech.NfcV, NfcAdapter.FLAG_READER_NFC_V),
+            },
+            {
+              label: 'Read ISO-DEP Metadata (Read Only)',
+              testID: 'action-read-isodep-metadata',
+              run: () =>
+                readAndroidMetadata(
+                  NfcTech.IsoDep,
+                  NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_NFC_B,
+                ),
+            },
+            {
+              label: 'Start Metadata Discovery (Read Only)',
+              testID: 'action-start-metadata-discovery',
+              run: async () => {
+                await NfcManager.start();
+                await NfcManager.registerTagEvent({
+                  isReaderModeEnabled: true,
+                  readerModeFlags:
+                    NfcAdapter.FLAG_READER_NFC_A |
+                    NfcAdapter.FLAG_READER_NFC_B |
+                    NfcAdapter.FLAG_READER_NFC_V |
+                    NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+                });
+                appendLog(
+                  'Scan a card for discoverTag metadata, then press Stop Metadata Discovery before other tests',
+                );
+              },
+            },
+            {
+              label: 'Stop Metadata Discovery',
+              testID: 'action-stop-metadata-discovery',
+              run: async () => {
+                await NfcManager.unregisterTagEvent();
+                appendLog('metadata discovery stopped');
+              },
+            },
+          ]
+        : []),
       {
         label: 'Start NFC Manager',
         run: async () => {
@@ -454,9 +534,7 @@ function App(): React.JSX.Element {
               );
               appendLog('failed-I/O recovery connected');
               const tag = await NfcManager.getTag();
-              appendLog(
-                `failed-I/O recovery getTag(): ${JSON.stringify(tag)}`,
-              );
+              appendLog(`failed-I/O recovery getTag(): ${JSON.stringify(tag)}`);
             },
           }
         : {

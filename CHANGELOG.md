@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Example
+
+- Add Android read-only NFC-V and ISO-DEP metadata actions and explicit discovery start/stop controls for physical-device validation.
+
 ### Fixed
 
 - Preserve emoji and other supplementary Unicode characters when decoding NDEF text and URI records; reject decoded values above the Unicode maximum. Ports the main #852 fix to v4.

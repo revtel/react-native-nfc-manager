@@ -19,6 +19,8 @@ jest.mock('react-native-nfc-manager', () => {
   const NfcTech = {
     Ndef: 'Ndef',
     NfcA: 'NfcA',
+    NfcV: 'NfcV',
+    IsoDep: 'IsoDep',
     Iso15693IOS: 'iso15693',
   };
 
@@ -49,6 +51,7 @@ jest.mock('react-native-nfc-manager', () => {
     },
     NfcEvents,
     NfcTech,
+    NfcAdapter: { FLAG_READER_NFC_A: 1, FLAG_READER_NFC_B: 2, FLAG_READER_NFC_V: 8, FLAG_READER_SKIP_NDEF_CHECK: 128 },
   };
 });
 

@@ -120,3 +120,23 @@ After changing capabilities/profile, clean and reinstall:
 npm run pods
 npm run ios
 ```
+
+## Android cached metadata smoke test
+
+Use the current built package on a physical Android device. These actions read
+cached tag metadata; they do not send transceive commands or write a tag.
+
+1. Press **Start Metadata Discovery (Read Only)**, scan an NFC-V or ISO-DEP card,
+   and record the `discoverTag` fields. Press **Stop Metadata Discovery**.
+2. Remove the card. Press **Read NFC-V Metadata (Read Only)** or
+   **Read ISO-DEP Metadata (Read Only)**, then tap the same card. The app prints
+   selected `getTag()` metadata and cancels the request automatically.
+3. Remove the card and repeat to check cleanup and subsequent requests.
+
+For NFC-V record `dsfid` and `responseFlags` (unsigned numbers). For ISO-DEP
+record `historicalBytes` for NFC-A or `hiLayerResponse` for NFC-B. Either field
+can be absent depending on the card; do not treat every missing optional field
+as a failure. Record device/OS, package commit, card technology, discovery and
+getTag values, repeated-request results and any errors before marking a hardware
+gate complete. NFC-V or ISO-DEP support alone does not establish that a card is
+a writable NDEF tag for PR #843's same-session write/read regression.
