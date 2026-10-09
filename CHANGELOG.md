@@ -1,3 +1,9 @@
+## Unreleased
+
+### Changed
+
+- Add one-time development warnings for unsupported React Native versions and missing New Architecture runtime signals on RN 0.76–0.81, before native initialization. Missing native modules now report linking/rebuild and Expo Development Build guidance.
+
 ## [4.0.0-beta.11](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.10...v4.0.0-beta.11) (2026-10-09)
 
 ### Example

@@ -1,5 +1,6 @@
 'use strict';
-import {NativeModules, NativeEventEmitter} from 'react-native';
+import {NativeModules, NativeEventEmitter, TurboModuleRegistry} from 'react-native';
+import {warnRuntimeCompatibility} from './runtimeCompatibility';
 
 type NativeMethod = (...args: unknown[]) => void;
 type NativeEventSubscription = {remove: () => void};
@@ -25,10 +26,20 @@ const reactNativeGlobal = global as typeof global & {
 const isTurboModuleEnabled =
   reactNativeGlobal['RN$Bridgeless'] === true ||
   reactNativeGlobal.__turboModuleProxy != null;
+warnRuntimeCompatibility();
+
 const nativeModules = NativeModules || {};
 const NativeNfcManager = (isTurboModuleEnabled
-  ? require('../specs/NativeNfcManager').default
+  ? TurboModuleRegistry.get('NfcManager')
   : nativeModules.NfcManager) as NativeModule;
+
+if (!NativeNfcManager) {
+  throw new Error(
+    '[react-native-nfc-manager] The NfcManager native module is unavailable. ' +
+      'Verify native linking and rebuild the native app after installing this package. ' +
+      'Expo apps require a Development Build; Expo Go cannot load this module.',
+  );
+}
 
 const legacyNfcManagerEmitter: NativeEmitterLike =
   typeof NativeEventEmitter === 'function'
