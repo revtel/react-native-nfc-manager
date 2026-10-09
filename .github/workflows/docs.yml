@@ -38,6 +38,8 @@ jobs:
       - name: Install documentation dependencies
         run: npm ci --prefix docs
       - name: Build documentation
+        env:
+          DOCS_SOURCE_BRANCH: ${{ github.base_ref || github.ref_name }}
         run: npm run build --prefix docs
       - name: Upload static preview artifact
         uses: actions/upload-artifact@v4

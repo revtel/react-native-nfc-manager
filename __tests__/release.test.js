@@ -4,7 +4,7 @@ const {releaseArguments, runRelease} = require('../scripts/release');
 const packageJson = require('../package.json');
 const config = require('../.release-it.json');
 
-function fixture({branch = 'v4', status = '', failVerification = false, published = ['4.0.0-beta.9'], registryError = false, currentVersion = '4.0.0-beta.9'} = {}) {
+function fixture({branch = 'main', status = '', failVerification = false, published = ['4.0.0-beta.9'], registryError = false, currentVersion = '4.0.0-beta.9'} = {}) {
   const exec = jest.fn((command, args) => {
     if (command === 'git') {
       return args[0] === 'branch' ? branch : status;
@@ -25,7 +25,7 @@ it('uses the same dotenv wrapper for every release entrypoint', () => {
   expect(packageJson.scripts.release).toBe(packageJson.scripts['release:stable']);
   expect(packageJson.scripts['release:stable']).toBe('dotenv -- node scripts/release.js stable');
   expect(packageJson.scripts['release:beta']).toBe('dotenv -- node scripts/release.js beta');
-  expect(config.git).toMatchObject({requireBranch: 'v4', requireCleanWorkingDir: true, requireUpstream: true});
+  expect(config.git).toMatchObject({requireBranch: ['main', 'v4'], requireCleanWorkingDir: true, requireUpstream: true});
 });
 
 it.each([
@@ -62,9 +62,9 @@ it.each([
   expect(deps.execFileSync).not.toHaveBeenCalled();
 });
 
-it.each(['main', 'v4-refactor', ''])('rejects branch %s before verification or release', branch => {
+it.each(['v3', 'v4', 'v4-refactor', ''])('rejects branch %s before verification or release', branch => {
   const deps = fixture({branch});
-  expect(() => runRelease(['stable', '4.0.0'], deps)).toThrow('Releases require branch v4');
+  expect(() => runRelease(['stable', '4.0.0'], deps)).toThrow('Unsupported release branch/version');
   expect(deps.execFileSync).toHaveBeenCalledTimes(1);
 });
 
@@ -124,4 +124,10 @@ it.each([
   const deps = fixture(options);
   expect(() => runRelease(['beta'], deps)).toThrow();
   expect(deps.execFileSync).toHaveBeenCalledTimes(3);
+});
+
+it.each(['main', 'v4'])('keeps beta publication available from %s', branch => {
+  const deps = fixture({branch});
+  runRelease(['beta', '4.0.0-beta.12', '--dry-run'], deps);
+  expect(deps.execFileSync.mock.calls[4][1]).toContain('--npm.tag=beta');
 });

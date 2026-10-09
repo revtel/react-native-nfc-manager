@@ -4,6 +4,10 @@
 
 - Add one-time development warnings for unsupported React Native versions and missing New Architecture runtime signals on RN 0.76–0.81, before native initialization. Missing native modules now report linking/rebuild and Expo Development Build guidance.
 
+### Tooling
+
+- Prepare the v4-to-main and main-to-v3 cutover with shared branch/channel policy: v4 stable on main uses latest, beta on main/transitional v4 uses beta, and v3 uses legacy. Validate exact candidate-branch CI and preserve GitHub prerelease/latest classification. No branch rename or stable publication is announced.
+
 ### Documentation
 
 - Shorten the README and organize v4 setup, usage and API guides into a searchable static documentation site with isolated VitePress tooling and a documentation-only build check.

@@ -2,7 +2,10 @@
   "git": {
     "commitMessage": "chore: release ${version}",
     "tagName": "v${version}",
-    "requireBranch": "v4",
+    "requireBranch": [
+      "main",
+      "v4"
+    ],
     "requireCleanWorkingDir": true,
     "requireUpstream": true
   },

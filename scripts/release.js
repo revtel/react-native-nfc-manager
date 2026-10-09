@@ -3,9 +3,9 @@
 const {execFileSync} = require('child_process');
 const {join} = require('path');
 const packageJson = require('../package.json');
+const {releasePolicy} = require('./release-policy.cjs');
 
 const repositoryRoot = join(__dirname, '..');
-const releaseBranch = 'v4';
 const number = '(?:0|[1-9][0-9]*)';
 const stableVersion = new RegExp(`^4\\.${number}\\.${number}$`);
 const betaVersion = new RegExp(`^4\\.${number}\\.${number}-beta\\.${number}$`);
@@ -57,9 +57,8 @@ function runRelease(args, dependencies = {}) {
     cwd: repositoryRoot,
     encoding: 'utf8',
   }).trim();
-  if (branch !== releaseBranch) {
-    throw new Error(`Releases require branch ${releaseBranch}; current branch is ${branch || '(detached HEAD)'}.`);
-  }
+  // The wrapper selects only v4 versions; v3 uses its hosted legacy publisher.
+  releasePolicy(branch, releaseArgs[0]);
   const status = exec('git', ['status', '--porcelain'], {
     cwd: repositoryRoot,
     encoding: 'utf8',

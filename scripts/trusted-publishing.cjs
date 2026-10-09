@@ -5,6 +5,7 @@ const {execFileSync} = require('node:child_process');
 const {createHash} = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const {releasePolicy} = require('./release-policy.cjs');
 
 const repository = 'revtel/react-native-nfc-manager';
 const packageName = 'react-native-nfc-manager';
@@ -12,17 +13,11 @@ const registry = 'https://registry.npmjs.org';
 const requiredJobs = ['Validate', 'Select native builds', 'Android New Architecture', 'iOS New Architecture', 'Native build gate'];
 
 function candidate(input, manifest) {
-  const integer = '(?:0|[1-9][0-9]*)';
-  const patterns = {
-    main: new RegExp(`^3\\.${integer}\\.${integer}$`),
-    v4: new RegExp(`^4\\.${integer}\\.${integer}-beta\\.${integer}$`),
-  };
-  assert(patterns[input.branch]?.test(input.version), 'Only main/v3 stable and v4/v4 beta candidates are supported');
+  const {distTag} = releasePolicy(input.branch, input.version);
   assert(/^[a-f0-9]{40}$/.test(input.sha), 'Provide the complete 40-character commit SHA');
   assert.equal(manifest.name, packageName, 'Unexpected package');
   assert.equal(manifest.version, input.version, 'Commit the selected package version before dispatching');
   assert.equal(manifest.repository?.url, `https://github.com/${repository}.git`, 'Package repository must match the OIDC repository');
-  const distTag = input.branch === 'main' ? 'latest' : 'beta';
   const publishConfig = manifest.publishConfig || {};
   if (publishConfig.registry !== undefined) assert.equal(publishConfig.registry.replace(/\/$/, ''), registry);
   if (publishConfig.tag !== undefined) assert.equal(publishConfig.tag, distTag);
@@ -32,11 +27,12 @@ function candidate(input, manifest) {
   return {...input, distTag};
 }
 
-function validateCi(run, jobs, sha) {
+function validateCi(run, jobs, sha, branch) {
+  assert(['main', 'v4'].includes(branch), 'v4 CI requires the selected main/v4 branch');
   assert.equal(run.head_sha, sha, 'CI must cover the exact candidate');
   assert.equal(run.path, '.github/workflows/ci.yml');
-  assert.equal(run.head_branch, 'v4');
-  assert(['push', 'workflow_dispatch'].includes(run.event), 'Use CI on the v4 branch, not a fork PR');
+  assert.equal(run.head_branch, branch);
+  assert(['push', 'workflow_dispatch'].includes(run.event), 'Use CI on the selected candidate branch, not a fork PR');
   assert.equal(run.conclusion, 'success', 'Candidate CI failed');
   for (const name of requiredJobs) {
     assert.equal(jobs.find(job => job.name === name)?.conclusion, 'success', `${name} must actually succeed; skipped builds do not qualify`);
@@ -51,7 +47,7 @@ function validateBundle(metadata, input, tarball) {
   assert.equal(metadata.branch, input.branch);
   assert.equal(metadata.version, input.version);
   assert.equal(metadata.sha, input.sha);
-  assert.equal(metadata.distTag, input.branch === 'main' ? 'latest' : 'beta');
+  assert.equal(metadata.distTag, releasePolicy(input.branch, input.version).distTag);
   assert.equal(metadata.filename, `${packageName}-${input.version}.tgz`);
   assert.equal(metadata.integrity, digest(tarball), 'Candidate tarball integrity changed');
 }
@@ -82,12 +78,12 @@ async function checkHead(input) {
 }
 
 async function checkCi(input) {
-  if (input.branch !== 'v4') return;
+  if (!releasePolicy(input.branch, input.version).requiresNativeCi) return;
   const data = await github(`actions/runs?head_sha=${input.sha}&per_page=100`);
-  const run = data.workflow_runs.find(item => item.path === '.github/workflows/ci.yml' && item.head_branch === 'v4' && ['push', 'workflow_dispatch'].includes(item.event));
-  assert(run, 'Run full v4 CI on the exact candidate first');
+  const run = data.workflow_runs.find(item => item.path === '.github/workflows/ci.yml' && item.head_branch === input.branch && ['push', 'workflow_dispatch'].includes(item.event));
+  assert(run, 'Run full v4 CI on the selected branch and exact candidate first');
   const dataJobs = await github(`actions/runs/${run.id}/jobs?per_page=100`);
-  validateCi(run, dataJobs.jobs, input.sha);
+  validateCi(run, dataJobs.jobs, input.sha, input.branch);
 }
 
 async function checkTag(input) {
@@ -158,6 +154,7 @@ async function verifyPublication(input, metadata, lookup = request, pause = ms =
 async function publish(input, bundle, execute = run) {
   assert.equal(process.env.PUBLISH, 'true', 'Publication was not requested');
   assert(process.env.ACTIONS_ID_TOKEN_REQUEST_URL && process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN, 'Publication requires GitHub Actions OIDC');
+  const policy = releasePolicy(input.branch, input.version);
   const metadata = JSON.parse(fs.readFileSync(path.join(bundle, 'metadata.json')));
   const tarballPath = path.join(bundle, `${packageName}-${input.version}.tgz`);
   validateBundle(metadata, input, fs.readFileSync(tarballPath));
@@ -177,10 +174,10 @@ async function publish(input, bundle, execute = run) {
   if (!tag) await github('git/refs', {method: 'POST', body: JSON.stringify({ref: `refs/tags/v${input.version}`, sha: input.sha})});
   const release = await github(`releases/tags/v${input.version}`, {}, true);
   if (!release) {
-    await github('releases', {method: 'POST', body: JSON.stringify({tag_name: `v${input.version}`, name: `v${input.version}`, body: fs.readFileSync(path.join(bundle, 'release-notes.md'), 'utf8'), draft: false, prerelease: input.branch === 'v4', make_latest: input.branch === 'main' ? 'true' : 'false'})});
+    await github('releases', {method: 'POST', body: JSON.stringify({tag_name: `v${input.version}`, name: `v${input.version}`, body: fs.readFileSync(path.join(bundle, 'release-notes.md'), 'utf8'), draft: false, prerelease: policy.prerelease, make_latest: policy.distTag === 'latest' ? 'true' : 'false'})});
   } else {
     assert.equal(release.draft, false);
-    assert.equal(release.prerelease, input.branch === 'v4');
+    assert.equal(release.prerelease, policy.prerelease);
   }
   console.log(`Verified ${packageName}@${input.version}, npm ${metadata.distTag}, tag and GitHub release`);
 }
