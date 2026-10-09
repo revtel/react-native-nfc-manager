@@ -31,16 +31,16 @@ The build fails on broken internal page links. Also check anchors, JSON/shell/co
 
 ## Continuous integration
 
-The build-only `Documentation` workflow runs for documentation, image and workflow changes on PRs and `v4`/`main` pushes. It installs the pinned docs lockfile, builds the site and uploads a short-lived static artifact. It does not deploy to GitHub Pages. The package CI and native build gates retain their own checks.
+The `Documentation` workflow runs for documentation, image and workflow changes on PRs and `v4`/`main` pushes. It installs the pinned docs lockfile, builds the site and uploads a short-lived static preview artifact. Only main pushes or manual runs on main upload a Pages artifact and deploy through the `github-pages` environment. PRs and other branches build previews only. Deployment permissions are confined to the deploy job; npm publication and native build gates remain independent.
 
 ## Publishing the site
 
-The repository is prepared for a GitHub Pages project URL with base `/react-native-nfc-manager/`. No public documentation URL is announced until deployment is verified. Before enabling publication:
+The site uses GitHub Actions deployment with project base `/react-native-nfc-manager/`. To maintain the deployment:
 
-1. Review the built artifact and authorize Pages activation/deployment.
-2. Configure Pages to use GitHub Actions. Add a deployment job on the agreed documentation branch with `pages: write`, `id-token: write` and a `github-pages` environment. Use the official Pages artifact/deployment actions, separate from npm publication.
+1. Review the built artifact before merging documentation changes to main.
+2. Keep Pages configured to use GitHub Actions and the `github-pages` environment restricted to main. The workflow uses official Pages artifact/deployment actions with `pages: write` and `id-token: write` only on the deployment job.
 3. Verify the public homepage, nested routes, images, anchors, mobile navigation and search at the project base path.
-4. Point README and the repository website link to the verified URL. Coordinate a Wiki notice linking to current docs while preserving historical URLs.
+4. Keep README and the repository website link pointed to the verified URL. A Wiki notice or historical issue replies require their own authorized follow-up; preserve historical URLs.
 
 See [GitHub's Pages workflow guide](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) and [VitePress deployment instructions](https://vuejs.github.io/vitepress/v1/guide/deploy).
 
