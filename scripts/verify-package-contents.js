@@ -6,6 +6,9 @@ const {tmpdir} = require('os');
 const {join} = require('path');
 
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+if (Object.prototype.hasOwnProperty.call(packageJson, 'babel')) {
+  throw new Error('Repository Babel configuration must not be published in package.json');
+}
 const temporaryDirectory = mkdtempSync(
   join(tmpdir(), 'react-native-nfc-manager-pack-'),
 );
@@ -47,6 +50,7 @@ try {
   }
 
   const forbiddenPatterns = [
+    /^babel\.config\./,
     /^build\//,
     /^generated\//,
     /^android\/build\//,

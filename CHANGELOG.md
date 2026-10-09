@@ -1,3 +1,11 @@
+## Unreleased
+
+### Fixed
+
+- Preserve emoji and other supplementary Unicode characters when decoding NDEF text and URI records; reject decoded values above the Unicode maximum. Ports the main #852 fix to v4.
+- Keep repository Babel configuration out of published packages, retaining the TypeScript preset for local tests. Ports the main #835 fix to v4.
+- Reject published Babel configuration in the package-content verification gate.
+
 ## [4.0.0-beta.10](https://github.com/revtel/react-native-nfc-manager/compare/v4.0.0-beta.9...v4.0.0-beta.10) (2026-10-03)
 
 ### Release preparation
