@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: Prepared candidate branch (v4 stable uses the separate cutover process)
+        description: 'Prepared candidate branch (main: v4, v3: legacy, v4: transitional beta)'
         type: choice
-        options: [main, v4]
+        options: [main, v4, v3]
         default: main
         required: true
       version:
@@ -81,14 +81,14 @@ jobs:
         working-directory: candidate
         run: npm ci
       - name: Validate v3 candidate
-        if: inputs.branch == 'main'
+        if: inputs.branch == 'v3'
         working-directory: candidate
         run: |
           npm run lint
           npm run typecheck
           npm test -- --runInBand --no-watchman
       - name: Validate v4 candidate
-        if: inputs.branch == 'v4'
+        if: inputs.branch != 'v3'
         working-directory: candidate
         run: |
           npm ci --prefix example

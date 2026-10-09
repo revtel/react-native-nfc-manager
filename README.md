@@ -1,5 +1,7 @@
 # react-native-nfc-manager
 
+> This is the v3 legacy maintenance branch. Active development and current documentation are on [main](https://github.com/revtel/react-native-nfc-manager/tree/main). v4 remains available through `react-native-nfc-manager@beta` until its stable release.
+
 [![npm version](https://img.shields.io/npm/v/react-native-nfc-manager.svg?style=flat)](https://www.npmjs.com/package/react-native-nfc-manager)
 [![build](https://api.travis-ci.org/whitedogg13/react-native-nfc-manager.svg?branch=master)](https://travis-ci.org/whitedogg13/react-native-nfc-manager)
 [![issues](https://img.shields.io/github/issues/whitedogg13/react-native-nfc-manager.svg?style=flat)](https://github.com/whitedogg13/react-native-nfc-manager/issues)
