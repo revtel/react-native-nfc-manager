@@ -219,6 +219,14 @@ function App(): React.JSX.Element {
                 appendLog('metadata discovery stopped');
               },
             },
+            {
+              label: 'Get NFC Antenna Info',
+              testID: 'action-get-nfc-antenna-info',
+              run: async () => {
+                const info = await NfcManager.getNfcAntennaInfo();
+                appendLog(`getNfcAntennaInfo(): ${JSON.stringify(info)}`);
+              },
+            },
           ]
         : []),
       {

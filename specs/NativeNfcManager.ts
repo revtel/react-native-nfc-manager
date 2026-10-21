@@ -70,6 +70,7 @@ export interface Spec extends TurboModule {
   iso15693_extendedLockBlock(options: Object, callback: (err?: string) => void): void;
   goToNfcSetting(callback: (err?: string) => void): void;
   getLaunchTagEvent(callback: (err?: string, tag?: Object) => void): void;
+  getNfcAntennaInfo(callback: (err?: string, info?: Object) => void): void;
   setTimeout(timeout: number, callback: (err?: string, tag?: Object) => void): void;
   getTimeout(callback: (err?: string, timeout?: number) => void): void;
   connect(techs: string[], callback: (err?: string) => void): void;

@@ -90,6 +90,29 @@ describe('NfcManager (android)', () => {
     });
   });
 
+  test('API: getNfcAntennaInfo forwards the native result', async () => {
+    const antennaInfo = {
+      deviceWidth: 77,
+      deviceHeight: 161,
+      deviceFoldable: false,
+      availableNfcAntennas: [{locationX: 23, locationY: 45}],
+    };
+    callNative.mockResolvedValueOnce(antennaInfo);
+    await expect(NfcManager.getNfcAntennaInfo()).resolves.toEqual(antennaInfo);
+    expect(lastNativeCall()).toEqual(['getNfcAntennaInfo']);
+
+    callNative.mockResolvedValueOnce(null);
+    await expect(NfcManager.getNfcAntennaInfo()).resolves.toBeNull();
+
+    NativeNfcManager.setNextError(
+      'antenna info unavailable',
+      'getNfcAntennaInfo',
+    );
+    await expect(NfcManager.getNfcAntennaInfo()).rejects.toMatchObject({
+      message: 'antenna info unavailable',
+    });
+  });
+
   test('API: state-change events deliver their native payload', () => {
     const onStateChanged = jest.fn();
     const state = {state: 'on'};
