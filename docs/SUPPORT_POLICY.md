@@ -2,6 +2,11 @@
 
 This document defines the v4 support scope for `react-native-nfc-manager` and distinguishes API intent from recorded validation evidence.
 
+The current stable release is [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0).
+Its [release validation record](./V4_1_RELEASE_VALIDATION_2026-10-23.md) names
+the exact candidate, packed artifact, compiler/CI gates, hardware attribution,
+and independently verified npm publication.
+
 ## Versioning Policy
 
 - The v4 support floor is React Native **0.76** with the New Architecture enabled. React Native 0.76 is the first release where the New Architecture is enabled by default and declared production-ready.

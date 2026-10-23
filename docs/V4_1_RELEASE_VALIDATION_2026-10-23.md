@@ -6,10 +6,11 @@ search: false
 
 ## Candidate and scope
 
-Prepared on main for 4.1.0; the eventual release tag identifies the exact
-candidate. Publication has not yet been verified in this preparation record.
-Packed artifact identity and local gate outcomes are recorded below; final
-candidate CI/preview and publication must still be verified independently.
+[4.1.0 is published](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0)
+on npm `latest`. The release tag points to main candidate
+`404e4d6cbf706cb82b8266a8052f68ce917655e3`. GitHub reports a regular, non-draft
+release and returns v4.1.0 from its latest-release endpoint. npm `beta` remains
+4.0.0-beta.11. Publication and the independent consumer checks below passed.
 
 - New library behavior since 4.0.0: Android `getNfcAntennaInfo()` from original
   contributor [PR #858](https://github.com/revtel/react-native-nfc-manager/pull/858),
@@ -86,7 +87,30 @@ The initial hosted [CI](https://github.com/revtel/react-native-nfc-manager/actio
 and non-publishing [preview](https://github.com/revtel/react-native-nfc-manager/actions/runs/39888557887)
 passed at `738f394`; the preview artifact is byte-identical. The subsequent
 validation-tool output-limit fix and these records are excluded from the npm
-package. The final main-SHA CI and preview remain required after committing that
-tooling fix; earlier runs must not substitute for final candidate checks.
+package. Final-SHA checks were run separately after that fix; the earlier runs
+were not substituted for final candidate checks.
 
-Publication and a clean registry consumer installation remain pending.
+## Final hosted checks and publication
+
+All runs below cover `404e4d6cbf706cb82b8266a8052f68ce917655e3` on main.
+
+| Check | Evidence |
+| --- | --- |
+| Exact candidate CI | [Run 39889559642](https://github.com/revtel/react-native-nfc-manager/actions/runs/39889559642): Validate, Select native builds, Android New Architecture, iOS New Architecture and Native build gate all succeeded; neither native build was skipped. |
+| Non-publishing preview | [Run 39889997914](https://github.com/revtel/react-native-nfc-manager/actions/runs/39889997914): validate succeeded, publish skipped; downloaded artifact is byte-identical to the local and consumer tarballs. |
+| OIDC npm and GitHub publication | [Run 39890318655](https://github.com/revtel/react-native-nfc-manager/actions/runs/39890318655): validate and publish both succeeded. |
+| npm artifact and channel | Independently queried 4.1.0 and `latest`; registry integrity matches the value above. Downloaded npm tarball is byte-identical to the tested artifact (same SHA-256). |
+| Git tag and authorship | `v4.1.0` resolves to the exact candidate and includes contributor commit `30e95fd`; original PR #858 merge history is preserved. |
+| Clean registry consumer | Fresh React 19.2.3 / RN 0.84.0 consumer installed `react-native-nfc-manager@latest` as 4.1.0. Importing `NfcAntennaInfo` and checking `getNfcAntennaInfo(): Promise<NfcAntennaInfo \| null>` passed with TypeScript 5.9.3. |
+
+The first downstream type check used the repository's older TypeScript compiler
+and failed parsing newly resolved transitive `@types/node` syntax. Rechecking
+the same clean consumer with the RN example's TypeScript 5.9.3 passed; no library
+source or published package was changed. This consumer check is installation
+and public-type evidence, not another native or hardware run.
+
+Post-publication README/status updates do not modify the immutable npm artifact
+or release tag. Local logs and candidate tarballs are retained under temporary
+release-check directories; hosted release-candidate artifacts have seven-day
+retention. The original NDEF failed attempt and remaining hardware limits above
+remain part of the release assessment.
