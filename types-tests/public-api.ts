@@ -10,6 +10,7 @@ import NfcManager, {
   NfcErrorIOS,
   type CancelTechReqOpts,
   type NdefRecord,
+  type NfcAntennaInfo,
   type RegisterTagEventOpts,
   type TagEvent,
 } from 'react-native-nfc-manager';
@@ -34,7 +35,10 @@ async function smoke() {
   await NfcManager.invalidateSessionWithErrorIOS();
   await NfcManager.invalidateSessionWithErrorIOS('Unable to read tag');
   const deprecatedPush: Promise<never> = NfcManager.setNdefPushMessage([]);
+  const antennaInfo: NfcAntennaInfo | null = await NfcManager.getNfcAntennaInfo();
+  const antennaX: number | undefined = antennaInfo?.availableNfcAntennas[0]?.locationX;
   void directNdef;
+  void antennaX;
   void cachedNdef;
   void backgroundNdef;
   void deprecatedPush;

@@ -357,6 +357,10 @@ continueUserActivity:(NSUserActivity *)userActivity
     callback(@[@"unsupported tag api", [NSNull null]]);
 }
 
+- (void)getNfcAntennaInfo:(RCTResponseSenderBlock)callback {
+    callback(@[@"unsupported tag api", [NSNull null]]);
+}
+
 - (void)setTimeout:(double)timeout callback:(RCTResponseSenderBlock)callback {
     callback(@[@"unsupported tag api", [NSNull null]]);
 }

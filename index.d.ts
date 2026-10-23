@@ -121,6 +121,25 @@ declare module 'react-native-nfc-manager' {
     delayMsAndroid?: number;
   }
 
+  /**
+   * Antenna position in millimeters. 0, 0 is the top-left corner when the
+   * user is facing the screen in portrait (unfolded, for foldable devices).
+   */
+  export interface AvailableNfcAntenna {
+    locationX: number;
+    locationY: number;
+  }
+
+  /** Android 14+ NFC antenna layout reported by the device. */
+  export interface NfcAntennaInfo {
+    /** Device width in millimeters. */
+    deviceWidth: number;
+    /** Device height in millimeters. */
+    deviceHeight: number;
+    deviceFoldable: boolean;
+    availableNfcAntennas: AvailableNfcAntenna[];
+  }
+
   interface NdefHandler {
     writeNdefMessage: (bytes: number[] , options?: { reconnectAfterWrite?: boolean }) => Promise<void>;
     getNdefMessage: () => Promise<TagEvent | null>;
@@ -325,6 +344,8 @@ declare module 'react-native-nfc-manager' {
      */
     goToNfcSetting(): Promise<boolean>;
     getLaunchTagEvent(): Promise<TagEvent | null>;
+    /** Resolves `null` below Android 14 or when the device reports no antenna info. */
+    getNfcAntennaInfo(): Promise<NfcAntennaInfo | null>;
     transceive(bytes: number[]): Promise<number[]>;
     getMaxTransceiveLength(): Promise<number>;
     setTimeout(timeout: number): Promise<void>;

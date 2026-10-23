@@ -17,7 +17,9 @@ import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import android.app.PendingIntent;
 import android.content.IntentFilter.MalformedMimeTypeException;
+import android.nfc.AvailableNfcAntenna;
 import android.nfc.NfcAdapter;
+import android.nfc.NfcAntennaInfo;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
@@ -526,6 +528,51 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
         Intent launchIntent = currentActivity.getIntent();
         WritableMap nfcTag = parseNfcIntent(launchIntent);
         callback.invoke(null, nfcTag);
+    }
+
+    @ReactMethod
+    public void getNfcAntennaInfo(Callback callback) {
+        Log.d(LOG_TAG, "getNfcAntennaInfo");
+        // NfcAdapter.getNfcAntennaInfo() was added in API 34 (Android 14)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            callback.invoke(null, null);
+            return;
+        }
+
+        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(getReactApplicationContext());
+        if (nfcAdapter == null) {
+            callback.invoke(null, null);
+            return;
+        }
+
+        NfcAntennaInfo info;
+        try {
+            info = nfcAdapter.getNfcAntennaInfo();
+        } catch (UnsupportedOperationException ex) {
+            // thrown when the device has neither NFC nor card emulation features
+            callback.invoke(null, null);
+            return;
+        }
+
+        if (info == null) {
+            callback.invoke(null, null);
+            return;
+        }
+
+        WritableArray antennas = Arguments.createArray();
+        for (AvailableNfcAntenna antenna : info.getAvailableNfcAntennas()) {
+            WritableMap location = Arguments.createMap();
+            location.putInt("locationX", antenna.getLocationX());
+            location.putInt("locationY", antenna.getLocationY());
+            antennas.pushMap(location);
+        }
+
+        WritableMap result = Arguments.createMap();
+        result.putInt("deviceWidth", info.getDeviceWidth());
+        result.putInt("deviceHeight", info.getDeviceHeight());
+        result.putBoolean("deviceFoldable", info.isDeviceFoldable());
+        result.putArray("availableNfcAntennas", antennas);
+        callback.invoke(null, result);
     }
 
     @ReactMethod
