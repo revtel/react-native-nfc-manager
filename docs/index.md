@@ -29,6 +29,10 @@ Requires React Native **0.76+ with the New Architecture** and an NFC-capable phy
 
 [Support policy](./SUPPORT_POLICY.md) · [Migration](./MIGRATING_V3_TO_V4.md) · [Contributing](./CONTRIBUTING.md)
 
+In [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0),
+Android apps can query [NFC antenna positions](./guide/android.md#nfc-antenna-location)
+on Android 14 and newer to help users position a tag. This API is Android-only.
+
 ## Start here
 
 - [Install the package](./guide/installation.md) and choose Expo or React Native CLI.

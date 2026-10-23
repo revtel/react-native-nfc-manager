@@ -21,12 +21,32 @@ Use `isSupported()` to check hardware support and `isEnabled()` to check the ada
 
 ## NFC antenna location
 
-On Android 14 (API 34) and newer, `getNfcAntennaInfo()` reports where the NFC antenna is, so an app can show users where to hold a tag:
+Available since **react-native-nfc-manager 4.1.0**. On Android 14 (API 34) and
+newer, `getNfcAntennaInfo()` reports where the NFC antenna is, so an app can show
+users where to hold a tag. It does not require a tag scan or technology request.
 
 ```javascript
-const info = await NfcManager.getNfcAntennaInfo();
-// {deviceWidth: 77, deviceHeight: 161, deviceFoldable: false,
-//  availableNfcAntennas: [{locationX: 23, locationY: 45}]}
+import {Platform} from 'react-native';
+import NfcManager from 'react-native-nfc-manager';
+
+if (Platform.OS === 'android') {
+  try {
+    const info = await NfcManager.getNfcAntennaInfo();
+    if (info && info.availableNfcAntennas.length > 0) {
+      console.log('NFC antenna layout in millimeters', info);
+      // {deviceWidth: 77, deviceHeight: 161, deviceFoldable: false,
+      //  availableNfcAntennas: [{locationX: 23, locationY: 45}]}
+    } else {
+      console.log('No NFC antenna location is available on this device');
+    }
+  } catch (error) {
+    console.warn('Could not query NFC antenna location', error);
+  }
+}
 ```
 
-Values are in millimeters, measured from the top-left corner with the screen facing the user in portrait (unfolded, on foldables). It resolves `null` below Android 14 or without an NFC adapter. Devices whose manufacturer doesn't configure the antenna layout return an empty `availableNfcAntennas` list. Android only.
+Values are in millimeters, measured from the **top-left** corner with the screen
+facing the user in portrait (unfolded, on foldables). Handle `null` and an empty
+`availableNfcAntennas` list when location data is unavailable. iOS does not
+provide this API. See the [API reference](../reference/api.md#android-nfc-antenna-location)
+for all fields and fallback behavior.
