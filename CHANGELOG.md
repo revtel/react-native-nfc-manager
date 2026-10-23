@@ -1,5 +1,19 @@
 ## Unreleased
 
+## [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0) (2026-10-23)
+
+### Added
+
+- Android: add `getNfcAntennaInfo()` to report device dimensions, foldable status,
+  and NFC antenna positions on Android 14/API 34 and newer. Positions use
+  millimeters from the top-left corner when facing the screen in portrait
+  (unfolded for foldables). Resolves `null` on older Android versions or when
+  antenna information is unavailable. This API is Android-only; iOS retains an
+  unsupported Codegen stub. Contributed by [@omeraydin00](https://github.com/omeraydin00)
+  in [PR #858](https://github.com/revtel/react-native-nfc-manager/pull/858).
+- Add example actions for same-session NDEF write/live-read and re-scan
+  persistence verification on a disposable writable Android tag.
+
 ### Validation
 
 - Record maintainer physical-device verification of PR #843's Android same-session
