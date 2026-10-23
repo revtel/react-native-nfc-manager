@@ -47,6 +47,7 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 
 | Expo | React Native | Architecture | Prebuild | Android | iOS | Status |
 |---|---|---|---|---|---|---|
+| 57.0.31 | 0.86.3 | New Architecture | Packed 4.1.0 plugin output and Doctor passed | Clean consumer APK compiled | Complete unsigned arm64 and x86_64 Simulator app compiled | [4.1.0 validation](./V4_1_RELEASE_VALIDATION_2026-10-23.md); no new Expo hardware, hosted EAS or App Store claim |
 | 57.0.21 | 0.86.3 | New Architecture | Packed-package plugin output verified | Generated consumer APK compiled | Pods, Codegen, unsigned Simulator app, and signed device app compiled | Local Development Build integration and recorded basic device smoke flows verified; Expo Doctor gate incomplete; hosted EAS unverified |
 | 57.0.25 | 0.86.3 | New Architecture | Packed-package plugin output verified | Clean consumer and Development Build APKs compiled | Pods, Codegen, unsigned Simulator app and signed device app compiled | Full local consumer gate and basic iPhone/Android regressions passed with the accepted Directory metadata warning; hosted EAS unverified |
 | 57.0.27 | 0.86.3 | New Architecture | Packed-package plugin output and Doctor verified | Clean consumer APK compiled | Pods, Codegen and complete unsigned arm64 Simulator app compiled | 4.0.0 compiler gate and focused Android/iPhone NDEF read/cancel/read integration passed; hosted EAS and x86_64 unverified |

@@ -454,11 +454,19 @@ function buildIos(consumerDirectory, temporaryRoot, dependencies) {
       'CODE_SIGNING_ALLOWED=NO',
       'build',
     ],
-    {cwd: iosDirectory, encoding: 'utf8', env: environment},
+    {
+      cwd: iosDirectory,
+      encoding: 'utf8',
+      env: environment,
+      // Xcode 27 can emit more than Node's default 1 MiB of SDK warnings even
+      // with -quiet. Keep the complete output for protocol-warning checks.
+      maxBuffer: 64 * 1024 * 1024,
+    },
   );
   const buildOutput = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
   if (result.status !== 0) {
-    throw new Error(`xcodebuild failed (${result.status})\n${buildOutput.trim()}`);
+    const processError = result.error ? `: ${result.error.message}` : '';
+    throw new Error(`xcodebuild failed (${result.status})${processError}\n${buildOutput.trim()}`);
   }
   if (
     /NfcManager\.mm.*conflicting parameter types/i.test(buildOutput) ||

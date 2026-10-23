@@ -8,7 +8,8 @@ search: false
 
 Prepared on main for 4.1.0; the eventual release tag identifies the exact
 candidate. Publication has not yet been verified in this preparation record.
-Packed artifact identity and gate outcomes will be recorded before publication.
+Packed artifact identity and local gate outcomes are recorded below; final
+candidate CI/preview and publication must still be verified independently.
 
 - New library behavior since 4.0.0: Android `getNfcAntennaInfo()` from original
   contributor [PR #858](https://github.com/revtel/react-native-nfc-manager/pull/858),
@@ -58,7 +59,34 @@ strict dependency checks. These changes affect validation tooling only; the
 shipped library and tarball bytes are unchanged. Neither failed attempt is
 counted as a pass; historical 57.0.27 hardware evidence retains its identity.
 
-Pending: root/example/package checks, RN 0.76.9/0.77.3/0.84 Codegen,
-full RN 0.84 Android/iOS applications, packed RN 0.76.9 support-floor and
-Expo 57.0.31/RN 0.86.3 consumers, exact main-SHA hosted native CI, a
-non-publishing preview, and verified publication/clean consumer installation.
+The SDK 57.0.31 consumer completed Doctor, configuration, provenance/autolinking,
+Android assembly and Pods, but its initial iOS build process ended with no exit
+status after approximately 1 MiB of Xcode warnings. The validator's synchronous
+capture used Node's default output limit. It now allows 64 MiB and reports
+process-level errors, retaining the NFC protocol-warning checks. A focused iOS
+retry uses the same preserved packed consumer, Pods and DerivedData; the initial
+interrupted build is not counted as a success. Regression coverage checks NFC
+warnings after more than 1 MiB of output and process-error diagnostics.
+
+| Check | Result |
+| --- | --- |
+| Root build/lint/public typecheck/Jest | Passed; 199 root tests. One local lint attempt overlapped another packer's `dist` cleanup; the sequential rerun passed. |
+| Example Jest and packed contents | Passed; 20 mocked tests, 110 package files; no generated native artifacts. |
+| Publishing-controller regressions | Passed; 18 tests. |
+| Packed Android/iOS Codegen | Passed for RN 0.76.9, 0.77.3 and 0.84.0. |
+| RN 0.84 Android/iOS example applications | Local full debug APK and complete arm64/x86_64 unsigned Simulator app passed. |
+| Packed RN 0.76.9 support-floor applications | Android and complete arm64/x86_64 iOS Simulator app passed. The existing Xcode 26+ `fmt` adjustment was applied only inside the disposable consumer. |
+| Packed Expo 57.0.31/RN 0.86.3 | Doctor, generated configuration, package provenance/autolinking, Android APK and Pods passed; focused full iOS retry passed with arm64/x86_64 app and NFC protocol-warning checks. |
+| Documentation build | Passed during candidate preparation and after local-gate record updates. |
+
+The immutable 4.1.0 tarball used by both packed native consumers and retained
+locally has SHA-256 `2393d599c6f27b6c587b5eca9a51996350876ff41511e30798ecdf32299de6f2`
+and npm integrity `sha512-2S9WNgkFHM5PllqH2aTSPZlfUqua/XbMANgeIlAps0cBxr1I07K9/L54KAFuRXyByKAWsNXi/0HYPaY8wbA1DA==`.
+The initial hosted [CI](https://github.com/revtel/react-native-nfc-manager/actions/runs/39888129489)
+and non-publishing [preview](https://github.com/revtel/react-native-nfc-manager/actions/runs/39888557887)
+passed at `738f394`; the preview artifact is byte-identical. The subsequent
+validation-tool output-limit fix and these records are excluded from the npm
+package. The final main-SHA CI and preview remain required after committing that
+tooling fix; earlier runs must not substitute for final candidate checks.
+
+Publication and a clean registry consumer installation remain pending.
