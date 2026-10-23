@@ -1,5 +1,14 @@
 ## Unreleased
 
+### Validation
+
+- Record maintainer physical-device verification of PR #843's Android same-session
+  NDEF write/live-read behavior, removal/re-scan persistence, and repeated cleanup
+  on Samsung SM-N975U1 / Android 12 / a writable NFC Forum Type 2 tag, using RN
+  0.84 and main `09f8af0` with local example test additions. Both full cycles
+  passed; the earlier empty-tag preflight failure and remaining limits are
+  retained in the [validation record](docs/ANDROID_NDEF_WRITE_READ_VALIDATION_2026-10-23.md).
+
 ## [4.0.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.0.0) (2026-10-09)
 
 ### v3-to-v4 migration

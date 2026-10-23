@@ -20,6 +20,7 @@ import NfcManager, {
   NfcAdapter,
   type TagEvent,
 } from 'react-native-nfc-manager';
+import { verifySavedNdef, writeReadSameSession, type WrittenNdef } from './ndefWriteReadSmoke';
 
 function toMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -60,6 +61,7 @@ function App(): React.JSX.Element {
   } | null>(null);
   const logScrollRef = useRef<ScrollView>(null);
   const androidPromptIdRef = useRef(0);
+  const writtenNdefRef = useRef<WrittenNdef | null>(null);
 
   const appendLog = (message: string) => {
     setLogLines(prev => [
@@ -178,6 +180,40 @@ function App(): React.JSX.Element {
     () => [
       ...(Platform.OS === 'android'
         ? [
+            ...(['write', 'verify'] as const).map(mode => ({
+              label: mode === 'write' ? 'NDEF Write + Live Read (Overwrites Tag)' : 'NDEF Verify After Removing Tag',
+              testID: `action-ndef-${mode}`,
+              run: async () => {
+                const log = (message: string) => {
+                  appendLog(`[NDEF843] ${message}`);
+                  console.log(`[NDEF843] ${message}`);
+                };
+                if (mode === 'verify' && !writtenNdefRef.current) {
+                  throw new Error('Run NDEF Write + Live Read successfully first');
+                }
+                if (mode === 'write') {
+                  writtenNdefRef.current = null;
+                }
+                await NfcManager.start();
+                try {
+                  await requestTechnologyWithPrompt(
+                    mode === 'write' ? 'Writing test tag: hold it still until finished' : 'Re-scan the same tag to verify saved content',
+                    () => NfcManager.requestTechnology(NfcTech.Ndef),
+                  );
+                  if (mode === 'write') {
+                    writtenNdefRef.current = await writeReadSameSession(log);
+                  } else {
+                    await verifySavedNdef(writtenNdefRef.current!, log);
+                  }
+                } catch (error) {
+                  log(`FAIL: ${toMessage(error)}`);
+                  throw error;
+                } finally {
+                  await cancelTechnologyWithPrompt();
+                  log('cleanup completed; remove the tag before the next test');
+                }
+              },
+            })),
             {
               label: 'Read NFC-V Metadata (Read Only)',
               testID: 'action-read-nfcv-metadata',

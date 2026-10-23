@@ -82,6 +82,16 @@ Samsung SM-N975U1 / Android 12 / NTAG215. Cached NFC-A `atqa` and `sak` were
 observed in the recovery payload. Other technology metadata and specifically
 configured transceive timeouts were not verified by that test.
 
+The [2026-10-23 NDEF write/read validation](./ANDROID_NDEF_WRITE_READ_VALIDATION_2026-10-23.md)
+records maintainer-observed PR #843 same-session live reads after two distinct
+writes on Samsung SM-N975U1 / Android 12 / a writable NFC Forum Type 2 tag
+(exact chip model unknown), using RN 0.84 and main `09f8af0` with local example
+test additions. Two full cycles passed: four matching live readbacks, two
+removal/re-scan persistence checks, and four cleanups. This closes the maintainer
+writable-tag evidence gap for that combination. The earlier empty-tag preflight
+failure remains recorded with its cause unresolved; cancellation/tag removal
+during I/O and other device/tag combinations remain unverified.
+
 ## Release Quality Gates
 
 For each release candidate, keep automated/compiler gates and record the hardware risk assessment:

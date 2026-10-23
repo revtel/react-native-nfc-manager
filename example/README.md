@@ -121,6 +121,20 @@ npm run pods
 npm run ios
 ```
 
+## Android same-session NDEF write/read smoke test
+
+For PR #843's writable-tag regression, use **NDEF Write + Live Read
+(Overwrites Tag)** with a disposable writable NDEF tag. Keep it still until
+both `PASS same-session` messages and `cleanup completed` appear. This writes
+two distinct timestamped text records, each followed by a live
+`getNdefMessage()` read without reconnecting. Preflight uses cached discovery
+metadata rather than a live read before writing an empty tag. The app logs the original data,
+tag ID, writable status, capacity, and readback records under `[NDEF843]`.
+Remove the tag, press **NDEF Verify After Removing Tag**, then scan the same
+tag again and require `PASS saved content`. Repeat the cycle to verify cleanup.
+The final test text remains on the tag. Record device/OS, tag technology,
+commit, logs, and observed results; mocked tests do not establish hardware success.
+
 ## Android cached metadata smoke test
 
 Use the current built package on a physical Android device. These actions read
