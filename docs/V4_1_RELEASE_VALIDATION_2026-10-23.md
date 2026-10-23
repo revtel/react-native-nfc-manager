@@ -35,8 +35,10 @@ Packed artifact identity and gate outcomes will be recorded before publication.
   hardware test. The subsequent changes are version metadata, notes and records.
 - Reuse the attributed [4.0.0 Expo integration results](./V4_STABLE_RELEASE_2026-10-09.md)
   for unchanged iPhone 15 Plus/iOS 26.6.1 and Samsung SM-N975U1/Android 12 NDEF
-  startup/read/cancel/re-read flows. Expo plugin, SDK, dependencies and those
-  native paths are unchanged. No new Expo hardware run is claimed.
+  startup/read/cancel/re-read flows. Expo plugin and those library native paths
+  are unchanged. The validation-only consumer now uses SDK 57.0.31 rather than
+  57.0.27, retaining RN 0.86.3; its new compiler/Doctor results do not establish
+  new Expo hardware integration. No new Expo hardware run is claimed.
 - Earlier empty-tag live-preflight/write failure remains recorded and its cause
   is unresolved. The successful harness uses cached preflight metadata; no
   library workaround is being shipped. Writing cancellation/tag removal, iOS
@@ -46,7 +48,17 @@ Packed artifact identity and gate outcomes will be recorded before publication.
 
 ## Publication gates
 
+The first Expo validator attempt stopped before dependency installation because
+the unversioned blank TypeScript template had advanced to SDK 58. The validator
+now pins `blank-typescript@57.0.33` (React 19.2.3/RN 0.86.3). The second attempt
+then reached Doctor and failed its patch-version check: SDK 57 now requires
+`~57.0.31`, whereas the old validator pinned 57.0.27. The consumer pin and current
+validation policy were updated to 57.0.31, retaining the same RN version and
+strict dependency checks. These changes affect validation tooling only; the
+shipped library and tarball bytes are unchanged. Neither failed attempt is
+counted as a pass; historical 57.0.27 hardware evidence retains its identity.
+
 Pending: root/example/package checks, RN 0.76.9/0.77.3/0.84 Codegen,
 full RN 0.84 Android/iOS applications, packed RN 0.76.9 support-floor and
-Expo 57.0.27/RN 0.86.3 consumers, exact main-SHA hosted native CI, a
+Expo 57.0.31/RN 0.86.3 consumers, exact main-SHA hosted native CI, a
 non-publishing preview, and verified publication/clean consumer installation.
