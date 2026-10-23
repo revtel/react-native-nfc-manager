@@ -122,7 +122,7 @@ declare module 'react-native-nfc-manager' {
   }
 
   /**
-   * Antenna position in millimeters. 0, 0 is the bottom-left corner when the
+   * Antenna position in millimeters. 0, 0 is the top-left corner when the
    * user is facing the screen in portrait (unfolded, for foldable devices).
    */
   export interface AvailableNfcAntenna {

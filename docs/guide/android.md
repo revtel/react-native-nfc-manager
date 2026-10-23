@@ -29,4 +29,4 @@ const info = await NfcManager.getNfcAntennaInfo();
 //  availableNfcAntennas: [{locationX: 23, locationY: 45}]}
 ```
 
-Values are in millimeters, measured from the bottom-left corner with the screen facing the user in portrait (unfolded, on foldables). It resolves `null` below Android 14 or without an NFC adapter. Devices whose manufacturer doesn't configure the antenna layout return an empty `availableNfcAntennas` list. Android only.
+Values are in millimeters, measured from the top-left corner with the screen facing the user in portrait (unfolded, on foldables). It resolves `null` below Android 14 or without an NFC adapter. Devices whose manufacturer doesn't configure the antenna layout return an empty `availableNfcAntennas` list. Android only.
