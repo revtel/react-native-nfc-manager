@@ -2,6 +2,11 @@
 
 This document defines the v4 support scope for `react-native-nfc-manager` and distinguishes API intent from recorded validation evidence.
 
+The current stable release is [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0).
+Its [release validation record](./V4_1_RELEASE_VALIDATION_2026-10-23.md) names
+the exact candidate, packed artifact, compiler/CI gates, hardware attribution,
+and independently verified npm publication.
+
 ## Versioning Policy
 
 - The v4 support floor is React Native **0.76** with the New Architecture enabled. React Native 0.76 is the first release where the New Architecture is enabled by default and declared production-ready.
@@ -28,7 +33,7 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 ### Example app policy
 
 - Primary development example: **React Native CLI** (`example/`)
-- Representative secondary consumer: pinned **Expo SDK 57.0.27 / React Native 0.86.3** prebuild + custom Development Build
+- Representative secondary consumer: pinned **Expo SDK 57.0.31 / React Native 0.86.3** prebuild + custom Development Build
 - Expo Go is unsupported because it cannot load this package's custom native module
 
 ## Verification Matrix
@@ -47,6 +52,7 @@ This document defines the v4 support scope for `react-native-nfc-manager` and di
 
 | Expo | React Native | Architecture | Prebuild | Android | iOS | Status |
 |---|---|---|---|---|---|---|
+| 57.0.31 | 0.86.3 | New Architecture | Packed 4.1.0 plugin output and Doctor passed | Clean consumer APK compiled | Complete unsigned arm64 and x86_64 Simulator app compiled | [4.1.0 validation](./V4_1_RELEASE_VALIDATION_2026-10-23.md); no new Expo hardware, hosted EAS or App Store claim |
 | 57.0.21 | 0.86.3 | New Architecture | Packed-package plugin output verified | Generated consumer APK compiled | Pods, Codegen, unsigned Simulator app, and signed device app compiled | Local Development Build integration and recorded basic device smoke flows verified; Expo Doctor gate incomplete; hosted EAS unverified |
 | 57.0.25 | 0.86.3 | New Architecture | Packed-package plugin output verified | Clean consumer and Development Build APKs compiled | Pods, Codegen, unsigned Simulator app and signed device app compiled | Full local consumer gate and basic iPhone/Android regressions passed with the accepted Directory metadata warning; hosted EAS unverified |
 | 57.0.27 | 0.86.3 | New Architecture | Packed-package plugin output and Doctor verified | Clean consumer APK compiled | Pods, Codegen and complete unsigned arm64 Simulator app compiled | 4.0.0 compiler gate and focused Android/iPhone NDEF read/cancel/read integration passed; hosted EAS and x86_64 unverified |
@@ -98,7 +104,7 @@ For each release candidate, keep automated/compiler gates and record the hardwar
 
 - Required: packed-package Android/iOS Codegen matrix for RN 0.76.9, 0.77.3, and 0.84.0
 - Required before stable promotion while RN 0.76 remains supported: clean packed-package RN 0.76.9 New Architecture Android and iOS application builds
-- Required before stable promotion: clean packed-package Expo SDK 57.0.27 / RN 0.86.3 prebuild, Expo Doctor review, Android application build, and iOS pod/Codegen/application build
+- Required before stable promotion: clean packed-package Expo SDK 57.0.31 / RN 0.86.3 prebuild, Expo Doctor review, Android application build, and iOS pod/Codegen/application build
 - Required: RN 0.84 New Architecture Android and iOS compiler checks
 - Optional: older React Native lines only when the release claims them
 - Required hardware review: compare candidate changes with attributed physical-device evidence and select affected flows for focused retesting. Releasing a version alone does not require a full device suite.

@@ -1,3 +1,7 @@
+---
+search: false
+---
+
 # Android same-session NDEF write/read validation — 2026-10-23
 
 ## Test identity

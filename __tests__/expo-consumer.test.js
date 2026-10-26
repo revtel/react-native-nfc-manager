@@ -10,10 +10,12 @@ const {
 } = require('fs');
 const {tmpdir} = require('os');
 const {dirname, join} = require('path');
+const {spawnSync} = require('child_process');
 const plist = require('@expo/plist').default;
 const {
   EXPO_CONSUMER,
   PHASES,
+  buildIos,
   configureConsumer,
   createGeneratorArgs,
   parseArgs,
@@ -46,7 +48,8 @@ describe('Expo consumer validator', () => {
     expect(EXPO_CONSUMER).toMatchObject({
       appName: 'NfcExpoConsumer',
       createExpoApp: 'create-expo-app@4.0.0',
-      expo: '57.0.27',
+      template: 'blank-typescript@57.0.33',
+      expo: '57.0.31',
       expoDoctor: 'expo-doctor@1.20.4',
       react: '19.2.3',
       reactNative: '0.86.3',
@@ -85,7 +88,7 @@ describe('Expo consumer validator', () => {
       '--',
       '/tmp/NfcExpoConsumer',
       '--template',
-      'blank-typescript',
+      'blank-typescript@57.0.33',
       '--no-install',
       '--yes',
     ]);
@@ -127,7 +130,7 @@ describe('Expo consumer validator', () => {
       expect(packageJson.dependencies['react-native-nfc-manager']).toBe(
         'file:/tmp/library.tgz',
       );
-      expect(packageJson.dependencies.expo).toBe('57.0.27');
+      expect(packageJson.dependencies.expo).toBe('57.0.31');
       expect(appJson.expo.newArchEnabled).toBeUndefined();
       expect(appJson.expo.plugins[0][1]).toMatchObject({
         nfcPermission: 'Scan nearby NFC tags',
@@ -259,8 +262,26 @@ describe('Expo consumer validator', () => {
         () => {},
       ),
     ).toThrow(
-      'Expo consumer validation failed [Expo 57.0.27] [ios] [iOS application build]: protocol mismatch',
+      'Expo consumer validation failed [Expo 57.0.31] [ios] [iOS application build]: protocol mismatch',
     );
+  });
+
+  test('still detects NFC protocol warnings after more than 1 MiB of Xcode output', () => {
+    withFixture((directory) => {
+      mkdirSync(join(directory, 'ios'));
+      expect(() => buildIos(directory, directory, {
+        spawn: (_command, _args, options) => spawnSync(process.execPath, [
+          '-e',
+          "process.stdout.write('warning\\n'.repeat(140000) + 'NfcManager.mm conflicting parameter types\\n')",
+        ], options),
+      })).toThrow('NFC TurboModule protocol warning detected');
+    });
+  });
+
+  test('reports process failures when Xcode has no exit status', () => {
+    expect(() => buildIos('/tmp/consumer', '/tmp/build', {
+      spawn: () => ({ status: null, error: new Error('spawnSync xcodebuild ENOBUFS') }),
+    })).toThrow('spawnSync xcodebuild ENOBUFS');
   });
 
   test('cleans temporary roots on success and failure unless retained', () => {

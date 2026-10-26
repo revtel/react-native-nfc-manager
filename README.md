@@ -9,7 +9,7 @@ Requires **React Native 0.76+ with the New Architecture**. Use an NFC-capable ph
 
 ## Versions
 
-- **v4 (current):** The stable release on npm `latest`, developed on `main`.
+- **v4 (current):** [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0), the stable release on npm `latest`, developed on `main`.
 - **v3 (legacy):** Existing v3 or Legacy Architecture apps can install `react-native-nfc-manager@3`. Source and documentation remain on the [v3 branch](https://github.com/revtel/react-native-nfc-manager/tree/v3).
 
 ## Installation
