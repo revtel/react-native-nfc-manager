@@ -24,6 +24,10 @@
 ### Fixed
 
 - iOS: stop logging raw MIFARE command bytes, which may contain tag passwords.
+- Example: adopt a single UIKit scene for iOS 27 SDK builds, preventing the
+  launch-time UIKit failure before React Native starts. Resolve React and React
+  Native from the example app's dependencies, including for the linked library,
+  so the bundle contains one app runtime.
 
 ## [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0) (2026-10-23)
 

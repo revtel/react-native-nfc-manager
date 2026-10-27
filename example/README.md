@@ -81,6 +81,10 @@ read covers pages 4–7 only; record separately whether those pages are protecte
 
 - This example uses `react-native@0.84`, which is New Architecture only.
 - Old Architecture toggles (`newArchEnabled=false`, `RCT_NEW_ARCH_ENABLED=0`) are not supported in this RN version.
+- The iOS example uses a single UIKit scene, including when built with the iOS
+  27 SDK. React Native starts from `SceneDelegate` after its window is connected.
+- Metro resolves React and React Native from this app's dependencies even for
+  the linked library, avoiding a second runtime from the repository's dev dependencies.
 
 ## Commands
 
