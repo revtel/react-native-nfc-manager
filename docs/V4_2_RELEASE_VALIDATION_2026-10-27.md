@@ -8,8 +8,8 @@ search: false
 
 4.2.0 is a prepared candidate, **not a verified publication**. The current
 published stable version remains [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0).
-The selected final commit, packed artifact hashes, PR and hosted run links will
-be recorded after their checks complete.
+The exact merged-main commit and final hosted preview/publication links remain
+pending.
 
 The initial software and compiler checks below cover the feature branch based
 on `5ad9871c5bbac1c89fe11078087f1286ce6858bd` plus the reviewed feature changes.
@@ -18,13 +18,33 @@ candidate, retained tarball, or full hosted CI.
 
 The feature was committed as `4f75c2e202d0d1e7b7ae1dd788b83d8ba960c02a` in
 [PR #859](https://github.com/revtel/react-native-nfc-manager/pull/859). The
-retained 4.2.0 tarball used for packed native validation has SHA-256
+earlier 4.2.0 tarball used for packed native validation has SHA-256
 `209ba4fa8245528866c5cbd52d7708dc5464960cc0a27fdbf0a1e577bf802768` and npm
 integrity `sha512-8oiLcDvJ0HqG9HGDIlsdmN6+szBPjPNVD3xmUNpU1908izy6jr+fFZUhw8w+nPXQW+ei85U9WMeQQGjeN5z/Lg==`.
-Its 110 entries exclude local workflow files; the packed API/native sources,
-declarations, package metadata and README match the committed candidate.
-Subsequent example-only Scene, Metro and test corrections, and this validation
-record, are outside the packed package and leave those tarball bytes unchanged.
+The RN 0.76.9 and Expo native compiler gates below used that earlier artifact.
+The later example-only Scene, Metro and test corrections are outside the package.
+
+The final candidate tarball has SHA-256
+`55ebd37c9551a174012d366d2256849b50371b375b16c1f38595e42ddeefda14` and npm
+integrity `sha512-3LCVChwRxtGG89vMTSWgrGhxIYfM9WCkJ8qO5dGTy/E8X7US5XjSN3Xg2JbN6k2iPZKWVue3qImqhGpuJsqKFw==`.
+Its README describes npm's stable v4 channel without hardcoding the current
+version, so an installed 4.2.0 package will not incorrectly identify 4.1.0 as
+current and an unpublished candidate does not claim prior publication.
+
+Independent entry-by-entry comparison found identical 110 paths, file types,
+modes and link metadata, with no additions or removals. **Only README.md content
+differs**; the other 109 files, including compiled JavaScript, source,
+declarations, Codegen specification, native implementations, package metadata
+and dependency declarations, are byte-identical. All new entries match the
+checkout, and local workflow files are excluded. Before repacking with
+`npm pack --ignore-scripts`, both source and compiled output were confirmed to
+match the previously built and validated artifact.
+
+The native consumer and device evidence is therefore reused for the unchanged
+runtime, with the original artifact identities retained. The new tarball is
+**not** claimed to have run those packed native gates itself. Final PR CI will
+rerun root, package, Codegen and selected native checks on the README candidate;
+the exact merged-main gate and preview must select and verify its new artifact.
 
 - Add `getTag({readNdef: false})` and the public `GetTagOptions` type. On iOS,
   the false path returns the connected tag's basic metadata before NDEF handle
@@ -176,12 +196,12 @@ awaited cleanup, preventing overlapping authentication attempts.
 | Independent public API/native compatibility review | Passed, including authentication UI validation/in-flight lock, raw command-log removal and the example Scene/Metro corrections. |
 | Root build, lint, public typecheck and Jest | Passed; 11 root suites / 206 tests. Initial version-banner overlap was metadata-only; package stage used 4.2.0. Final candidate checks remain required. |
 | Example Jest | Passed final Scene/Metro rerun: 6 suites / 56 mocked tests. |
-| Packed contents, artifact hashes and local-file exclusion | Passed: retained 4.2.0 / 110-entry tarball and hashes above; required contents present, no local workflow included, critical packed files match the committed candidate. |
-| Packed Android/iOS Codegen for RN 0.76.9, 0.77.3 and 0.84.0 | Passed all 3 versions on both platforms. Initial sandbox cache-write denial was resolved by scoped retry; it was not a source failure. |
+| Packed contents, artifact hashes and local-file exclusion | Final 55ebd37c… candidate inspected: 110 entries match the checkout; only README differs from the earlier 209ba4fa… native-gate artifact. Independent comparison passed; final CI package check pending. |
+| Packed Android/iOS Codegen for RN 0.76.9, 0.77.3 and 0.84.0 | All 3 versions passed on both platforms during preparation; final README-candidate CI rerun pending. Initial sandbox cache-write denial was resolved by scoped retry; it was not a source failure. |
 | RN 0.84 Android debug application | Passed full assembly; compiler evidence only. |
 | RN 0.84 full unsigned iOS Simulator application | Passed full application builds including MIFARE logging removal and the Scene-lifecycle correction; compiler evidence only. |
-| Packed RN 0.76.9 Android and iOS support-floor applications | Passed: Android debug APK and complete arm64/x86_64 unsigned iOS Simulator app. Existing Xcode 26+ fmt adjustment applied only inside the disposable consumer. |
-| Packed Expo 57.0.31/RN 0.86.3 Doctor, configuration and Android/iOS applications | Passed Doctor, configuration, provenance/autolinking, Android APK, iOS Pods and full iOS Simulator application. The tarball is byte-identical to the support-floor artifact above. |
+| Packed RN 0.76.9 Android and iOS support-floor applications | Earlier 209ba4fa… artifact passed Android debug APK and complete arm64/x86_64 unsigned iOS Simulator app; reused for the new README-only candidate's byte-identical runtime. Existing Xcode 26+ fmt adjustment applied only inside the disposable consumer. |
+| Packed Expo 57.0.31/RN 0.86.3 Doctor, configuration and Android/iOS applications | Earlier 209ba4fa… artifact passed Doctor, configuration, provenance/autolinking, Android APK, iOS Pods and full iOS Simulator application; reused for the new README-only candidate's byte-identical runtime. This was the same earlier tarball used by the support-floor gate. |
 | Affected physical-device success/failure/recovery checks | Maintainer-reported iPhone passes: ordinary NDEF/default read plus Cancel; protected NTAG215 metadata-only repeated access and cleanup; exact metadata-only action re-scan after cancellation, and after pending scan → Home → return → cleanup. Scope and limits above. |
 | Password-protected-tag authentication/read sequence | Unverified; authentication testing currently unavailable and protection range unknown. No generic password-unlock claim. |
 | Signed iPhone app startup | Corrected Release app passed two sustained cold launches with one verified app runtime and no new startup crash; maintainer confirmed the visible UI is normal. |
