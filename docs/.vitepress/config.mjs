@@ -10,6 +10,7 @@ const maintainers = [
     {text: 'Publishing', link: '/GITHUB_ACTIONS_PUBLISHING'},
   ]},
   {text: 'Validation records', collapsed: true, items: [
+    {text: '4.2.0 release · Oct 27', link: '/V4_2_RELEASE_VALIDATION_2026-10-27'},
     {text: '4.1.0 release · Oct 23', link: '/V4_1_RELEASE_VALIDATION_2026-10-23'},
     {text: 'Android NDEF write/read · Oct 23', link: '/ANDROID_NDEF_WRITE_READ_VALIDATION_2026-10-23'},
     {text: 'Stable release · Oct 9', link: '/V4_STABLE_RELEASE_2026-10-09'},
