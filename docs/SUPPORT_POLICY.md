@@ -2,17 +2,18 @@
 
 This document defines the v4 support scope for `react-native-nfc-manager` and distinguishes API intent from recorded validation evidence.
 
-The current stable release is [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0).
-Its [release validation record](./V4_1_RELEASE_VALIDATION_2026-10-23.md) names
+The current stable release is [4.2.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.2.0).
+Its [release validation record](./V4_2_RELEASE_VALIDATION_2026-10-27.md) names
 the exact candidate, packed artifact, compiler/CI gates, hardware attribution,
 and independently verified npm publication.
 
-The 4.2.0 candidate adds `getTag({readNdef: false})` to skip the implicit iOS
+Version 4.2.0 adds `getTag({readNdef: false})` to skip the implicit iOS
 NDEF read while retaining existing defaults and Android discovery-time cached
 data. It does not change the supported React Native or Expo versions. Its
-[candidate validation record](./V4_2_RELEASE_VALIDATION_2026-10-27.md) tracks
-the pending compiler, device and publication checks; it is not a publication
-announcement or a claim that password-protected tags have been verified.
+[validation record](./V4_2_RELEASE_VALIDATION_2026-10-27.md) separates verified
+publication, compiler checks and maintainer-reported iPhone metadata/recovery
+observations. Password authentication, protected-content readback and protection
+range remain unverified; no password-unlock claim is made.
 
 ## Versioning Policy
 
@@ -59,6 +60,7 @@ announcement or a claim that password-protected tags have been verified.
 
 | Expo | React Native | Architecture | Prebuild | Android | iOS | Status |
 |---|---|---|---|---|---|---|
+| 57.0.31 | 0.86.3 | New Architecture | Earlier 4.2.0 artifact passed configuration and Doctor | Earlier artifact APK compiled | Earlier artifact complete arm64/x86_64 Simulator app compiled | [4.2.0 validation](./V4_2_RELEASE_VALIDATION_2026-10-27.md); final tarball differs only in README, with byte-identical runtime reuse; no fresh Expo hardware claim |
 | 57.0.31 | 0.86.3 | New Architecture | Packed 4.1.0 plugin output and Doctor passed | Clean consumer APK compiled | Complete unsigned arm64 and x86_64 Simulator app compiled | [4.1.0 validation](./V4_1_RELEASE_VALIDATION_2026-10-23.md); no new Expo hardware, hosted EAS or App Store claim |
 | 57.0.21 | 0.86.3 | New Architecture | Packed-package plugin output verified | Generated consumer APK compiled | Pods, Codegen, unsigned Simulator app, and signed device app compiled | Local Development Build integration and recorded basic device smoke flows verified; Expo Doctor gate incomplete; hosted EAS unverified |
 | 57.0.25 | 0.86.3 | New Architecture | Packed-package plugin output verified | Clean consumer and Development Build APKs compiled | Pods, Codegen, unsigned Simulator app and signed device app compiled | Full local consumer gate and basic iPhone/Android regressions passed with the accepted Directory metadata warning; hosted EAS unverified |
@@ -142,7 +144,7 @@ See [hardware retesting by change risk](./RELEASING.md#hardware-retesting-by-cha
 ## Stable preparation and branch policy
 
 `main` is the active v4 development and release branch; `v3` preserves legacy maintenance.
-[4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0) is published on npm `latest`; the beta channel remains separate.
+[4.2.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.2.0) is published on npm `latest`; the beta channel remains separate.
 See [Migration](./MIGRATING_V3_TO_V4.md) and the
 [stable cutover procedure](./RELEASING.md#stable-cutover-procedure).
 GitHub default-branch selection and npm `latest` are independent operations.

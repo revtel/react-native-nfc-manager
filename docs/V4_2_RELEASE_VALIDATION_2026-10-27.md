@@ -2,14 +2,17 @@
 search: false
 ---
 
-# 4.2.0 candidate validation — 2026-10-27
+# 4.2.0 release validation — 2026-10-27
 
-## Candidate and scope
+## Published release and scope
 
-4.2.0 is a prepared candidate, **not a verified publication**. The current
-published stable version remains [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0).
-The exact merged-main commit and final hosted preview/publication links remain
-pending.
+[4.2.0 is published](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.2.0)
+on npm `latest`. The release tag points to exact main commit
+`f7c51990aded9b9bf98c6fc5a1401efef5bc900f`, which merges original
+[PR #859](https://github.com/revtel/react-native-nfc-manager/pull/859). GitHub
+reports a regular, non-draft latest release. npm `beta` remains
+4.0.0-beta.11. Publication, artifact identity and the independent clean-registry
+consumer checks below passed.
 
 The initial software and compiler checks below cover the feature branch based
 on `5ad9871c5bbac1c89fe11078087f1286ce6858bd` plus the reviewed feature changes.
@@ -24,12 +27,12 @@ integrity `sha512-8oiLcDvJ0HqG9HGDIlsdmN6+szBPjPNVD3xmUNpU1908izy6jr+fFZUhw8w+nP
 The RN 0.76.9 and Expo native compiler gates below used that earlier artifact.
 The later example-only Scene, Metro and test corrections are outside the package.
 
-The final candidate tarball has SHA-256
+The published tarball has SHA-256
 `55ebd37c9551a174012d366d2256849b50371b375b16c1f38595e42ddeefda14` and npm
 integrity `sha512-3LCVChwRxtGG89vMTSWgrGhxIYfM9WCkJ8qO5dGTy/E8X7US5XjSN3Xg2JbN6k2iPZKWVue3qImqhGpuJsqKFw==`.
 Its README describes npm's stable v4 channel without hardcoding the current
 version, so an installed 4.2.0 package will not incorrectly identify 4.1.0 as
-current and an unpublished candidate does not claim prior publication.
+current; the same wording was accurate before publication as well.
 
 Independent entry-by-entry comparison found identical 110 paths, file types,
 modes and link metadata, with no additions or removals. **Only README.md content
@@ -41,10 +44,11 @@ checkout, and local workflow files are excluded. Before repacking with
 match the previously built and validated artifact.
 
 The native consumer and device evidence is therefore reused for the unchanged
-runtime, with the original artifact identities retained. The new tarball is
-**not** claimed to have run those packed native gates itself. Final PR CI will
-rerun root, package, Codegen and selected native checks on the README candidate;
-the exact merged-main gate and preview must select and verify its new artifact.
+runtime, with the original artifact identities retained. The published tarball
+is **not** claimed to have run those packed native gates itself. Exact-main CI
+reran root, package, Codegen and both native builds on the final source. The
+hosted preview and publication selected that exact commit and produced the new
+artifact above, independently compared with npm after publication.
 
 - Add `getTag({readNdef: false})` and the public `GetTagOptions` type. On iOS,
   the false path returns the connected tag's basic metadata before NDEF handle
@@ -186,18 +190,18 @@ Hosted EAS and App Store validation remain deferred. See the
 
 ## Validation gates
 
-Results identify their evidence level. Pending means no completed
-candidate-specific result is asserted here. The final example UI enforces exactly
+Results identify their evidence level. Unverified flows remain explicitly
+limited despite successful publication. The final example UI enforces exactly
 eight hexadecimal password characters and holds an in-flight lock through
 awaited cleanup, preventing overlapping authentication attempts.
 
 | Check | Status |
 | --- | --- |
 | Independent public API/native compatibility review | Passed, including authentication UI validation/in-flight lock, raw command-log removal and the example Scene/Metro corrections. |
-| Root build, lint, public typecheck and Jest | Passed; 11 root suites / 206 tests. Initial version-banner overlap was metadata-only; package stage used 4.2.0. Final candidate checks remain required. |
+| Root build, lint, public typecheck and Jest | Passed; 11 root suites / 206 tests, with fresh exact-main validation in the final CI and publishing workflow. Initial local version-banner overlap was metadata-only; package stage used 4.2.0. |
 | Example Jest | Passed final Scene/Metro rerun: 6 suites / 56 mocked tests. |
-| Packed contents, artifact hashes and local-file exclusion | Final 55ebd37c… candidate inspected: 110 entries match the checkout; only README differs from the earlier 209ba4fa… native-gate artifact. Independent comparison passed; final CI package check pending. |
-| Packed Android/iOS Codegen for RN 0.76.9, 0.77.3 and 0.84.0 | All 3 versions passed on both platforms during preparation; final README-candidate CI rerun pending. Initial sandbox cache-write denial was resolved by scoped retry; it was not a source failure. |
+| Packed contents, artifact hashes and local-file exclusion | Published 55ebd37c… tarball has 110 verified entries; only README differs from the earlier 209ba4fa… native-gate artifact. Final exact-main CI/package checks and independent published-byte comparisons passed. |
+| Packed Android/iOS Codegen for RN 0.76.9, 0.77.3 and 0.84.0 | All 3 versions passed on both platforms, including final exact-main/publishing validation. Initial sandbox cache-write denial was resolved by scoped retry; it was not a source failure. |
 | RN 0.84 Android debug application | Passed full assembly; compiler evidence only. |
 | RN 0.84 full unsigned iOS Simulator application | Passed full application builds including MIFARE logging removal and the Scene-lifecycle correction; compiler evidence only. |
 | Packed RN 0.76.9 Android and iOS support-floor applications | Earlier 209ba4fa… artifact passed Android debug APK and complete arm64/x86_64 unsigned iOS Simulator app; reused for the new README-only candidate's byte-identical runtime. Existing Xcode 26+ fmt adjustment applied only inside the disposable consumer. |
@@ -206,27 +210,58 @@ awaited cleanup, preventing overlapping authentication attempts.
 | Password-protected-tag authentication/read sequence | Unverified; authentication testing currently unavailable and protection range unknown. No generic password-unlock claim. |
 | Signed iPhone app startup | Corrected Release app passed two sustained cold launches with one verified app runtime and no new startup crash; maintainer confirmed the visible UI is normal. |
 | Publishing-controller regressions | Passed. |
-| Exact merged-main SHA full hosted CI, both native builds actually run | Pending |
-| Non-publishing preview and tarball comparison | Pending |
-| npm artifact/channel, tag, GitHub release and clean published consumer | Pending; publication has not been verified |
+| Exact merged-main SHA full hosted CI, both native builds actually run | Passed on f7c51990…; all five required jobs actually succeeded. |
+| Non-publishing preview and tarball comparison | Passed; preview tarball is byte-identical to the local final and published artifact. |
+| npm artifact/channel, tag, GitHub release and clean published consumer | Independently verified; details below. |
 
 The feature-head [CI run](https://github.com/revtel/react-native-nfc-manager/actions/runs/40492092423)
 and [documentation run](https://github.com/revtel/react-native-nfc-manager/actions/runs/40492092441)
 both completed successfully for `e1df81e594a6ac9c33b1346e48c68187f1b63fd0`.
 Validate, Select native builds, Android New Architecture, iOS New Architecture
-and Native build gate all actually succeeded. This is PR-head evidence; the
-separate exact merged-main publishing gate remains pending.
+and Native build gate all actually succeeded. This is intermediate PR-head
+evidence; the separate exact merged-main gate is recorded below.
 
-Read-only release preflight on 2026-10-27 still found PR #859 open and draft,
+An earlier, pre-publication snapshot on 2026-10-27 found PR #859 open and draft,
 main at `5ad9871c5bbac1c89fe11078087f1286ce6858bd`, npm `latest` at 4.1.0 and
 `beta` at 4.0.0-beta.11, with no published 4.2.0 version or v4.2.0 Git tag.
-Version availability must be checked again before publication.
+This is historical preflight state, not the current publication or PR status.
 
-The final publication must select the exact merged main tip and use the existing
-OIDC publishing workflow after its full CI succeeds. PR CI cannot substitute for
-the publisher's main-SHA gate. Preserve the tested tarball and compare its bytes
-with the preview and published package. A moved candidate requires renewed
-selection and relevant verification.
+## Exact-main checks and verified publication
+
+All runs below selected `f7c51990aded9b9bf98c6fc5a1401efef5bc900f` on main.
+
+| Check | Evidence |
+| --- | --- |
+| Exact-main push CI | [40496988681](https://github.com/revtel/react-native-nfc-manager/actions/runs/40496988681): Validate, Select native builds, Android New Architecture, iOS New Architecture and Native build gate all succeeded; neither native build was skipped. |
+| Non-publishing preview | [40497774540](https://github.com/revtel/react-native-nfc-manager/actions/runs/40497774540): validate succeeded, publish skipped; artifact 12732140907 contained the exact final tarball and main/version/SHA/channel manifest. |
+| OIDC npm/GitHub publication | [40498207803](https://github.com/revtel/react-native-nfc-manager/actions/runs/40498207803): validate and publish succeeded. The workflow rechecked exact main, full CI, tag and artifact integrity before publishing. |
+| Published artifact | Downloaded npm tarball is byte-identical to the local final tarball, preview and publication artifact 12732091328: 81,430 bytes, 110 entries, SHA-256 and SHA-512 above. |
+| Registry and GitHub channels | npm `latest` is 4.2.0; `beta` remains 4.0.0-beta.11. `v4.2.0` resolves to the exact main commit above. GitHub release 425387555 is regular/non-draft and returned as latest, published 2026-10-27T11:47:16Z. |
+
+Public npm SLSA provenance identifies the published package's SHA-512 digest,
+source commit `f7c51990aded9b9bf98c6fc5a1401efef5bc900f`, repository
+`revtel/react-native-nfc-manager`, `refs/heads/main`, workflow
+`.github/workflows/publish.yml` and publication run 40498207803/attempt 1.
+Both release execution and an independent check matched those identities and
+the downloaded artifact; the publish log also records its transparency-log
+statement.
+
+An independent clean registry consumer used Node 22.22.2, npm 10.9.7,
+React 19.2.3, RN 0.84.0 and TypeScript 5.9.3. An unqualified
+`npm install react-native-nfc-manager` resolved 4.2.0. The lock points to the
+registry's exact 4.2.0 tarball/integrity without a repository link or fallback;
+all 110 installed package files matched the published tarball byte-for-byte.
+The consumer resolved its own installed main entry and `index.d.ts`, and a
+strict focused typecheck passed for exported `GetTagOptions`, no-argument and
+default/false/true calls, `Promise<TagEvent | null>`, and rejection of a string
+option or bare boolean argument. This verifies registry installation and public
+types; it does not execute Core NFC or add hardware coverage.
+
+Post-publication documentation updates do not change the immutable package,
+release tag or source commit. Documentation-only CI for those later updates is
+not substituted for the exact-main native release CI above. Candidate tarballs,
+comparison records and logs are retained locally; hosted release artifacts have
+seven-day retention.
 
 ## Automated control-flow evidence
 
