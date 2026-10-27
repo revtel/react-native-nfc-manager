@@ -92,6 +92,10 @@ async function readNdef() {
 
 For a complete React screen and session lifecycle, see [reading NDEF tags](docs/guide/reading-ndef.md).
 
+To retrieve tag information before authentication, use
+`getTag({readNdef: false})` to skip iOS's implicit NDEF read. Android still
+returns any discovery-time NDEF cache. See [read control and platform details](docs/reference/api.md#tag-information-without-an-implicit-ndef-read).
+
 <a id="nfccompatibility"></a>
 
 ## Technology support

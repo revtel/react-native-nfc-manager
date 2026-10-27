@@ -7,6 +7,11 @@ import ReactTestRenderer from 'react-test-renderer';
 import { Platform } from 'react-native';
 import App from '../App';
 import NfcManager, { NfcTech } from 'react-native-nfc-manager';
+import { verifyNtag215ReadOption } from '../getTagReadOptionSmoke';
+
+jest.mock('../getTagReadOptionSmoke', () => ({
+  verifyNtag215ReadOption: jest.fn(async () => undefined),
+}));
 
 const defaultPlatformOS = Platform.OS;
 
@@ -22,6 +27,7 @@ jest.mock('react-native-nfc-manager', () => {
     NfcV: 'NfcV',
     IsoDep: 'IsoDep',
     Iso15693IOS: 'iso15693',
+    MifareIOS: 'mifare',
   };
 
   return {
@@ -70,6 +76,115 @@ test('renders correctly', async () => {
   await ReactTestRenderer.act(() => {
     ReactTestRenderer.create(<App />);
   });
+});
+
+test.each(['ios', 'android'])(
+  'mocked %s interaction - tag info skips NDEF and cleans up repeated calls',
+  async os => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+    const tag = { id: '04010203', tech: 'mifare' };
+    (NfcManager.getTag as jest.Mock).mockResolvedValueOnce(tag).mockResolvedValueOnce(tag);
+    let root: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(() => {
+      root = ReactTestRenderer.create(<App />);
+    });
+    await ReactTestRenderer.act(async () => {
+      root!.root.findByProps({ testID: 'action-get-tag-without-ndef' }).props.onPress();
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+    expect(NfcManager.requestTechnology).toHaveBeenCalledWith(
+      os === 'ios' ? NfcTech.MifareIOS : NfcTech.NfcA,
+      expect.objectContaining({
+        isReaderModeEnabled: true,
+        readerModeFlags: 129,
+      }),
+    );
+    expect(NfcManager.getTag).toHaveBeenCalledTimes(2);
+    expect(NfcManager.getTag).toHaveBeenNthCalledWith(1, { readNdef: false });
+    expect(NfcManager.getTag).toHaveBeenNthCalledWith(2, { readNdef: false });
+    expect(NfcManager.cancelTechnologyRequest).toHaveBeenCalledTimes(1);
+    expect(root!.root.findAllByProps({ testID: 'android-nfc-scan-prompt' })).toHaveLength(0);
+  },
+);
+
+test('mocked tag info failure still awaits cleanup', async () => {
+  (NfcManager.getTag as jest.Mock).mockRejectedValueOnce(new Error('tag lost'));
+  let root: ReactTestRenderer.ReactTestRenderer;
+  await ReactTestRenderer.act(() => {
+    root = ReactTestRenderer.create(<App />);
+  });
+  await ReactTestRenderer.act(async () => {
+    root!.root.findByProps({ testID: 'action-get-tag-without-ndef' }).props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
+  expect(NfcManager.getTag).toHaveBeenCalledTimes(1);
+  expect(NfcManager.cancelTechnologyRequest).toHaveBeenCalledTimes(1);
+});
+
+test.each(['', '01020304\n', 'G1020304'])('mocked NTAG215 auth rejects invalid input before NFC starts: %j', async password => {
+  let root: ReactTestRenderer.ReactTestRenderer;
+  await ReactTestRenderer.act(() => { root = ReactTestRenderer.create(<App />); });
+  root!.root.findByProps({ testID: 'ntag215-password' }).props.onChangeText(password);
+  await ReactTestRenderer.act(async () => {
+    root!.root.findByProps({ testID: 'action-ntag215-auth-read' }).props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
+  expect(NfcManager.start).not.toHaveBeenCalled();
+  expect(NfcManager.requestTechnology).not.toHaveBeenCalled();
+  expect(verifyNtag215ReadOption).not.toHaveBeenCalled();
+});
+
+test('mocked NTAG215 auth ignores rapid taps until cleanup finishes', async () => {
+  let finishAuth: (() => void) | undefined;
+  let finishCleanup: (() => void) | undefined;
+  (verifyNtag215ReadOption as jest.Mock).mockImplementationOnce(() => new Promise<void>(resolve => { finishAuth = resolve; }));
+  (NfcManager.cancelTechnologyRequest as jest.Mock).mockImplementationOnce(() => new Promise<void>(resolve => { finishCleanup = resolve; }));
+  let root: ReactTestRenderer.ReactTestRenderer;
+  await ReactTestRenderer.act(() => { root = ReactTestRenderer.create(<App />); });
+  root!.root.findByProps({ testID: 'ntag215-password' }).props.onChangeText('01020304');
+  const button = root!.root.findByProps({ testID: 'action-ntag215-auth-read' });
+  await ReactTestRenderer.act(async () => {
+    button.props.onPress();
+    button.props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
+  expect(NfcManager.start).toHaveBeenCalledTimes(1);
+  expect(NfcManager.requestTechnology).toHaveBeenCalledTimes(1);
+  expect(verifyNtag215ReadOption).toHaveBeenCalledTimes(1);
+  await ReactTestRenderer.act(async () => {
+    finishAuth?.();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    button.props.onPress();
+  });
+  expect(NfcManager.start).toHaveBeenCalledTimes(1);
+  expect(NfcManager.cancelTechnologyRequest).toHaveBeenCalledTimes(1);
+  await ReactTestRenderer.act(async () => {
+    finishCleanup?.();
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
+});
+
+test.each([false, true])('mocked NTAG215 auth awaits cleanup on failure=%s', async fails => {
+  let root: ReactTestRenderer.ReactTestRenderer;
+  await ReactTestRenderer.act(() => { root = ReactTestRenderer.create(<App />); });
+  const input = root!.root.findByProps({ testID: 'ntag215-password' });
+  expect(input.props.secureTextEntry).toBe(true);
+  input.props.onChangeText('01020304');
+  if (fails) {
+    (verifyNtag215ReadOption as jest.Mock).mockRejectedValueOnce(new Error('Authentication failed'));
+  }
+  await ReactTestRenderer.act(async () => {
+    root!.root.findByProps({ testID: 'action-ntag215-auth-read' }).props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
+  expect(verifyNtag215ReadOption).toHaveBeenCalledWith('01020304', expect.any(Function));
+  expect(NfcManager.cancelTechnologyRequest).toHaveBeenCalledTimes(1);
+  // A second tap must not reuse the previous password.
+  await ReactTestRenderer.act(async () => {
+    root!.root.findByProps({ testID: 'action-ntag215-auth-read' }).props.onPress();
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
+  expect(verifyNtag215ReadOption).toHaveBeenCalledTimes(1);
 });
 
 test('mocked interaction - request NfcA + transceive([0x30, 0x00])', async () => {

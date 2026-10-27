@@ -77,6 +77,27 @@ describe('NfcManager (android)', () => {
     expect(lastNativeCall()[0]).toEqual('getCachedNdefMessage');
   });
 
+  test('API: getTag opt-out retains native discovery-cache data', async () => {
+    const tag = {
+      id: 'cached-tag',
+      techTypes: ['android.nfc.tech.Ndef'],
+      ndefMessage: [{tnf: 1, payload: [1]}],
+      maxSize: 504,
+    };
+    callNative.mockResolvedValueOnce(tag);
+
+    await expect(NfcManager.getTag({readNdef: false})).resolves.toEqual(tag);
+    expect(lastNativeCall()).toEqual(['getTag', [false]]);
+
+    await NfcManager.getTag();
+    expect(lastNativeCall()).toEqual(['getTag', [true]]);
+
+    NativeNfcManager.setNextError('no tech request available', 'getTag');
+    await expect(NfcManager.getTag({readNdef: false})).rejects.toMatchObject({
+      message: 'no tech request available',
+    });
+  });
+
   test('API: timeout forwards success and native errors', async () => {
     await NfcManager.setTimeout(500);
     expect(lastNativeCall()).toEqual(['setTimeout', [500]]);

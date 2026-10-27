@@ -133,9 +133,10 @@ public extension RNNfcManager {
         } as NSArray
     }
 
-    @objc(getTagFromTagSession:callback:)
+    @objc(getTagFromTagSession:readNdef:callback:)
     static func getTag(
         from tagSession: NFCTagReaderSession?,
+        readNdef: Bool,
         callback: @escaping RNNfcResponseSenderBlock
     ) {
         guard let tagSession else {
@@ -149,6 +150,11 @@ public extension RNNfcManager {
         }
 
         var tagInfo = rnTag(from: connectedTag)
+        guard readNdef else {
+            callback([NSNull(), tagInfo])
+            return
+        }
+
         guard let ndefTag = ndefTagHandle(from: connectedTag) else {
             callback([NSNull(), tagInfo])
             return
@@ -162,12 +168,13 @@ public extension RNNfcManager {
         }
     }
 
-    @objc(getTagWithCallback:)
+    @objc(getTagWithReadNdef:callback:)
     static func getTag(
+        readNdef: Bool,
         callback: @escaping RNNfcResponseSenderBlock
     ) {
         if #available(iOS 13.0, *) {
-            getTag(from: runtimeTagSession, callback: callback)
+            getTag(from: runtimeTagSession, readNdef: readNdef, callback: callback)
             return
         }
 

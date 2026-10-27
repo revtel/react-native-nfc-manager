@@ -1,5 +1,30 @@
 ## Unreleased
 
+## [4.2.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.2.0) (2026-10-27)
+
+### Added
+
+- Add `getTag({readNdef: false})` and the public `GetTagOptions` type. On iOS,
+  this returns tag metadata without the implicit NDEF read, allowing applications
+  to perform tag-specific authentication before reading protected data. Calls
+  without options, with `{}`, or with `readNdef: true` retain existing behavior.
+- Android accepts the same option and continues returning discovery-time cached
+  NDEF data without a fresh read. This option does not disable system discovery
+  checks or provide a generic password-authentication flow; Android reader flags
+  and technology-specific commands remain separate.
+- Add an example action for repeated metadata-only calls and cleanup, retaining
+  the separate ordinary NDEF read flow. Password-protected-tag behavior requires
+  device/tag-specific verification; see the [candidate validation record](docs/V4_2_RELEASE_VALIDATION_2026-10-27.md).
+- Add an NTAG215 example smoke action using a known password, metadata-only
+  access, one authentication attempt and a read of pages 4–7, without writing the
+  tag. The example clears its password input and closes the request after each
+  attempt. Passwords, authentication responses and read data are not logged;
+  successful reads alone do not establish the tag's protection configuration.
+
+### Fixed
+
+- iOS: stop logging raw MIFARE command bytes, which may contain tag passwords.
+
 ## [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0) (2026-10-23)
 
 ### Added

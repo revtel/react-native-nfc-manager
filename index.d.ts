@@ -71,6 +71,11 @@ declare module 'react-native-nfc-manager' {
     payload: number[];
   }
 
+  export interface GetTagOptions {
+    /** Defaults to true. False skips the implicit iOS NDEF read; Android retains discovery-time cached NDEF. */
+    readNdef?: boolean;
+  }
+
   export interface TagEvent {
     /** Absent when no NDEF message is available; do not assume an empty array. */
     ndefMessage?: NdefRecord[];
@@ -288,7 +293,7 @@ declare module 'react-native-nfc-manager' {
       options?: RegisterTagEventOpts,
     ): Promise<NfcTech | null>;
     cancelTechnologyRequest: (options?: CancelTechReqOpts) => Promise<void>;
-    getTag: () => Promise<TagEvent | null>;
+    getTag: (options?: GetTagOptions) => Promise<TagEvent | null>;
     getBackgroundTag: () => Promise<TagEvent | null>;
     clearBackgroundTag: () => Promise<void>;
     setAlertMessage: (alertMessage: string) => Promise<void>;

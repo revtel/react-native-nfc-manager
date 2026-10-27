@@ -24,6 +24,41 @@ const records = tag?.ndefMessage ?? [];
 
 `getNdefMessage()` resolves to a tag result, rather than an array of NDEF records. Handle absent or empty `ndefMessage` before decoding records.
 
+### Tag information without an implicit NDEF read
+
+`getTag(options?: GetTagOptions)` accepts `readNdef?: boolean` (added in **4.2.0**):
+
+```javascript
+const tag = await NfcManager.getTag({readNdef: false});
+```
+
+The default is `true`: `getTag()`, `getTag({})`, and an undefined `readNdef`
+preserve existing behavior. On iOS, the default attempts to read NDEF and includes
+`ndefMessage` when available. With `false`, it returns available connected-tag
+metadata without attempting NDEF I/O and omits `ndefMessage`. Missing-session
+and missing-tag outcomes remain unchanged.
+
+On Android, either value returns discovery-time metadata, including cached
+`ndefMessage` when available. `false` does not remove cached content or refresh
+it. This option controls only work initiated by this `getTag` call; it does not
+disable earlier system discovery probes or NDEF reads requested through other APIs.
+
+For protected tags, retrieve metadata with `readNdef: false`, then perform the
+tag-specific authentication and data commands in the required order. On iOS,
+`ndefHandler.getNdefMessage()` can request an explicit NDEF read from the connected
+tag. On Android, that handler requires an active `Ndef` connection; a low-level
+`NfcA` authentication flow cannot assume it can call the handler directly.
+Authentication and subsequent data access depend on the tag and platform.
+
+Android reader mode separately supports `FLAG_READER_SKIP_NDEF_CHECK` to skip
+system NDEF discovery checks. That also prevents `Ndef` technology enumeration;
+it is not a general-purpose option for an NDEF request. Configure reader flags
+when registering the scan: options passed to `requestTechnology` do not replace
+an already active tag-event registration.
+
+Rebuild the native app after upgrading to use this option. Expo requires a rebuilt
+Development Build; a JavaScript-only update cannot update the native bridge.
+
 On Android, `getTag()` and `ndefHandler.getCachedNdefMessageAndroid()` return
 discovery-time NDEF data. Use `ndefHandler.getNdefMessage()` to read the current
 contents after a write, while the same NDEF request remains connected and the

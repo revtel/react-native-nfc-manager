@@ -117,7 +117,8 @@ class NfcManager extends NfcManagerIOSStubBase implements ActivityEventListener,
     }
 
     @ReactMethod
-    public void getTag(Callback callback) {
+    public void getTag(boolean readNdef, Callback callback) {
+        // Android returns discovery-time NDEF data; neither flag value initiates a read.
         synchronized (this) {
             if (techRequest != null) {
                 Tag tag = techRequest.getTagHandle();

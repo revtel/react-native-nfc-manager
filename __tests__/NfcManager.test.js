@@ -148,6 +148,36 @@ describe('NfcManager (ios)', () => {
     await expect(NfcManager.getTag()).rejects.toBeInstanceOf(NfcError.Timeout);
   });
 
+  test.each([
+    ['no argument', []],
+    ['undefined options', [undefined]],
+    ['empty options', [{}]],
+    ['undefined readNdef', [{readNdef: undefined}]],
+    ['explicit read', [{readNdef: true}]],
+  ])('API: getTag preserves the read default with %s', async (_name, args) => {
+    const tag = {id: 'ndef-tag', ndefMessage: [{tnf: 1, payload: [1]}]};
+    callNative.mockResolvedValueOnce(tag);
+
+    await expect(NfcManager.getTag(...args)).resolves.toEqual(tag);
+    expect(lastNativeCall()).toEqual(['getTag', [true]]);
+  });
+
+  test('API: getTag forwards the NDEF opt-out and preserves native results', async () => {
+    const options = {readNdef: false};
+    const tag = {id: 'protected-tag', tech: 'mifare'};
+    callNative.mockResolvedValueOnce(tag);
+
+    await expect(NfcManager.getTag(options)).resolves.toEqual(tag);
+    expect(lastNativeCall()).toEqual(['getTag', [false]]);
+    expect(options).toEqual({readNdef: false});
+
+    NativeNfcManager.setNextError('NFCError:103', 'getTag');
+    await expect(NfcManager.getTag(options)).rejects.toBeInstanceOf(
+      NfcError.SessionInvalidated,
+    );
+    expect(lastNativeCall()).toEqual(['getTag', [false]]);
+  });
+
   test('API: registerTagEvent', () => {
     NfcManager.registerTagEvent();
     expect(lastNativeCall()[0]).toEqual('registerTagEvent');

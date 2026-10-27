@@ -180,9 +180,9 @@ continueUserActivity:(NSUserActivity *)userActivity
     [RNNfcManager invalidateSessionWithErrorMessage:errorMessage callback:callback];
 }
 
-- (void)getTag: (nonnull RCTResponseSenderBlock)callback
+- (void)getTag:(BOOL)readNdef callback:(nonnull RCTResponseSenderBlock)callback
 {
-    [RNNfcManager getTagWithCallback:callback];
+    [RNNfcManager getTagWithReadNdef:readNdef callback:callback];
 }
 
 - (void)getNdefMessage: (nonnull RCTResponseSenderBlock)callback

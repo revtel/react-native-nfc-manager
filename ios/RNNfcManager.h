@@ -91,10 +91,12 @@ typedef void (^RNNfcResponseSenderBlock)(NSArray * _Nonnull response);
 
 + (NSArray *)convertNdefMessage:(NFCNDEFMessage *)message;
 
-+ (void)getTagWithCallback:(RNNfcResponseSenderBlock)callback;
++ (void)getTagWithReadNdef:(BOOL)readNdef
+                callback:(RNNfcResponseSenderBlock)callback;
 
 + (void)getTagFromTagSession:(NFCTagReaderSession * _Nullable)tagSession
-                      callback:(RNNfcResponseSenderBlock)callback;
+                   readNdef:(BOOL)readNdef
+                   callback:(RNNfcResponseSenderBlock)callback;
 
 + (void)getNdefMessageWithCallback:(RNNfcResponseSenderBlock)callback;
 

@@ -22,6 +22,8 @@ const NfcErrorIOS = NfcError.NfcErrorIOS;
 
 export default nfcManager;
 
+export type {GetTagOptions} from './NfcManager';
+
 export {
   NfcTech,
   NfcEvents,

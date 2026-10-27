@@ -65,6 +65,12 @@ export default App;
 
 ## Session lifecycle
 
+`getTag()` keeps its existing NDEF behavior. If you need tag information before
+authentication, `getTag({readNdef: false})` skips the implicit read on iOS;
+Android can still return discovery-time cached NDEF. See
+[read control and platform details](../reference/api.md#tag-information-without-an-implicit-ndef-read)
+for authentication, discovery flags, and native rebuild requirements.
+
 Await `start()` before requesting a technology. Initialization does not start a scan. Request the technology, read the tag or use its handler, then await cancellation before allowing another request. The example guards rapid repeated taps and handles both operation and cleanup failures.
 
 For technology-specific operations, see [API and handlers](../reference/api.md). A transceive timeout does not imply a timeout while waiting for a tag.
