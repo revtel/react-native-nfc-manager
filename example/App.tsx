@@ -7,6 +7,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import {
@@ -21,6 +22,7 @@ import NfcManager, {
   type TagEvent,
 } from 'react-native-nfc-manager';
 import { verifySavedNdef, writeReadSameSession, type WrittenNdef } from './ndefWriteReadSmoke';
+import { verifyNtag215ReadOption } from './getTagReadOptionSmoke';
 
 function toMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -62,6 +64,9 @@ function App(): React.JSX.Element {
   const logScrollRef = useRef<ScrollView>(null);
   const androidPromptIdRef = useRef(0);
   const writtenNdefRef = useRef<WrittenNdef | null>(null);
+  const ntagPasswordRef = useRef('');
+  const ntagPasswordInputRef = useRef<TextInput>(null);
+  const ntagAuthInFlightRef = useRef(false);
 
   const appendLog = (message: string) => {
     setLogLines(prev => [
@@ -298,6 +303,71 @@ function App(): React.JSX.Element {
           appendLog('requestTechnology(Ndef) success, waiting getTag()');
           const tag = await NfcManager.getTag();
           appendLog(`getTag(): ${JSON.stringify(tag)}`);
+        },
+      },
+      {
+        label: 'NFC-A Tag Info Without NDEF Read',
+        testID: 'action-get-tag-without-ndef',
+        run: async () => {
+          await NfcManager.start();
+          try {
+            await requestTechnologyWithPrompt('Hold an NFC-A tag still', () =>
+              NfcManager.requestTechnology(
+                Platform.OS === 'ios' ? NfcTech.MifareIOS : NfcTech.NfcA,
+                {
+                  alertMessage: 'Read tag info without NDEF',
+                  isReaderModeEnabled: true,
+                  readerModeFlags:
+                    NfcAdapter.FLAG_READER_NFC_A |
+                    NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+                },
+              ),
+            );
+            const tag = await NfcManager.getTag({ readNdef: false });
+            appendLog(`getTag(readNdef=false): ${JSON.stringify(tag)}`);
+            const repeated = await NfcManager.getTag({ readNdef: false });
+            appendLog(`getTag(readNdef=false) repeated: ${JSON.stringify(repeated)}`);
+          } finally {
+            await cancelTechnologyWithPrompt();
+            appendLog('Tag info request closed; remove the tag before repeating');
+          }
+        },
+      },
+      {
+        label: 'NTAG215 Authenticate + Read (No Writes)',
+        testID: 'action-ntag215-auth-read',
+        run: async () => {
+          if (ntagAuthInFlightRef.current) return;
+          const password = ntagPasswordRef.current;
+          if (password.length !== 8 || !/^[0-9a-fA-F]{8}$/.test(password)) {
+            throw new Error('Enter the known NTAG215 password as 8 hexadecimal characters');
+          }
+          ntagAuthInFlightRef.current = true;
+          try {
+            await NfcManager.start();
+            await requestTechnologyWithPrompt('Hold the protected NTAG215 still', () =>
+              NfcManager.requestTechnology(
+                Platform.OS === 'ios' ? NfcTech.MifareIOS : NfcTech.NfcA,
+                {
+                  alertMessage: 'Read NTAG215 after authentication',
+                  isReaderModeEnabled: true,
+                  readerModeFlags:
+                    NfcAdapter.FLAG_READER_NFC_A |
+                    NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+                },
+              ),
+            );
+            await verifyNtag215ReadOption(password, appendLog);
+          } finally {
+            ntagPasswordRef.current = '';
+            ntagPasswordInputRef.current?.clear();
+            try {
+              await cancelTechnologyWithPrompt();
+              appendLog('NTAG215 request closed; remove the tag before repeating');
+            } finally {
+              ntagAuthInFlightRef.current = false;
+            }
+          }
         },
       },
       {
@@ -665,6 +735,19 @@ function App(): React.JSX.Element {
           <View style={styles.actionsContainer}>
             <Text style={styles.sectionTitle}>Test Actions</Text>
             <ScrollView contentContainerStyle={styles.actionsScrollContent}>
+              <Text>Known NTAG215 password (8 hex characters)</Text>
+              <TextInput
+                ref={ntagPasswordInputRef}
+                testID="ntag215-password"
+                accessibilityLabel="Known NTAG215 password"
+                autoCapitalize="none"
+                autoCorrect={false}
+                maxLength={8}
+                secureTextEntry
+                placeholder="Enter password for auth test"
+                onChangeText={value => { ntagPasswordRef.current = value; }}
+                style={{ borderWidth: 1, borderColor: '#889', padding: 10, marginBottom: 12 }}
+              />
               {actions.map(action => (
                 <Pressable
                   key={action.label}

@@ -7,6 +7,13 @@ Its [release validation record](./V4_1_RELEASE_VALIDATION_2026-10-23.md) names
 the exact candidate, packed artifact, compiler/CI gates, hardware attribution,
 and independently verified npm publication.
 
+The 4.2.0 candidate adds `getTag({readNdef: false})` to skip the implicit iOS
+NDEF read while retaining existing defaults and Android discovery-time cached
+data. It does not change the supported React Native or Expo versions. Its
+[candidate validation record](./V4_2_RELEASE_VALIDATION_2026-10-27.md) tracks
+the pending compiler, device and publication checks; it is not a publication
+announcement or a claim that password-protected tags have been verified.
+
 ## Versioning Policy
 
 - The v4 support floor is React Native **0.76** with the New Architecture enabled. React Native 0.76 is the first release where the New Architecture is enabled by default and declared production-ready.
@@ -135,7 +142,7 @@ See [hardware retesting by change risk](./RELEASING.md#hardware-retesting-by-cha
 ## Stable preparation and branch policy
 
 `main` is the active v4 development and release branch; `v3` preserves legacy maintenance.
-[4.0.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.0.0) is published on npm `latest`; the beta channel remains separate.
+[4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0) is published on npm `latest`; the beta channel remains separate.
 See [Migration](./MIGRATING_V3_TO_V4.md) and the
 [stable cutover procedure](./RELEASING.md#stable-cutover-procedure).
 GitHub default-branch selection and npm `latest` are independent operations.

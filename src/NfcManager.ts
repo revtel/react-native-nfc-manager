@@ -48,6 +48,7 @@ const DEFAULT_REGISTER_TAG_EVENT_OPTIONS = {
 type NfcEventName = (typeof NfcEvents)[keyof typeof NfcEvents];
 type RegisterTagEventOptions = Partial<typeof DEFAULT_REGISTER_TAG_EVENT_OPTIONS>;
 type WriteNdefOptions = {reconnectAfterWrite?: boolean};
+export type GetTagOptions = {readNdef?: boolean};
 type ClientEventCallback = ((payload: unknown) => void) | null;
 type NativeSubscriptionMap = Partial<Record<NfcEventName, {remove: () => void}>>;
 type ClientListenerMap = Partial<Record<NfcEventName, ClientEventCallback>>;
@@ -102,8 +103,8 @@ class NfcManagerBase {
     return handleNativeException(callNative('unregisterTagEvent'));
   }
 
-  async getTag() {
-    return handleNativeException(callNative('getTag'));
+  async getTag(options: GetTagOptions = {}) {
+    return handleNativeException(callNative('getTag', [options.readNdef ?? true]));
   }
 
   setEventListener(name: NfcEventName, callback: ClientEventCallback) {

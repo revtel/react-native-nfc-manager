@@ -30,7 +30,7 @@ export interface Spec extends TurboModule {
       callback: (err?: string) => void
   ): void;
   unregisterTagEvent(callback: (err?: string) => void): void;
-  getTag(callback: (err?: string, tag?: Object) => void): void;
+  getTag(readNdef: boolean, callback: (err?: string, tag?: Object) => void): void;
   queryNdefStatus(callback: (err?: string, ndefStatus?: Object) => void): void;
   getBackgroundTag(callback: (err?: string, tag?: Object) => void): void;
   clearBackgroundTag(callback: (err?: string) => void): void;

@@ -41,7 +41,6 @@ public extension RNNfcManager {
         }
 
         let data = RNNfcSwiftUtil.data(from: bytes)
-        NSLog("input bytes: %@", RNNfcSwiftUtil.hexString(from: data))
         mifareTag.sendMiFareCommand(commandPacket: data) { response, error in
             if let error {
                 completion(nil, error as NSError)

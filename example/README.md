@@ -53,10 +53,43 @@ npm run android
 npm run ios
 ```
 
+## Tag information without an NDEF read
+
+After rebuilding the native app, use **NFC-A Tag Info Without NDEF Read** with
+a MIFARE/NTAG Type 2 tag. The action connects using `MifareIOS` on iOS or `NfcA`
+on Android, calls `getTag({readNdef: false})` twice, logs both results, and awaits
+cleanup. iOS results should contain available metadata without `ndefMessage`.
+On Android the action also configures reader mode to skip discovery-time NDEF
+checks; that separate flag is not supplied by `getTag` itself.
+
+This action does not authenticate or change the tag. Remove the tag and repeat
+the action to check recovery, then use **Request Ndef + Get Tag** with an ordinary
+NDEF tag to check the existing read flow. Protected-tag authentication and data
+commands depend on the tag; metadata success alone does not verify authentication.
+
+**Request Ndef + Get Tag** deliberately keeps its technology request connected
+after returning the tag. Use **Cancel Request** to close its NFC prompt. The
+metadata action instead cancels automatically after its two calls; the second
+`repeated` log is an intentional second call, not another discovery event.
+
+For a password-protected **NTAG215**, enter its known four-byte password as eight
+hexadecimal characters in the secure field on the device, then use **NTAG215
+Authenticate + Read (No Writes)**. The action gets metadata twice with
+`readNdef: false`, sends one password-authentication command, reads pages 4–7,
+and awaits cleanup. It does not write data or change protection settings. Only
+use the correct known password; an incorrect password can count toward the tag's
+configured authentication-attempt limit. The field clears when the operation ends.
+Logs omit the password, authentication response, and page contents. A successful
+read covers pages 4–7 only; record separately whether those pages are protected.
+
 ## Architecture notes
 
 - This example uses `react-native@0.84`, which is New Architecture only.
 - Old Architecture toggles (`newArchEnabled=false`, `RCT_NEW_ARCH_ENABLED=0`) are not supported in this RN version.
+- The iOS example uses a single UIKit scene, including when built with the iOS
+  27 SDK. React Native starts from `SceneDelegate` after its window is connected.
+- Metro resolves React and React Native from this app's dependencies even for
+  the linked library, avoiding a second runtime from the repository's dev dependencies.
 
 ## Commands
 

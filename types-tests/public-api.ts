@@ -9,6 +9,7 @@ import NfcManager, {
   NfcError,
   NfcErrorIOS,
   type CancelTechReqOpts,
+  type GetTagOptions,
   type NdefRecord,
   type NfcAntennaInfo,
   type RegisterTagEventOpts,
@@ -18,6 +19,18 @@ import NfcManager, {
 async function smoke() {
   await NfcManager.start();
   await NfcManager.isSupported(NfcTech.Ndef);
+  const tagOptions: GetTagOptions = {readNdef: false};
+  const tagInfo: TagEvent | null = await NfcManager.getTag(tagOptions);
+  await NfcManager.getTag();
+  await NfcManager.getTag(undefined);
+  await NfcManager.getTag({});
+  await NfcManager.getTag({readNdef: undefined});
+  await NfcManager.getTag({readNdef: true});
+  // @ts-expect-error readNdef must be a boolean when defined.
+  await NfcManager.getTag({readNdef: 'false'});
+  // @ts-expect-error The public API accepts an options object, not a bare boolean.
+  await NfcManager.getTag(false);
+  void tagInfo;
   await NfcManager.cancelTechnologyRequest({
     throwOnError: false,
     delayMsAndroid: 500,

@@ -9,7 +9,7 @@ Requires **React Native 0.76+ with the New Architecture**. Use an NFC-capable ph
 
 ## Versions
 
-- **v4 (current):** [4.1.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.1.0), the stable release on npm `latest`, developed on `main`.
+- **v4 (current):** The stable New Architecture line on [npm `latest`](https://www.npmjs.com/package/react-native-nfc-manager), developed on `main`.
 - **v3 (legacy):** Existing v3 or Legacy Architecture apps can install `react-native-nfc-manager@3`. Source and documentation remain on the [v3 branch](https://github.com/revtel/react-native-nfc-manager/tree/v3).
 
 ## Installation
@@ -91,6 +91,10 @@ async function readNdef() {
 ```
 
 For a complete React screen and session lifecycle, see [reading NDEF tags](docs/guide/reading-ndef.md).
+
+To retrieve tag information before authentication, use
+`getTag({readNdef: false})` to skip iOS's implicit NDEF read. Android still
+returns any discovery-time NDEF cache. See [read control and platform details](docs/reference/api.md#tag-information-without-an-implicit-ndef-read).
 
 <a id="nfccompatibility"></a>
 
