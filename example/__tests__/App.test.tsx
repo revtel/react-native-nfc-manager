@@ -90,7 +90,7 @@ test.each(['ios', 'android'])(
     });
     await ReactTestRenderer.act(async () => {
       root!.root.findByProps({ testID: 'action-get-tag-without-ndef' }).props.onPress();
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
     });
     expect(NfcManager.requestTechnology).toHaveBeenCalledWith(
       os === 'ios' ? NfcTech.MifareIOS : NfcTech.NfcA,
@@ -115,7 +115,7 @@ test('mocked tag info failure still awaits cleanup', async () => {
   });
   await ReactTestRenderer.act(async () => {
     root!.root.findByProps({ testID: 'action-get-tag-without-ndef' }).props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
   });
   expect(NfcManager.getTag).toHaveBeenCalledTimes(1);
   expect(NfcManager.cancelTechnologyRequest).toHaveBeenCalledTimes(1);
@@ -127,7 +127,7 @@ test.each(['', '01020304\n', 'G1020304'])('mocked NTAG215 auth rejects invalid i
   root!.root.findByProps({ testID: 'ntag215-password' }).props.onChangeText(password);
   await ReactTestRenderer.act(async () => {
     root!.root.findByProps({ testID: 'action-ntag215-auth-read' }).props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
   });
   expect(NfcManager.start).not.toHaveBeenCalled();
   expect(NfcManager.requestTechnology).not.toHaveBeenCalled();
@@ -146,21 +146,21 @@ test('mocked NTAG215 auth ignores rapid taps until cleanup finishes', async () =
   await ReactTestRenderer.act(async () => {
     button.props.onPress();
     button.props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
   });
   expect(NfcManager.start).toHaveBeenCalledTimes(1);
   expect(NfcManager.requestTechnology).toHaveBeenCalledTimes(1);
   expect(verifyNtag215ReadOption).toHaveBeenCalledTimes(1);
   await ReactTestRenderer.act(async () => {
     finishAuth?.();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
     button.props.onPress();
   });
   expect(NfcManager.start).toHaveBeenCalledTimes(1);
   expect(NfcManager.cancelTechnologyRequest).toHaveBeenCalledTimes(1);
   await ReactTestRenderer.act(async () => {
     finishCleanup?.();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
   });
 });
 
@@ -175,14 +175,14 @@ test.each([false, true])('mocked NTAG215 auth awaits cleanup on failure=%s', asy
   }
   await ReactTestRenderer.act(async () => {
     root!.root.findByProps({ testID: 'action-ntag215-auth-read' }).props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
   });
   expect(verifyNtag215ReadOption).toHaveBeenCalledWith('01020304', expect.any(Function));
   expect(NfcManager.cancelTechnologyRequest).toHaveBeenCalledTimes(1);
   // A second tap must not reuse the previous password.
   await ReactTestRenderer.act(async () => {
     root!.root.findByProps({ testID: 'action-ntag215-auth-read' }).props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
   });
   expect(verifyNtag215ReadOption).toHaveBeenCalledTimes(1);
 });
