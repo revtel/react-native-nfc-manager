@@ -55,27 +55,52 @@ record, are outside the packed package and leave those tarball bytes unchanged.
 ## Hardware risk assessment
 
 The new iOS early-return path changes NFC runtime behavior, so historical NDEF
-reads cannot establish that path's device behavior. Focused retests must cover
-ordinary-tag default and false calls, an explicit read after metadata-only access,
-and affected failure/cancellation/repeated-request/cleanup and recovery behavior.
-Tag removal and background/resume observations must retain their actual outcome
-and scope rather than being inferred from compiler or mocked checks.
+reads cannot establish that path's device behavior. Focused device checks cover
+the ordinary default read, protected-tag metadata-only calls, cancellation,
+repeated requests, cleanup and recovery after leaving and returning to the app.
+Authentication and protected-content readback are assessed separately below.
+No raw NFC command trace, configured timeout or exact event-count result is
+inferred from UI observations, compiler builds or mocked checks.
 
-Password-protected-tag behavior remains **unverified** until a record identifies
-the chip/tag technology, protection configuration, device/OS, authentication
-command sequence, candidate and outcome. An Android NfcA authentication flow
-cannot be assumed to switch directly into the existing Ndef handler. Skipping
-Android discovery NDEF checks also removes the platform's enumerated Ndef
-technology; it is a separate integration decision.
+Authentication and protected-content readback remain **unverified**. The
+metadata-only observations below cover the maintainer-identified protected
+NTAG215; its protection configuration and protected page range are unknown.
+An Android NfcA authentication flow cannot be assumed to switch directly into
+the existing Ndef handler. Skipping Android discovery NDEF checks also removes
+the platform's enumerated Ndef technology; it is a separate integration decision.
 
 Connected-device inventory on 2026-10-27 found Samsung SM-N975U1 / Android 12
 and iPhone 15 Plus / iOS 27.0.1. Inventory alone is not NFC validation. Earlier
 iPhone records identify iOS 26.6.1 and must not be relabeled as tests of the
-current OS or this candidate. The available tag was identified as NTAG215, but
-no protection configuration or candidate-specific NFC result has been recorded.
-The NTAG215 action is a test tool, not evidence that it has
-been exercised on a tag. A successful read does not establish the configured
-protection range; the test must not assume or change the tag's configuration.
+current OS or this candidate. The maintainer reported the first focused iPhone
+results on 2026-10-27, using a signed app whose runtime source matches
+`e1df81e594a6ac9c33b1346e48c68187f1b63fd0`: native executable SHA-256
+`73a11eaaed6d56b0ff4e1dbc01af4f440432be254a6c098c0c7e323a729b56c6` and Hermes
+bundle SHA-256 `fa40cf7593d008609a8af0814e18acad76065ba3582668e37dd1520009c645a7`.
+
+| Platform / device / OS | Tag | Flow | Attributed observation |
+| --- | --- | --- | --- |
+| iOS / iPhone 15 Plus / iOS 27.0.1 | Ordinary NDEF tag; chip model not recorded | Existing default `getTag()` read, then Cancel | Maintainer-reported pass: `ndefMessage` present and cancellation completed. |
+| iOS / iPhone 15 Plus / iOS 27.0.1 | Maintainer-identified password-protected NTAG215 | Two `getTag({readNdef: false})` calls, then automatic cleanup | Maintainer-reported pass: both calls returned an identifier without `ndefMessage`; automatic cleanup completed. |
+| iOS / iPhone 15 Plus / iOS 27.0.1 | Same NTAG215; protection range unknown | Known-password authentication and page 4 read, two cycles | Unverified; authentication testing is currently unavailable. |
+| iOS / iPhone 15 Plus / iOS 27.0.1 | NTAG215; retry scan | Cancel a pending `NFC-A Tag Info Without NDEF Read` scan, then start that exact action and scan again | Maintainer explicitly confirmed pass: the subsequent scan succeeded. |
+| iOS / iPhone 15 Plus / iOS 27.0.1 | NTAG215; retry scan | Pending `NFC-A Tag Info Without NDEF Read` scan → Home → return to app → cleanup → start that exact action and scan again | Maintainer explicitly confirmed pass: the subsequent scan succeeded. |
+
+These are user-reported device observations, not captured NFC command traces.
+The NTAG215 authentication action remains a prepared test tool. A missing error
+alone does not establish authentication, protected-data readback, or absence of
+an implicit read: the legacy iOS `getTag()` path suppresses NDEF read errors.
+The maintainer's separate no-error observation referred to the default
+`Request Ndef + Get Tag` action on the protected tag; no payload or authentication
+success is inferred from it. Even a successful page 4 read would not establish
+the configured protection range. No test changes tag passwords, protection
+settings or memory.
+
+The maintainer observed the two expected metadata log entries: the dedicated
+smoke action intentionally calls `getTag({readNdef: false})` twice. This is not
+an event-count measurement. The default `Request Ndef + Get Tag` action retains
+its connection until manual Cancel; the metadata-only action awaits its own
+cleanup. These are the existing, distinct example lifecycle behaviors.
 
 The first signed iPhone candidate installed and briefly appeared in the process
 list, but the maintainer reported an immediate startup crash. The crash report
@@ -95,14 +120,49 @@ AST and contains one React 19.2.3 and one RN 0.84.0. Its Hermes bundle SHA-256 i
 The corrected signed Release app passed two cold launches on iPhone 15 Plus /
 iOS 27.0.1: its process remained present after 43 and 49 seconds, JavaScript and
 NFC initialization appeared in the console, and no new startup crash was found.
-This is startup evidence only. Maintainer confirmation of the visible UI and
-the first NFC flows is pending; no tag read or authentication result is claimed.
+The maintainer subsequently confirmed that the visible main screen is normal
+and reported the first NFC observations listed above. Authentication and
+protected-content readback are not claimed.
 
-Unchanged Android NDEF transport, Expo plugin and integration paths may reuse
-attributed prior records after source comparison, with each original candidate
-and limitation retained. See the [4.1.0 record](./V4_1_RELEASE_VALIDATION_2026-10-23.md)
-and [hardware retesting policy](./RELEASING.md#hardware-retesting-by-change-risk).
-Hosted EAS and App Store validation remain deferred.
+### Accepted limits for this release
+
+The release assessment accepts the unavailable password-
+authentication test for this bounded change. The new contract controls only
+NDEF I/O performed by a `getTag()` call; it changes no authentication command,
+transport or password-unlock behavior. The actual iPhone metadata-only and
+recovery observations above, together with the independently checked Swift
+zero-NDEF-call path, support that contract. Authentication/PACK validation,
+protected page readback and protection-range verification remain untested;
+this release makes no password-unlock claim.
+
+Android's existing tag conversion, discovery cache and transport body are
+unchanged; only the shared boolean method signature was added. The new
+signature/default forwarding and retained cached result have JS/type/Codegen
+and Android compiler coverage. There is **no fresh 4.2.0 Android device test** of
+`readNdef: false`, cached NDEF or password authentication. For unchanged Android
+behavior, reuse these attributed observations with their original identities:
+
+- [4.0.0 Expo 57.0.27 integration record](./V4_STABLE_RELEASE_2026-10-09.md):
+  Samsung SM-N975U1 / Android 12 / user-identified NTAG215; agent-inspected
+  startup/support/enabled, NDEF request/getTag/read/cleanup, pending cancellation
+  with UserCancel and repeated read/cleanup. This is the original 4.0.0
+  Development Build evidence, not a test of the 4.2.0 package or new boolean.
+- [2026-10-23 Android NDEF record](./ANDROID_NDEF_WRITE_READ_VALIDATION_2026-10-23.md):
+  main `09f8af005ba692dd4179b2828fc71246d80bf3b4`, package 4.0.0 plus example
+  test additions; Samsung SM-N975U1 / Android 12 / writable NFC Forum Type 2,
+  exact chip unknown. Matching live readbacks, removal/re-scan persistence,
+  repeated requests and cleanup passed. The earlier empty-tag preflight failure
+  and other limits remain in that original record.
+
+The Expo plugin and library integration are unchanged. The packed Expo 57.0.31
+compiler/Doctor gate is new compiler evidence, while applicable historical
+physical Expo evidence retains its original SDK, candidate and limitations.
+No fresh Expo hardware, configured-timeout, exact event-count, iOS ISO 15693,
+tag-removal-during-I/O or password-authentication result is asserted. Broader
+backgrounding during I/O is not established by the pending-scan recovery test.
+Hosted EAS and App Store validation remain deferred. See the
+[4.1.0 record](./V4_1_RELEASE_VALIDATION_2026-10-23.md) and
+[hardware retesting policy](./RELEASING.md#hardware-retesting-by-change-risk).
 
 ## Validation gates
 
@@ -122,13 +182,25 @@ awaited cleanup, preventing overlapping authentication attempts.
 | RN 0.84 full unsigned iOS Simulator application | Passed full application builds including MIFARE logging removal and the Scene-lifecycle correction; compiler evidence only. |
 | Packed RN 0.76.9 Android and iOS support-floor applications | Passed: Android debug APK and complete arm64/x86_64 unsigned iOS Simulator app. Existing Xcode 26+ fmt adjustment applied only inside the disposable consumer. |
 | Packed Expo 57.0.31/RN 0.86.3 Doctor, configuration and Android/iOS applications | Passed Doctor, configuration, provenance/autolinking, Android APK, iOS Pods and full iOS Simulator application. The tarball is byte-identical to the support-floor artifact above. |
-| Affected physical-device success/failure/recovery checks | Pending |
-| Password-protected-tag authentication/read sequence | Unverified; suitable tag and recorded configuration required |
-| Signed iPhone app startup | Corrected Release app passed two sustained cold launches with one verified app runtime and no new startup crash; visible UI confirmation and NFC flows remain pending. |
+| Affected physical-device success/failure/recovery checks | Maintainer-reported iPhone passes: ordinary NDEF/default read plus Cancel; protected NTAG215 metadata-only repeated access and cleanup; exact metadata-only action re-scan after cancellation, and after pending scan → Home → return → cleanup. Scope and limits above. |
+| Password-protected-tag authentication/read sequence | Unverified; authentication testing currently unavailable and protection range unknown. No generic password-unlock claim. |
+| Signed iPhone app startup | Corrected Release app passed two sustained cold launches with one verified app runtime and no new startup crash; maintainer confirmed the visible UI is normal. |
 | Publishing-controller regressions | Passed. |
 | Exact merged-main SHA full hosted CI, both native builds actually run | Pending |
 | Non-publishing preview and tarball comparison | Pending |
 | npm artifact/channel, tag, GitHub release and clean published consumer | Pending; publication has not been verified |
+
+The feature-head [CI run](https://github.com/revtel/react-native-nfc-manager/actions/runs/40492092423)
+and [documentation run](https://github.com/revtel/react-native-nfc-manager/actions/runs/40492092441)
+both completed successfully for `e1df81e594a6ac9c33b1346e48c68187f1b63fd0`.
+Validate, Select native builds, Android New Architecture, iOS New Architecture
+and Native build gate all actually succeeded. This is PR-head evidence; the
+separate exact merged-main publishing gate remains pending.
+
+Read-only release preflight on 2026-10-27 still found PR #859 open and draft,
+main at `5ad9871c5bbac1c89fe11078087f1286ce6858bd`, npm `latest` at 4.1.0 and
+`beta` at 4.0.0-beta.11, with no published 4.2.0 version or v4.2.0 Git tag.
+Version availability must be checked again before publication.
 
 The final publication must select the exact merged main tip and use the existing
 OIDC publishing workflow after its full CI succeeds. PR CI cannot substitute for

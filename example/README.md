@@ -67,6 +67,11 @@ the action to check recovery, then use **Request Ndef + Get Tag** with an ordina
 NDEF tag to check the existing read flow. Protected-tag authentication and data
 commands depend on the tag; metadata success alone does not verify authentication.
 
+**Request Ndef + Get Tag** deliberately keeps its technology request connected
+after returning the tag. Use **Cancel Request** to close its NFC prompt. The
+metadata action instead cancels automatically after its two calls; the second
+`repeated` log is an intentional second call, not another discovery event.
+
 For a password-protected **NTAG215**, enter its known four-byte password as eight
 hexadecimal characters in the secure field on the device, then use **NTAG215
 Authenticate + Read (No Writes)**. The action gets metadata twice with
