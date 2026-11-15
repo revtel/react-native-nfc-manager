@@ -26,7 +26,11 @@
     "ios",
     "react-native-nfc-manager.podspec",
     "app.plugin.js",
-    "specs"
+    "specs",
+    "Package.swift",
+    "spm-bridge",
+    "spm-headers",
+    "spm-support/Imports.swift"
   ],
   "license": "MIT",
   "author": {
@@ -103,5 +107,8 @@
     "android": {
       "javaPackageName": "community.revteltech.nfc"
     }
+  },
+  "swiftpmConfig": {
+    "name": "react_native_nfc_manager"
   }
 }

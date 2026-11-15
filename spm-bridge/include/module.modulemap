@@ -1,0 +1,6 @@
+// Lists the headers explicitly so adding one invalidates cached modules (an umbrella folder does not).
+module NfcManagerBridge {
+    header "RNNfcBridgeUtil.h"
+    header "RNNfcTypes.h"
+    export *
+}
