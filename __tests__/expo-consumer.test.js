@@ -49,7 +49,7 @@ describe('Expo consumer validator', () => {
       appName: 'NfcExpoConsumer',
       createExpoApp: 'create-expo-app@4.0.0',
       template: 'blank-typescript@57.0.33',
-      expo: '57.0.31',
+      expo: '57.0.33',
       expoDoctor: 'expo-doctor@1.20.4',
       react: '19.2.3',
       reactNative: '0.86.3',
@@ -130,7 +130,7 @@ describe('Expo consumer validator', () => {
       expect(packageJson.dependencies['react-native-nfc-manager']).toBe(
         'file:/tmp/library.tgz',
       );
-      expect(packageJson.dependencies.expo).toBe('57.0.31');
+      expect(packageJson.dependencies.expo).toBe('57.0.33');
       expect(appJson.expo.newArchEnabled).toBeUndefined();
       expect(appJson.expo.plugins[0][1]).toMatchObject({
         nfcPermission: 'Scan nearby NFC tags',
@@ -262,7 +262,7 @@ describe('Expo consumer validator', () => {
         () => {},
       ),
     ).toThrow(
-      'Expo consumer validation failed [Expo 57.0.31] [ios] [iOS application build]: protocol mismatch',
+      'Expo consumer validation failed [Expo 57.0.33] [ios] [iOS application build]: protocol mismatch',
     );
   });
 

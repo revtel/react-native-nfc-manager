@@ -41,7 +41,7 @@ range remain unverified; no password-unlock claim is made.
 ### Example app policy
 
 - Primary development example: **React Native CLI** (`example/`)
-- Representative secondary consumer: pinned **Expo SDK 57.0.31 / React Native 0.86.3** prebuild + custom Development Build
+- Representative secondary consumer: pinned **Expo SDK 57.0.33 / React Native 0.86.3** prebuild + custom Development Build
 - Expo Go is unsupported because it cannot load this package's custom native module
 
 ## Verification Matrix
@@ -113,7 +113,7 @@ For each release candidate, keep automated/compiler gates and record the hardwar
 
 - Required: packed-package Android/iOS Codegen matrix for RN 0.76.9, 0.77.3, and 0.84.0
 - Required before stable promotion while RN 0.76 remains supported: clean packed-package RN 0.76.9 New Architecture Android and iOS application builds
-- Required before stable promotion: clean packed-package Expo SDK 57.0.31 / RN 0.86.3 prebuild, Expo Doctor review, Android application build, and iOS pod/Codegen/application build
+- Required before stable promotion: clean packed-package Expo SDK 57.0.33 / RN 0.86.3 prebuild, Expo Doctor review, Android application build, and iOS pod/Codegen/application build
 - Required: RN 0.84 New Architecture Android and iOS compiler checks
 - Optional: older React Native lines only when the release claims them
 - Required hardware review: compare candidate changes with attributed physical-device evidence and select affected flows for focused retesting. Releasing a version alone does not require a full device suite.

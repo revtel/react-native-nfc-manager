@@ -1,5 +1,22 @@
 ## Unreleased
 
+## [4.3.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.3.0) (2026-11-16)
+
+### Added
+
+- iOS: add Swift Package Manager support for React Native's SwiftPM integration,
+  including separate Swift, Objective-C++ and event-bridge targets. CocoaPods
+  remains supported. Contributed by [@chrfalch](https://github.com/chrfalch)
+  in [PR #862](https://github.com/revtel/react-native-nfc-manager/pull/862).
+
+### Fixed
+
+- Restore `Ndef.stringify()` for text, URI, encoded messages and nested Smart
+  Poster records by using the correct internal decoders. Add seven regression
+  tests, including custom separators, empty/MIME records and input immutability.
+  Fixes [#864](https://github.com/revtel/react-native-nfc-manager/issues/864)
+  via [PR #866](https://github.com/revtel/react-native-nfc-manager/pull/866).
+
 ## [4.2.0](https://github.com/revtel/react-native-nfc-manager/releases/tag/v4.2.0) (2026-10-27)
 
 ### Added
