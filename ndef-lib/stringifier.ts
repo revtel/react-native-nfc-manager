@@ -1,4 +1,6 @@
-const ndef = require('./ndef');
+const {decodeNdefMessage} = require('./ndef');
+const textHelper = require('./ndef-text');
+const uriHelper = require('./ndef-uri');
 const constants = require('./constants');
 
 type Byte = number;
@@ -20,7 +22,7 @@ let stringifier = {
     if (Array.isArray(data)) {
       const records: NdefRecord[] =
         typeof data[0] === 'number'
-          ? ndef.decodeMessage(data as ByteArray)
+          ? decodeNdefMessage(data as ByteArray)
           : (data as NdefRecord[]);
 
       if (typeof data[0] === 'number') {
@@ -112,18 +114,18 @@ let stringifier = {
       case constants.RTD_TEXT:
         result += 'Text Record';
         result += separator;
-        result += ndef.text.decodePayload(record.payload);
+        result += textHelper.decodePayload(record.payload);
         break;
       case constants.RTD_URI:
         result += 'URI Record';
         result += separator;
-        result += ndef.uri.decodePayload(record.payload);
+        result += uriHelper.decodePayload(record.payload);
         break;
       case constants.RTD_SMART_POSTER:
         result += 'Smart Poster';
         result += separator;
         // the payload of a smartposter is a NDEF message
-        result += stringifier.printRecords(ndef.decodeMessage(record.payload));
+        result += stringifier.printRecords(decodeNdefMessage(record.payload));
         break;
       default:
         // attempt to display other types
