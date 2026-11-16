@@ -9,6 +9,28 @@ pod install
 
 The native sources require Swift 5.7 or newer. For Expo apps, follow the [config-plugin setup](./expo.md); use this page when inspecting generated native configuration.
 
+## Swift Package Manager
+
+Version 4.3.0 adds a SwiftPM manifest for React Native's generated SwiftPM
+integration. CocoaPods remains supported; existing apps do not need to migrate.
+The manifest requires Swift tools 6.0 and iOS 15.1 or later.
+
+In a React Native CLI app with SwiftPM integration available (the validation
+fixture uses React Native 0.88.1), install this npm package, then run from the app
+root:
+
+```sh
+npx react-native spm add --deintegrate --yes
+npx react-native spm update
+```
+
+The first command replaces the app's CocoaPods integration. Review and commit
+existing app changes before migrating. Build the generated Xcode project rather
+than the former CocoaPods workspace. The package relies on React Native's
+locally generated package paths; it is not a standalone remote Xcode package.
+NFC capabilities, entitlements and usage descriptions below are still required.
+A simulator can validate linking and unsupported-device handling, not NFC reads.
+
 ## Enable NFC
 
 Enable NFC for your App ID on the [Apple Developer website](https://developer.apple.com/).
