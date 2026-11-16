@@ -55,16 +55,22 @@ changing candidate code.
   CocoaPods 1.15.2 and ffi 1.17.0 were used.
 - Hosted PR CI passed Validate, Android New Architecture, iOS New Architecture,
   Select native builds and Native build gate; documentation also built.
-- Expo consumer generation, tarball installation and prebuild passed. **Expo
-  Doctor failed 20/21**: the validation fixture pins Expo 57.0.31, while the SDK
-  now requires `~57.0.33`. This is an additional failure disallowed by the release
-  policy. Expo Android/iOS compilation was not run.
+- Initial Expo consumer generation, tarball installation and prebuild passed,
+  but Doctor rejected the fixture's Expo 57.0.31 pin: the SDK now requires
+  `~57.0.33`. Publication was stopped; no failed check was bypassed.
+- With maintainer approval, only the verification fixture's Expo patch pin,
+  corresponding tests and current policy references were updated to 57.0.33.
+  Historical records were preserved. Full `npm run verify`, 13 focused Expo
+  validator tests and lint passed. The packed candidate SHA-256 remained
+  identical, confirming this did not change shipped library content.
+- The corrected Expo 57.0.33 / RN 0.86.3 consumer passed generation,
+  installation, prebuild, all Doctor checks, generated configuration/provenance
+  and autolinking verification, and Android application assembly.
+  iOS CocoaPods installation and the unsigned iOS Simulator application build
+  both passed.
 
-**Publication is blocked.** PR #867 remains a draft; no release merge, tag or
-npm publication occurred. The next step is to update the verification fixture's
-Expo patch pin and corresponding tests, rerun Expo gates, then complete exact-main
-CI and the publication preview. Do not treat the native checks above as passing
-Expo or the final publication gate.
+Final exact-main CI, publication preview and registry publication verification
+remain required. This preparation record does not yet claim publication.
 
 ## Risk assessment and hardware limits
 

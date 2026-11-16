@@ -19,7 +19,7 @@ const EXPO_CONSUMER = Object.freeze({
   appName: 'NfcExpoConsumer',
   createExpoApp: 'create-expo-app@4.0.0',
   template: 'blank-typescript@57.0.33',
-  expo: '57.0.31',
+  expo: '57.0.33',
   expoDoctor: 'expo-doctor@1.20.4',
   react: '19.2.3',
   reactNative: '0.86.3',
